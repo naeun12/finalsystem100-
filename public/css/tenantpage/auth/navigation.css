@@ -1,0 +1,49 @@
+.custom-navbar-border {
+    border-bottom: 2px solid #4edce2;
+    background-color: #fff;
+}
+
+.navbar-nav .nav-item {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.navbar-nav .nav-link {
+    padding: 0.5rem 0.75rem;
+}
+
+.navbar-nav .dropdown-menu {
+    padding: 0.5rem 0;
+}
+
+.btn .badge {
+    font-size: 0.65rem;
+    padding: 0.25em 0.4em;
+}
+
+.logo-text {
+    font-family: "Comic Sans MS", cursive, sans-serif;
+    font-size: 29px;
+    letter-spacing: -3.2px;
+    word-spacing: -2.8px;
+    color: #4edce2;
+    font-weight: 700;
+    text-decoration: none;
+    font-style: normal;
+    font-variant: small-caps;
+    text-transform: capitalize;
+}
+
+.nav-custom-link {
+    color: #333;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.nav-custom-link:hover,
+.nav-custom-link.active {
+    background-color: #4edce2;
+    color: white !important;
+}

@@ -1,0 +1,145 @@
+.logo-text {
+
+    font-family: "Comic Sans MS", cursive, sans-serif;
+    font-size: 29px;
+    letter-spacing: -3.2px;
+    word-spacing: -2.8px;
+    color: #4edce2;
+    font-weight: 700;
+    text-decoration: none;
+    font-style: normal;
+    font-variant: small-caps;
+    text-transform: capitalize;
+
+}
+
+.nav-header {
+    border-bottom: #4edce2 1px solid;
+}
+
+.sidebar {
+    border-right: #4edce2 1px solid;
+}
+
+.sidebar {
+    height: 100vh;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar .logo-text {
+    font-size: 1.25rem;
+    letter-spacing: 1px;
+}
+
+.list-group-item {
+    border: none;
+    background-color: transparent;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: #34495e;
+}
+
+.list-group-item:hover {
+    background-color: #f1f1f1;
+    color: #007bff;
+    cursor: pointer;
+}
+
+.list-group-item a {
+    color: inherit;
+    display: block;
+    padding: 5px 0;
+}
+
+.list-group-item a:hover {
+    color: #007bff;
+}
+
+.sidebar img {
+    transition: transform 0.3s ease;
+}
+
+.sidebar img:hover {
+    transform: scale(1.05);
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: fixed;
+        top: 56px;
+        left: -250px;
+        width: 250px;
+        height: calc(100vh - 56px);
+        z-index: 1000;
+        transition: left 0.3s ease;
+    }
+
+    .sidebar.show {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .display-4,
+    .display-6 {
+        font-size: 2rem !important;
+    }
+
+    /* Better touch targets */
+    .dropdown-item,
+    .list-group-item {
+        padding: 0.75rem 1.25rem;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 575.98px) {
+    .navbar-brand img {
+        width: 32px;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    h3,
+    h4 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Hide sidebar on small screens by default */
+@media (max-width: 767.98px) {
+    #sidebarMenu {
+        position: fixed;
+        top: 0;
+        left: -250px;
+        /* Hide sidebar off screen */
+        width: 250px;
+        height: 100%;
+        overflow-y: auto;
+        transition: left 0.3s ease;
+        z-index: 1050;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Show sidebar when toggled */
+    #sidebarMenu.show-sidebar {
+        left: 0;
+    }
+
+    /* Add an overlay when sidebar is visible */
+    body.sidebar-open::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+    }
+}

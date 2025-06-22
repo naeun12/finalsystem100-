@@ -1,0 +1,228 @@
+ .avatar-wrapper {
+     position: relative;
+     height: 200px;
+     width: 200px;
+     margin: 50px auto;
+     border-radius: 50%;
+     overflow: hidden;
+     box-shadow: 1px 1px 15px -5px black;
+     transition: all 0.3s ease;
+ }
+
+ .avatar-wrapper:hover {
+     transform: scale(1.05);
+     cursor: pointer;
+ }
+
+ .avatar-wrapper .profile-pic {
+     height: 100%;
+     width: 100%;
+     object-fit: cover;
+     transition: all 0.3s ease;
+ }
+
+ .avatar-wrapper .upload-button {
+     position: absolute;
+     top: 0;
+     left: 0;
+     height: 100%;
+     width: 100%;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     background-color: rgba(52, 73, 94, 0.7);
+     opacity: 0;
+     transition: opacity 0.3s ease;
+ }
+
+ .avatar-wrapper:hover .upload-button {
+     opacity: 1;
+ }
+
+ .avatar-wrapper .upload-button .fas.fa-arrow-circle-up {
+     font-size: 4rem;
+     color: white;
+ }
+
+ .file-input {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     opacity: 0;
+     cursor: pointer;
+     z-index: 2;
+ }
+
+ .text-create {
+     font-family: "Arial Black", Gadget, sans-serif;
+     font-size: 29px;
+     letter-spacing: -3.2px;
+     word-spacing: 0.6px;
+     color: black;
+     font-weight: 700;
+     text-decoration: none;
+     font-style: normal;
+     font-variant: small-caps;
+     text-transform: capitalize;
+ }
+
+ .registration-container {
+     box-shadow: rgba(78, 220, 226, 0.25) 0px 50px 100px -20px,
+         rgba(78, 220, 226, 0.3) 0px 30px 60px -30px,
+         rgba(78, 220, 226, 0.35) 0px -2px 6px 0px inset;
+ }
+
+ .error {
+     color: red;
+     font-size: 12px;
+ }
+
+
+
+ .custom-modal {
+     position: fixed;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+     width: 500px;
+     /* Adjust as needed */
+     max-width: 90%;
+     background-color: #fff;
+     border-radius: 8px;
+     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+     z-index: 1000;
+ }
+
+ .modal-header {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     padding: 1rem;
+     border-bottom: 1px solid #ddd;
+ }
+
+ .modal-header .modal-title {
+     font-size: 1.25rem;
+     font-weight: bold;
+ }
+
+ .modal-header .btn-close {
+     background: none;
+     border: none;
+     font-size: 1.5rem;
+     cursor: pointer;
+ }
+
+ /* Modal Body */
+ .modal-body {
+     padding: 1rem;
+     text-align: center;
+ }
+
+
+
+ /* OTP Inputs */
+ .otp-inputs {
+     display: flex;
+     justify-content: center;
+     gap: 10px;
+     margin-bottom: 1rem;
+ }
+
+ .otp-box {
+     width: 40px;
+     height: 40px;
+     text-align: center;
+     font-size: 1rem;
+     border: 1px solid #ccc;
+     border-radius: 4px;
+     outline: none;
+ }
+
+ .otp-box:focus {
+     border-color: #007bff;
+     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+ }
+
+ /* Modal Actions */
+
+
+
+
+ .btn {
+     padding: 0.75rem 1.5rem;
+     font-size: 1rem;
+     border-radius: 25px;
+     box-shadow: #777 0px 25px 20px -20px;
+     transition: transform 1s ease, box-shadow 0.3s ease;
+     background-color: #4edce2;
+ }
+
+ .btn:hover {
+
+     background-color: #093334;
+     color: white;
+     transform: scale(1.1);
+     box-shadow: 0px 10px 15px -5px #555;
+ }
+
+
+
+
+
+
+ /* Button Styling */
+ .btn-close {
+     margin-left: 1rem;
+     /* Add spacing between text and close button */
+ }
+
+ .sign-in-style {
+     background-color: #4edce2;
+     color: #000000;
+ }
+
+ .sign-in-style:hover {
+     background-color: #194d4f;
+     color: white;
+ }
+
+ .navbar-nav .nav-link {
+     padding: 0.5rem 1rem;
+     transition: background-color 0.3s, color 0.3s;
+     border-radius: 8px;
+     width: 150px;
+ }
+
+ /* Hover effect for nav items */
+ .navbar-nav .nav-link:hover {
+     background-color: rgba(255, 255, 255, 0.1);
+     color: blue !important;
+ }
+
+ /* Active state */
+ .navbar-nav .nav-link.active {
+     background-color: #ffffff22;
+     color: blue !important;
+ }
+
+ /* Dropdown dark mode consistency */
+ .dropdown-menu-dark .dropdown-item {
+     color: #f8f9fa;
+ }
+
+ .dropdown-menu-dark .dropdown-item:hover {
+     background-color: #343a40;
+ }
+
+ /* Logo and icon spacing */
+ .navbar-brand i {
+     font-size: 1.2rem;
+ }
+
+ /* Toggler color override (optional) */
+ .navbar-dark .navbar-toggler {
+     border-color: rgba(255, 255, 255, 0.3);
+ }

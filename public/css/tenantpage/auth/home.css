@@ -1,0 +1,63 @@
+body {
+    overflow-x: hidden;
+}
+
+.carousel-caption {
+    padding: 1rem;
+    backdrop-filter: blur(3px);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.carousel-inner {
+    max-height: 500px;
+}
+
+.carousel-inner img {
+    height: 500px;
+    object-fit: cover;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .carousel-inner img {
+        height: 300px;
+    }
+}
+
+
+
+.border-custom {
+    border: 1.5px solid #4edce2;
+}
+
+.nav-feature-link {
+    font-weight: 600;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 8px 16px;
+    transition: all 0.3s ease-in-out;
+}
+
+.nav-feature-link:hover {
+    background-color: #4edce2;
+    color: #fff !important;
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.map-card {
+    border: 1.5px solid #4edce2;
+    background-color: #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.map-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+#map,
+#map-mandaue {
+    border: 2px solid #eafafa;
+}

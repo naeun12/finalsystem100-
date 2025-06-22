@@ -1,0 +1,32 @@
+@media (max-width: 1265px) {
+    .logo-text {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1266px) {
+    .logo-text {
+        display: inline !important;
+    }
+}
+
+.hover-bg:hover {
+    background-color: #f1f1f1;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar {
+    min-height: 100vh;
+    border-right: 1px solid #dee2e6;
+}
+
+.offcanvas-backdrop {
+    z-index: 1020;
+    /* Above other content, below navbar */
+}
+
+.list-group-item a:hover {
+    background-color: #f0f8ff;
+    border-radius: 6px;
+    transition: 0.3s ease-in-out;
+}

@@ -1,0 +1,112 @@
+.container-fluid {
+    background-color: #fff;
+}
+
+
+
+::-webkit-scrollbar-thumb {
+    background: #4A6BF2;
+    border-radius: 5px;
+}
+
+
+
+.nav-btn:hover {
+    width: 100px;
+    height: 40px;
+    border-radius: 24.5px;
+    background-color: #4edce2;
+    text-align: center;
+    color: white;
+}
+
+.nav-link.active {
+    width: 100px;
+    height: 40px;
+    border-radius: 24.5px;
+    background-color: #4edce2;
+    text-align: center;
+    color: white;
+}
+
+.container-fluid {
+    background-color: #fff;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 25px;
+    box-shadow: #777 0px 25px 20px -20px;
+    transition: transform 1s ease, box-shadow 0.3s ease;
+    background-color: #4edce2;
+}
+
+.btn:hover {
+
+    background-color: #093334;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0px 10px 15px -5px #555;
+}
+
+
+@media (max-width: 768px) {
+    .col-md-6 {
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-top: 2rem;
+        /* Adjust for smaller screens */
+        padding-bottom: 2rem;
+    }
+}
+
+.navbar-nav .nav-link {
+    padding: 0.5rem 1rem;
+    transition: background-color 0.3s, color 0.3s;
+    border-radius: 8px;
+    width: 150px;
+}
+
+/* Hover effect for nav items */
+.navbar-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: blue !important;
+}
+
+/* Active state */
+.navbar-nav .nav-link.active {
+    background-color: #ffffff22;
+    color: blue !important;
+}
+
+/* Dropdown dark mode consistency */
+.dropdown-menu-dark .dropdown-item {
+    color: #f8f9fa;
+}
+
+.dropdown-menu-dark .dropdown-item:hover {
+    background-color: #343a40;
+}
+
+/* Logo and icon spacing */
+.navbar-brand i {
+    font-size: 1.2rem;
+}
+
+/* Toggler color override (optional) */
+.navbar-dark .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.3);
+}
