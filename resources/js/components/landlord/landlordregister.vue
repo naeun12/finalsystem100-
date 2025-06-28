@@ -4,7 +4,7 @@
 
     <form @submit.prevent="nextStep">
         <!-- Steps Navigation -->
-        <div class="nav-pills w-100 bg-info">
+        <div class="nav-pills w-100 ">
             <ul class="nav mb-3 justify-content-center flex-wrap">
                 <li class="" v-for="(step, index) in steps" :key="index">
                     <button class="btn btn-primary m-2" :class="{ active: currentStep === index }"

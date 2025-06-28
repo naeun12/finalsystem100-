@@ -15,9 +15,9 @@
             </button>
 
             <!-- Collapsible Content -->
-            <div class="collapse navbar-collapse justify-content-between " id="navbarMain">
+            <div class="collapse navbar-collapse position-relative" id="navbarMain">
                 <!-- Left: Nav Links -->
-                <ul class="navbar-nav align-items-center gap-2">
+                <ul class="navbar-nav align-items-center gap-4 mx-auto">
                     <li class="nav-item">
                         <a class="nav-link nav-custom-link {{ request()->routeIs('homepage') ? 'active' : '' }}"
                             href="{{ route('homepage', ['tenant_id' => session('tenant_id')]) }}">

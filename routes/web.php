@@ -93,12 +93,19 @@ Route::middleware([LandlordAuth::class])->group(function () {
 
     //functions for landlord dorm management
     Route::post('/AddDorm', [dormManagementController::class, 'AddDorm'])->name('AddDorm');
-    // Route::post('/upload-images',[imagesDormImages::class,'dormImages'])->name('upload-images');
     Route::post('/UpdateDorm/{id}', [dormManagementController::class, 'UpdateDorm'])->name('UpdateDorm');
     Route::delete('/DeleteDorm/{id}', [dormManagementController::class, 'DeleteDorm'])->name('DeleteDorm');
     Route::get('/ListDorms', [dormManagementController::class, 'ListDorms'])->name('ListDorms');
     Route::get('/ViewDorm/{id}', [dormManagementController::class, 'ViewDorm'])->name('ViewDorm');
     Route::get('/SearchDorms', [dormManagementController::class, 'searchDorms'])->name('SearchDorms');
+    Route::get('/filter-locations', [dormManagementController::class, 'filterLocations'])->name('filter.locations');
+    
+    Route::get('/filter-availability', [dormManagementController::class, 'filteredAvailability'])->name('filter.availability');
+
+    //functions for landlord dorm rules and policy
+    Route::post('/add-rules', [dormManagementController::class, 'addRulesAndPolicy'])->name('add.rules');
+    Route::delete('/delete-rules/{pivotId}', [dormManagementController::class, 'deleteRulesAndPolicies'])->name('delete.rules');
+
      //functions for amenities
      Route::post('/add-amenities', [dormManagementController::class, 'AddAmenities'])->name('add.amenities');
      Route::delete('/delete-amenities/{id}', [dormManagementController::class, 'DeleteAmenities'])->name('delete.amenities');
@@ -138,6 +145,12 @@ Route::middleware([TenantAuth::class])->group(function () {
     //map dormitories page
     Route::get('/dorm-map{tenant_id}', [dormitoriesmapcontroller::class, 'dormitoriesMap'])->name('dorm.map');
     Route::get('/nearby-dorms', [dormitoriesmapcontroller::class, 'getNearbyByCoordinates']);
+    Route::post('/price-range', [dormitoriesmapcontroller::class, 'priceRange']);
+    Route::post('/selected-gender-type', [dormitoriesmapcontroller::class, 'SelectedGenderType']);
+    Route::post('/filter-price-gender', [dormitoriesmapcontroller::class, 'filterPriceGender']);
+
+
+    // dormitories page
     Route::get('/dormitories{tenant_id}', [dormitories::class, 'dormitoriesListing'])->name('dormitories');
     Route::get('/list-dorms', [dormitories::class, 'Listdorms']);
     Route::post('/search-locations', [dormitories::class, 'searchLocations']);
@@ -146,6 +159,7 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::post('/api/search', [dormitories::class, 'searchWithPrice']);
     Route::post('/recommendations/gender-location', [dormitories::class, 'genderLocationRecommendations']);
     Route::get('/dormitories/filter', [dormitories::class, 'filtergenderpriceDormitories']);
+    Route::post('/filterpricegender-dormitories', [dormitories::class, 'filterpriceGenderDormitories']);
 
     
 

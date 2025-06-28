@@ -8,6 +8,9 @@
                 <h2 class="mb-4 text-primary fw-semibold text-center">Find Your Ideal Dorm in Mandaue and Lapu-Lapu City
                 </h2>
             </div>
+            <div class="text-primary">
+                Top Rated Dormitories
+            </div>
 
             <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden">
                 <span class="input-group-text bg-white border-0">
@@ -21,7 +24,7 @@
                 <!-- Price Range Dropdown -->
                 <div class="col-md-6 col-lg-4 mb-2">
                     <select class="form-select shadow-sm" v-model="selectedPriceRange"
-                        @change="fetchPriceRecommendations">
+                        @change="dropdownPriceRecommendations">
                         <option disabled value="">Select Price Range (based on rooms)</option>
                         <option value="all">All Prices</option>
                         <option value="0-100">₱0 - ₱100</option>
@@ -34,7 +37,7 @@
                 <!-- Occupancy Type Dropdown -->
                 <div class="col-md-6 col-lg-4 mb-2">
                     <select class="form-select shadow-sm" v-model="selectedOccupancyType"
-                        @change="fetchGenderRecommendations">
+                        @change="dropdownGenderRecommdations">
                         <option disabled value="">Select Occupancy Type</option>
                         <option value="all">All Types</option>
                         <option value="Male">Male</option>
@@ -65,12 +68,14 @@
                                 </p>
                             </div>
                             <div class="mt-4 d-flex justify-content-center">
-                                <button class="btn rounded-pill px-4 w-100">View Details</button>
+                                <button class="btn rounded-pill px-4 w-100" @click="viewDormsDetails(dorm.dorm_id)">View
+                                    Details</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
 
         <!-- Sidebar: recommendations only show if there are any -->
@@ -106,18 +111,20 @@
                     <i class="bi bi-search text-primary"></i>
                 </span>
                 <input type="text" class="form-control border-0 shadow-none" placeholder="Search Locations"
-                    aria-label="Search Locations" v-model="searchpriceLocations" @input="debouncedpriceSearch" />
+                    aria-label="Search Locations" v-model="searchPriceLocations" @input="debouncedpriceSearch" />
             </div>
             <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden" v-if="isGenderBased">
                 <span class="input-group-text bg-white border-0">
                     <i class="bi bi-search text-primary"></i>
                 </span>
                 <input type="text" class="form-control border-0 shadow-none" placeholder="Search Location"
-                    aria-label="Search Locations" v-model="searchgenderLocations" @input="debouncedgenderSearch" />
+                    aria-label="Search Locations" v-model="searchGenderLocations" @input="debouncedgenderSearch" />
             </div>
+
             <div class="col-md-6 col-lg-4 mb-2 w-75">
-                <select class="form-select shadow-sm " v-if="!isGenderBased" v-model="selectedPriceOccupancyType"
-                    @change="fetchFilteredpriceGenderDormitories">
+
+                <select class="form-select shadow-sm " v-if="!isGenderBased" v-model="priceFilterOccupancyType"
+                    @change="priceDropdownOccupancyType">
                     <option disabled value="">Select Occupancy Type</option>
                     <option value="all">All Types</option>
                     <option value="male">Male</option>
@@ -127,7 +134,8 @@
                 </select>
             </div>
             <div class="col-md-6 col-lg-4 mb-2 w-100" v-if="isGenderBased">
-                <select class="form-select shadow-sm" v-model="selectedPriceRange" @change="fetchPriceRecommendations">
+                <select class="form-select shadow-sm" v-model="genderSelectedPriceRange"
+                    @change="genderDropdownpriceRange">
                     <option disabled value="">Select Price Range (based on rooms)</option>
                     <option value="all">All Prices</option>
                     <option value="0-100">₱0 - ₱100</option>
@@ -141,10 +149,6 @@
                 <p class="mt-2 mb-0">No results found for your search.</p>
                 <small>Try another location or price range.</small>
             </div>
-
-
-
-
             <div v-for="(dorm, index) in recommendations" :key="'ai-' + index" class="mb-3">
                 <div class="card shadow-sm">
                     <div class="card-body p-3">
@@ -160,15 +164,16 @@
                         <p class="mb-1 small text-muted">
                             <i class="bi bi-geo-alt-fill me-1"></i>{{ dorm.address }}
                         </p>
-                        <p v-if="!isGenderBased" class="mb-1 small">
+                        <p v-if="!isGenderBased || visiblecard" class="mb-1 small">
                             <strong>₱{{ dorm.price }}</strong>
                             <span class="mx-2">|</span>
                             <i class="bi bi-door-open me-1"></i>{{ dorm.room_type }}
                         </p>
-                        <p v-if="isGenderBased" class="mb-1 small">
+                        <p v-if="isGenderBased || visiblecard" class="mb-1 small">
                             <i class="bi bi-people-fill me-1"></i>Occupancy Type: {{ dorm.occupancy_type }}
                         </p>
-                        <button class="btn mt-3 w-75 mx-auto d-block" style="height: 50px;">View Details</button>
+                        <button class="btn mt-3 w-75 mx-auto d-block" @click="viewDormsDetails(dorm.dorm_id)" style="
+                            height: 50px;">View Details</button>
                     </div>
                     <div v-if="!recommendloading && recommendations.length === 0" class="text-center text-muted my-4">
                         <i class="bi bi-emoji-frown fs-4"></i>
@@ -207,9 +212,11 @@ export default {
             showRecommendations: false,
             isGenderBased: false,
             searchlocations: '',
-            searchpriceLocations: '',
-            searchgenderLocations: '',
-            selectedPriceOccupancyType: '',
+            searchPriceLocations: '',
+            searchGenderLocations: '',
+            priceFilterOccupancyType: '',
+            genderSelectedPriceRange: '',
+            visiblecard: false,
             recommend: '',
 
         };
@@ -230,12 +237,15 @@ export default {
 
             }
         },
+        viewDormsDetails(dormitoryId) {
+            this.tenant_id = window.tenant_id;
+            window.location.href = `/room-details/${dormitoryId}/${this.tenant_id}`;
+        },
         async searchLocations() {
             try {
                 this.$refs.loader.loading = true;
 
                 if (!this.searchQuery.trim()) {
-                    this.$refs.loader.loading = false;
 
                     await this.dormListingfetch();  // re-fetch all dorms
                     return;
@@ -256,13 +266,15 @@ export default {
 
                 const result = await response.json();
                 if (result.status === "success") {
-                    this.$refs.loader.loading = false;
                     this.dormitories = result.recommendations;
+                    this.$refs.loader.loading = false;
+
 
                 } else {
                     console.error('Server responded with error:', result.message);
                     this.dormitories = [];
                     this.$refs.loader.loading = false;
+
 
                 }
             } catch (err) {
@@ -272,11 +284,20 @@ export default {
 
             }
         },
-        async fetchPriceRecommendations() {
-            const [min, max] = this.getPriceRange(this.selectedPriceRange);
-            this.$refs.loader.loading = true;
-
+        async dropdownPriceRecommendations() {
             this.recommendloading = true;
+            if (this.$refs.loader) {
+                this.showRecommendations = true;
+            }
+            if (!this.showRecommendations) {
+                // First time loading
+                if (this.$refs.loader) {
+                }
+            } else {
+                // Already showing recos – refresh/reload only
+                this.recommendloading = true;
+            }
+            const [min, max] = this.getPriceRange(this.selectedPriceRange);
             try {
                 const response = await fetch('/pricerecommendations', {
                     method: 'POST',
@@ -300,17 +321,14 @@ export default {
                     this.isGenderBased = false;
                     this.recommend = 'Recommended dorms based on your selected room price range';
                     this.selectedOccupancyType = '';
-                    this.$refs.loader.loading = false;
                     console.log(this.recommendations);
                 } else {
                     this.recommendloading = false;
-                    this.$refs.loader.loading = false;
 
 
                 }
 
             } catch (error) {
-                console.error('Error fetching AI recommendations:', error);
                 this.recommendloading = false;
                 this.$refs.loader.loading = false;
 
@@ -327,17 +345,15 @@ export default {
                 default: return [0, 999999]; // fallback
             }
         },
-        async fetchGenderRecommendations() {
+        async dropdownGenderRecommdations() {
             try {
-                this.recommendloading = false;
+                this.recommendloading = true;
                 if (this.$refs.loader) {
-                    this.$refs.loader.loading = false;
                     this.showRecommendations = true;
                 }
                 if (!this.showRecommendations) {
                     // First time loading
                     if (this.$refs.loader) {
-                        this.$refs.loader.loading = true;
                     }
                 } else {
                     // Already showing recos – refresh/reload only
@@ -364,7 +380,8 @@ export default {
                     this.recommend = 'Recommended dorms based on your selected occupancy preference';
                     this.selectedPriceRange = '';
                     this.recommendloading = false;
-                    this.$refs.loader.loading = false;
+                    this.genderSelectedPriceRange = '';
+
                 }
             }
             catch (error) {
@@ -375,10 +392,9 @@ export default {
         async recommendationsPriceSearchLocations() {
             try {
                 this.recommendloading = true;
-                if (!this.searchpriceLocations.trim()) {
-                    this.$refs.loader.loading = false;
+                if (!this.searchPriceLocations.trim()) {
 
-                    await this.fetchPriceRecommendations();  // re-fetch all dorms
+                    await this.dropdownPriceRecommendations();  // re-fetch all dorms
                     return;
                 }
 
@@ -403,7 +419,7 @@ export default {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
                     body: JSON.stringify({
-                        keyword: this.searchpriceLocations,
+                        keyword: this.searchPriceLocations,
                         min_price,
                         max_price
                     }),
@@ -424,10 +440,9 @@ export default {
         async recommendationsGenderLocations() {
             try {
                 this.recommendloading = true;
-                if (!this.searchpriceLocations.trim()) {
-                    this.$refs.loader.loading = false;
+                if (!this.searchPriceLocations.trim()) {
 
-                    await this.fetchPriceRecommendations();  // re-fetch all dorms
+                    await this.dropdownPriceRecommendations();  // re-fetch all dorms
                     return;
                 }
 
@@ -452,7 +467,7 @@ export default {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
                     body: JSON.stringify({
-                        keyword: this.searchpriceLocations,
+                        keyword: this.searchPriceLocations,
                         min_price,
                         max_price
                     }),
@@ -463,6 +478,8 @@ export default {
                 if (result.status === 'success') {
                     this.recommendations = result.recommendations;
 
+
+
                 }
             } catch (error) {
                 console.error('Search error:', error);
@@ -471,6 +488,12 @@ export default {
             }
         },
         async genderLocationSearch() {
+            if (!this.searchGenderLocations.trim()) {
+
+                await this.genderDropdownpriceRange();  // re-fetch all dorms
+                return;
+            }
+
             try {
                 const response = await fetch('/recommendations/gender-location', {
                     method: 'POST',
@@ -480,13 +503,15 @@ export default {
                     },
                     body: JSON.stringify({
                         occupancy_type: this.selectedOccupancyType,
-                        location: this.searchgenderLocations
+                        location: this.searchGenderLocations
                     })
                 });
 
                 const result = await response.json();
                 if (result.status === 'success') {
                     this.recommendations = result.recommendations;
+
+
                 } else {
                     this.recommendations = [];
                 }
@@ -494,33 +519,75 @@ export default {
                 console.error('Gender + Location search failed:', error);
             }
         },
-        fetchFilteredpriceGenderDormitories() {
+        priceDropdownOccupancyType() {
+            this.recommendloading = true;
+            if (this.$refs.loader) {
+                this.showRecommendations = true;
+            }
+            if (!this.showRecommendations) {
+                // First time loading
+                if (this.$refs.loader) {
+                }
+            } else {
+                // Already showing recos – refresh/reload only
+                this.recommendloading = true;
+            }
             axios.get('/dormitories/filter', {
                 params: {
                     price_range: this.selectedPriceRange,
-                    occupancy_type: this.selectedPriceOccupancyType.toLowerCase()
+                    occupancy_type: this.priceFilterOccupancyType.toLowerCase()
                 }
             })
                 .then(response => {
                     // Assuming backend returns: { status: 'success', recommendations: [...] }
                     this.recommendations = response.data.recommendations || [];
-                    console.log('Er', this.recommendations);
-
+                    this.recommendloading = false;
+                    this.searchPriceLocations = '';
                 })
                 .catch(error => {
                     console.error('Error fetching filtered dormitories:', error);
+                    this.recommendloading = false; // Add this line
+
                 });
         },
+        async genderDropdownpriceRange() {
+            this.recommendloading = true;
+            if (this.$refs.loader) {
+                this.showRecommendations = true;
+            }
+            if (!this.showRecommendations) {
+                // First time loading
+                if (this.$refs.loader) {
+                }
+            } else {
+                // Already showing recos – refresh/reload only
+                this.recommendloading = true;
+            }
+            axios.post('/filterpricegender-dormitories', {
+                occupancy_type: this.selectedOccupancyType,
+                price_range: this.genderSelectedPriceRange,
+            })
+                .then(response => {
+                    this.recommendations = response.data.recommendations;
+                    this.visiblecard = true;
+                    this.recommendloading = false; // Add this line
+                    this.searchGenderLocations = '';
 
+                })
+                .catch(error => {
+                    console.error("Error fetching filtered dorms:", error);
+                    this.recommendloading = false; // Add this line
 
-
-
+                });
+        },
         hiderecommendations() {
             this.showRecommendations = false;
-            this.selectedPriceRange = '';
+            this.genderSelectedPriceRange = '';
             this.filteredDorms = [];
             this.isGenderBased = false;
             this.selectedOccupancyType = '';
+            this.searchGenderLocations = '';
+            this.searchPriceLocations = '';
 
 
         }

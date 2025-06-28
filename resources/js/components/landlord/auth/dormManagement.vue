@@ -1,9 +1,8 @@
 <template>
     <Loader ref="loader" />
-    <Toastcomponents ref="toast" />
+
     <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="text-primary fw-bold">Register Dorm</h1>
+        <div class="d-flex justify-content-end align-items-end mb-4">
             <div>
                 <button class="btn btn-outline-secondary me-2" @click="ViewRoomsPage">View Rooms</button>
                 <button class="btn btn-outline-primary" @click="VisibleAddModal = true">
@@ -11,10 +10,35 @@
                 </button>
             </div>
         </div>
+        <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden">
+            <span class="input-group-text bg-white border-0">
+                <i class="bi bi-search text-primary"></i>
+            </span>
+            <input type="text" class="form-control border-0 shadow-none" placeholder="Search Dormitories name"
+                aria-label="Search Locations" v-model="searchTerm" />
+        </div>
+        <div class="mb-1 d-flex gap-2 flex-wrap justify-content-start">
+            <div class="col-md-6 col-lg-4 mb-2">
+                <select class="form-select shadow-sm" v-model="selectedLocation" @change="dropdownLocation">
 
+                    <option disabled value="">Select Locations</option>
+                    <option value="all">All Locations</option>
+                    <option value="mandaue">Mandaue City</option>
+                    <option value="lapu-lapu">Lapu-Lapu</option>
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-2">
+                <select class="form-select shadow-sm" v-model="selectedAvailability" @change="dropdownAvailability">
+
+                    <option disabled value="">Select Availability</option>
+                    <option value="all">All Availability</option>
+                    <option value="Available">Available</option>
+                    <option value="Not Available">Not Available</option>
+                </select>
+            </div>
+        </div>
         <!-- Search Bar -->
-        <input type="text" v-model="searchTerm" @input="onSearch" placeholder="🔍 Search Dorm..."
-            class="form-control mb-4 shadow-sm" />
+
         <div v-if="dorms.length === 0" class="text-center text-muted">
             No dormitories found matching your search criteria.
         </div>
@@ -28,27 +52,42 @@
                         <th scope="col">Address</th>
                         <th scope="col">Contact Email</th>
                         <th scope="col">Contact Phone</th>
+                        <th scope="col">Availability Status</th>
                         <th scope="col">Total Rooms</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="dorm in filteredDorms" :key="dorm.dorm_id" class="text-center">
+                    <tr v-for="dorm in dorms" :key="dorm.dorm_id" class="text-center">
                         <td>{{ dorm.dorm_id }}</td>
                         <td class="text-truncate" style="max-width: 150px;">{{ dorm.dorm_name }}</td>
                         <td class="text-truncate" style="max-width: 200px;">{{ dorm.address }}</td>
                         <td class="text-truncate" style="max-width: 200px;">{{ dorm.contact_email }}</td>
                         <td>{{ dorm.contact_phone }}</td>
+                        <td>
+                            <span class="badge text-uppercase" :class="{
+                                'bg-success': dorm.availability === 'Available',
+                                'bg-danger': dorm.availability === 'Not Available',
+                                'bg-warning text-dark': dorm.availability === 'under maintenance'
+                            }">
+                                {{ dorm.availability }}
+                            </span>
+                        </td>
+
                         <td>{{ dorm.total_rooms }}</td>
                         <td>
                             <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                <button class="btn btn-sm btn-outline-success"
-                                    @click="viewDorm(dorm.dorm_id)">View</button>
-                                <button class="btn btn-sm btn-outline-primary"
-                                    @click="editDorm(dorm.dorm_id)">Edit</button>
-                                <button class="btn btn-sm btn-outline-danger"
-                                    @click="deleteDorm(dorm.dorm_id)">Delete</button>
+                                <button class="btn btn-sm btn-outline-success" @click="viewDorm(dorm.dorm_id)">
+                                    <i class="fas fa-eye me-1"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" @click="editDorm(dorm.dorm_id)">
+                                    <i class="fas fa-edit me-1"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @click="deleteDorm(dorm.dorm_id)">
+                                    <i class="fas fa-trash me-1"></i>
+                                </button>
                             </div>
+
                         </td>
                     </tr>
                 </tbody>
@@ -59,8 +98,8 @@
             <nav aria-label="Page navigation">
                 <ul class="pagination mb-0">
                     <li :class="['page-item', { disabled: currentPage === 1 }]">
-                        <button class="page-link" :disabled="currentPage === 1" @click="fetchDorms(currentPage - 1)"
-                            aria-label="Previous">
+                        <button class="page-link" :disabled="currentPage === 1"
+                            @click="handlePagination(currentPage - 1)" aria-label="Previous">
                             <span aria-hidden="true">&laquo; Prev</span>
                         </button>
                     </li>
@@ -73,7 +112,7 @@
 
                     <li :class="['page-item', { disabled: currentPage === lastPage }]">
                         <button class="page-link" :disabled="currentPage === lastPage"
-                            @click="fetchDorms(currentPage + 1)" aria-label="Next">
+                            @click="handlePagination(currentPage + 1)" aria-label="Next">
                             <span aria-hidden="true">Next &raquo;</span>
                         </button>
                     </li>
@@ -92,16 +131,33 @@
                     </div>
                     <!-- Modal Body -->
                     <div class="modal-body bg-white">
-                        <div class="row g-4">
+                        <div class="p-3 d-flex align-items-center  flex-wrap">
+                            <img :src="getAssetPath('images/Logo/logo.png')" alt="Company Logo" width="50" class="">
+                            <span class="fw-bold fs-5 logo-text me-3">DormHub</span>
+
+                            <span class="text-muted small">
+                                📍 Click <strong>Select address</strong> to locate your dormitory.
+                            </span>
+
+                            <span class="text-muted small">
+                                ✅ Ensure all required fields are filled before submitting.
+                            </span>
+                        </div>
+
+
+                        <div class="row g-3">
                             <!-- Left Column -->
-                            <div class="col-md-4">
+                            <div class="col">
                                 <div class="form-floating mb-3 mt-3">
                                     <input type="text" class="form-control" id="dormName" v-model="dorm_name"
                                         placeholder="Dorm Name">
                                     <label for="dormName">Dorm Name</label>
                                 </div>
-                                <span class="mb-3 text-danger" v-if="errors.dorm_name">{{ errors.dorm_name[0]
-                                }}</span>
+                                <span class="mb-3 text-danger small d-flex align-items-center gap-1"
+                                    v-if="errors.dorm_name">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    {{ errors.dorm_name[0] }}
+                                </span>
                                 <div class="form-floating  mt-3">
                                     <input type="text" class="form-control" id="address" v-model="address"
                                         placeholder="Address" readonly>
@@ -113,6 +169,7 @@
                                     </button>
                                 </div>
                                 <span class="mb-3 text-danger " v-if="errors.address">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
                                     {{ errors.address[0] }}
                                 </span>
                                 <div class="form-floating mb-3 mt-3">
@@ -120,60 +177,51 @@
                                         style="height: 120px;" v-model="description"></textarea>
                                     <label for="description">Description</label>
                                 </div>
-                                <span class="mb-3 text-danger" v-if="errors.description">{{ errors.description[0]
-                                }}</span>
-                                <div class="form-floating mb-3 mt-3">
-                                    <textarea class="form-control" id="room_features" placeholder="Enter Room Features"
-                                        v-model="room_features" style="height: 150px;"></textarea>
-                                    <label for="room_features">Room Features</label>
+                                <span class="mb-3 text-danger" v-if="errors.description">
+                                    <i class="fa-solid fa-circle-exclamation"></i>{{ errors.description[0]
+                                    }}</span>
+
+                                <div>
+                                    <label for="total_rooms">Number of Rooms</label>
+
+                                    <div class="mb-3 mt-3 d-flex align-items-center gap-2">
+
+                                        <button class="btn btn-outline-danger" @click="decreamnentRooms()"><span
+                                                class="fw-bold">-</span></button>
+                                        <input type="text" class="form-control w-100 text-center" id="total_rooms"
+                                            placeholder="0" v-model="total_rooms" readonly>
+                                        <button class="btn btn-outline-success" @click="increamentRooms()"><span
+                                                class="fw-bold">+</span></button>
+                                    </div>
                                 </div>
-                                <span class="mb-3 text-danger" v-if="errors.room_features">{{ errors.room_features[0]
-                                }}</span>
-
-                                <label for="total_rooms">Number of Rooms</label>
-
-                                <div class="mb-3 mt-3 d-flex align-items-center gap-2">
-
-                                    <button class="btn btn-outline-danger" @click="decreamnentRooms()"><span
-                                            class="fw-bold">-</span></button>
-                                    <input type="text" class="form-control w-100 text-center" id="total_rooms"
-                                        placeholder="0" v-model="total_rooms" readonly>
-                                    <button class="btn btn-outline-success" @click="increamentRooms()"><span
-                                            class="fw-bold">+</span></button>
-                                </div>
-
-
                             </div>
-
                             <!-- Middle Column -->
-                            <div class="col-md-4">
+                            <div class="col">
                                 <div class="form-floating mb-3 mt-3">
                                     <input type="email" class="form-control" id="contact_email"
                                         placeholder="Contact Email" v-model="contact_email">
                                     <label for="contact_email">Contact Email</label>
                                 </div>
-                                <span class="mb-3 text-danger mt-3" v-if="errors.contact_email">{{
-                                    errors.contact_email[0] }}</span>
+                                <span class="mb-3 text-danger mt-3" v-if="errors.contact_email"> <i
+                                        class="fa-solid fa-circle-exclamation"></i> {{
+                                            errors.contact_email[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
                                     <input type="tel" class="form-control" id="contact_phone"
                                         placeholder="Contact Phone" v-model="contact_phone">
                                     <label for="contact_phone">Contact Phone</label>
                                 </div>
-                                <span class="text-danger mb-3" v-if="errors.contact_phone">{{
-                                    errors.contact_phone[0] }}</span>
-                                <div class="form-floating mb-3 mt-3">
-                                    <textarea class="form-control" id="rules" placeholder="Rules" style="height: 120px;"
-                                        v-model="rules"></textarea>
-                                    <label for="rules">Rules</label>
-                                </div>
-                                <span class="mb-3 text-danger" v-if="errors.rules">{{ errors.rules[0] }}</span>
+                                <span class="text-danger mb-3" v-if="errors.contact_phone"> <i
+                                        class="fa-solid fa-circle-exclamation"></i> {{
+                                            errors.contact_phone[0] }}</span>
+
                                 <div class="form-floating mb-3 mt-3">
                                     <input type="text" class="form-control" id="building_type"
                                         placeholder="Enter Building Type" v-model="building_type">
                                     <label for="building_type">Building Type</label>
                                 </div>
-                                <span class="text-danger mb-3" v-if="errors.building_type">{{
-                                    errors.building_type[0] }}</span>
+                                <span class="text-danger mb-3" v-if="errors.building_type"> <i
+                                        class="fa-solid fa-circle-exclamation"></i> {{
+                                            errors.building_type[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
                                     <select class="form-select" id="availability" v-model="availability">
                                         <option disabled value="">Select Availability</option>
@@ -182,8 +230,9 @@
                                     </select>
                                     <label for="availability">Select Availability</label>
                                 </div>
-                                <span class="text-danger mb-3" v-if="errors.availability">{{
-                                    errors.availability[0] }}</span>
+                                <span class="text-danger mb-3" v-if="errors.availability">
+                                    <i class="fa-solid fa-circle-exclamation"></i> {{
+                                        errors.availability[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
                                     <select class="form-select" id="occupancy_type" v-model="occupancy_type">
                                         <option disabled value="">Select Occupancy Type</option>
@@ -195,8 +244,9 @@
                                     </select>
                                     <label for="occupancy_type">Occupancy Type</label>
                                 </div>
-                                <span class="text-danger mb-3" v-if="errors.occupancy_type">{{
-                                    errors.occupancy_type[0] }}</span>
+                                <span class="text-danger mb-3" v-if="errors.occupancy_type"> <i
+                                        class="fa-solid fa-circle-exclamation"></i> {{
+                                            errors.occupancy_type[0] }}</span>
 
 
                                 <div class="d-grid">
@@ -207,31 +257,12 @@
                                 </div>
                             </div>
                             <!-- Right Column -->
-                            <div
-                                class="col-md-4 d-flex flex-column justify-content-center align-items-center text-center p-4">
-                                <a class="navbar-brand d-flex align-items-center mb-2" href="#">
-                                    <img :src="getAssetPath('images/Logo/logo.png')" alt="Company Logo" width="80"
-                                        class="me-2">
-                                    <span class="logo-text fw-bold fs-4 ">DormHub</span>
-                                </a>
-
-                                <div class="mt-3">
-                                    <p class="text-muted small mb-1">
-                                        📍 Click <strong>Select address</strong> to locate your dormitory.
-                                    </p>
-                                    <p class="text-muted small">
-                                        ✅ Ensure all required fields are filled before submitting.
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     <!-- Modal Footer -->
-                    <div class="modal-footer bg-light">
-                        <button class="btn btn-secondary" @click="CloseAddModal">Close</button>
-                    </div>
                 </div>
             </div>
+            <Toastcomponents ref="toast" />
         </div>
         <!-- MAP MODAL -->
         <div v-if="VisibleMap" class="modal fade show d-block w-100" tabindex="-1"
@@ -244,19 +275,15 @@
                         <h5 class="modal-title">Dorm Location</h5>
                         <button type="button" class="btn-close" @click="VisibleMap = false" aria-label="Close"></button>
                     </div>
-
                     <!-- Modal Body with Map -->
                     <div class="modal-body pt-3 position-relative">
-
                         <!-- 📍 Instruction -->
                         <div class="mb-2 text-muted" style="font-size: 14px;">
                             📍 Use this pin to locate your dormitory.
                         </div>
-
                         <!-- Map Container -->
                         <div id="AddMap" class="rounded" style="height: 400px; width: 100%;"></div>
                     </div>
-
                     <!-- Modal Footer -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @click="VisibleMap = false">
@@ -274,13 +301,15 @@
             style="background-color: rgba(0,0,0,0.5);" @click.self="amenitiesModal = false">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg rounded-4">
-                    <div class="modal-header bg-primary text-white rounded-top-4">
-                        <h5 class="modal-title">Add Amenities (Optional)</h5>
-                        <button type="button" class="btn-close btn-close-white" @click="closeaminitiemodal"
+                    <div class="modal-header  text-dark rounded-top-4">
+                        <h5 class="modal-title d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-circle-plus text-primary"></i>
+                            Add Amenities <span class="text-muted small">(Optional)</span>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-dark" @click="closeaminitiemodal"
                             aria-label="Close"></button>
                     </div>
                     <Toastcomponents ref="toast" />
-
 
                     <div class="modal-body">
                         <div v-for="(amenity, index) in amenities" :key="index" class="form-floating mb-3">
@@ -291,15 +320,46 @@
 
                         </div>
 
-                        <button class="btn btn-primary w-25 mb-4" @click="addAmenity"
-                            :disabled="amenities.length >= 4">Add Amenities</button>
+                        <button class="btn btn-primary mb-4" @click="addAmenity" :disabled="amenities.length >= 4"
+                            :title="amenities.length >= 4 ? 'Max 4 amenities allowed' : 'Add Amenity'">
+                            <i class="fa-solid fa-plus"></i> Add Amenity
+                        </button>
                     </div>
-
-
                 </div>
-
             </div>
+        </div>
+        <div class="modal fade show d-block w-100" v-if="rulesandpoliciesModal" tabindex="-1"
+            style="background-color: rgba(0,0,0,0.5);" @click.self="rulesandpoliciesModal = false">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <div class="modal-header  text-dark rounded-top-4">
+                        <h5 class="modal-title d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-circle-plus text-primary"></i>
+                            Add Rules and Policy <span class="text-muted small">(Optional)</span>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-dark" @click="rulesandpoliciesModal = false"
+                            aria-label="Close"></button>
+                    </div>
+                    <Toastcomponents ref="toast" />
 
+                    <div class="modal-body">
+                        <div v-for="(rule, index) in rules" :key="index" class="form-floating mb-3">
+                            <input type="text" class="form-control mb-2" v-model="rules[index]" :id="'rule' + index"
+                                placeholder="Enter rule or policy" />
+                            <label :for="'rule' + index">Rule/Policy {{ index + 1 }}</label>
+                            <span class="text-danger mb-3 " v-if="errors.rules">{{ errors.rules[0]
+                                }}</span>
+
+                        </div>
+
+                        <button class="btn btn-primary mb-4" @click="addRulesAndpolicy"
+                            :disabled="addRulesAndpolicy.length >= 4"
+                            :title="addRulesAndpolicy.length >= 4 ? 'Max 4 rules/policies allowed' : 'Add Rule/Policy'">
+                            <i class="fa-solid fa-plus"></i> Add Rule/Policy
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- Update Modal -->
         <div v-if="VisibleUpdateModal" class="modal fade show d-block w-100" tabindex="-1"
@@ -307,17 +367,34 @@
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
                     <!-- Modal Header -->
-                    <div class="modal-header bg-primary text-white py-3">
-                        <h5 class="modal-title fw-bold">🏠 Update Dorm</h5>
-                        <button type="button" class="btn-close btn-close-white"
-                            @click="VisibleUpdateModal = false"></button>
+                    <div class="modal-header text-dark py-3">
+                        <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-pen-to-square text-primary"></i>
+                            Update Dorm
+                        </h5>
+                        <button type="button" class="btn-close btn-close-dark" @click="VisibleUpdateModal = false"
+                            aria-label="Close"></button>
                     </div>
 
+                    <Toastcomponents ref="toast" />
 
                     <!-- Modal Body -->
                     <form @submit.prevent="updateDorm">
                         <div class="modal-body bg-white">
-                            <div class="row g-4">
+                            <div class="p-3 d-flex align-items-center  flex-wrap">
+                                <img :src="getAssetPath('images/Logo/logo.png')" alt="Company Logo" width="50" class="">
+                                <span class="fw-bold fs-5 logo-text me-3">DormHub</span>
+
+                                <span class="text-muted small">
+                                    📍 Click <strong>Select address</strong> to locate your dormitory.
+                                </span>
+
+                                <span class="text-muted small">
+                                    ✅ Ensure all required fields are filled before submitting.
+                                </span>
+                            </div>
+
+                            <div class="row g-3">
                                 <!-- Left Column -->
                                 <div class="col-md-4">
                                     <div class="form-floating mb-2">
@@ -351,27 +428,25 @@
                                             {{ errors.editDormData.description[0] }}
                                         </span>
                                     </div>
-                                    <div class="form-floating mb-3 mt-3">
-                                        <textarea class="form-control" id="room_features"
-                                            placeholder="Enter Room Features" v-model="editDormData.room_features"
-                                            style="height: 150px;"></textarea>
-                                        <label for="room_features">Room Features</label>
-                                    </div>
-                                    <span class="mb-3 text-danger" v-if="errors.editDormData?.room_features">{{
-                                        errors.editDormData.room_features[0]
-                                    }}</span>
-                                    <div class="form-floating mb-2">
-                                        <div class="mb-3 mt-3 d-flex align-items-center gap-2">
 
-                                            <button type="button" class="btn btn-outline-danger"
-                                                @click="updatedecreamnentRooms()"><span
-                                                    class="fw-bold">-</span></button>
-                                            <input type="text" class="form-control w-100 text-center" id="total_rooms"
-                                                placeholder="0" v-model="editDormData.total_rooms" readonly>
-                                            <button type="button" class="btn btn-outline-success"
-                                                @click="updateincreamentRooms()"><span class="fw-bold">+</span></button>
-                                        </div>
+                                    <div class="form-floating mb-2">
+                                        <input type="text" class="form-control" id="Optional"
+                                            v-model="editDormData.newAmenities" placeholder="Optional Add Amenities">
+                                        <label for="Optional">(Optional) Add Amenities</label>
                                     </div>
+                                    <span class="text-danger small" v-if="errors.editDormData?.newAmenities">
+                                        {{ errors.editDormData.newAmenities[0] }}
+                                    </span>
+
+                                    <div class="mb-2">
+                                        <button type="button" class="btn btn-outline-secondary w-100"
+                                            @click="addnewAmenity()">
+                                            <i class="fas fa-plus me-2"></i> Add Amenity
+                                        </button>
+
+
+                                    </div>
+
                                     <div class="border rounded p-2">
                                         <div class="row fw-bold border-bottom py-2 text-center">
                                             <div class="col">Amenity</div>
@@ -415,15 +490,6 @@
                                             {{ errors.editDormData.contact_phone[0] }}
                                         </span>
                                     </div>
-
-                                    <div class="form-floating mb-2">
-                                        <textarea class="form-control" id="rules" placeholder="Rules"
-                                            v-model="editDormData.rules" style="height: 120px;"></textarea>
-                                        <label for="rules">Rules</label>
-                                        <span class="text-danger small" v-if="errors.editDormData?.rules">
-                                            {{ errors.editDormData.rules[0] }}
-                                        </span>
-                                    </div>
                                     <div class="form-floating mb-3 mt-3">
                                         <input type="text" class="form-control" id="building_type"
                                             placeholder="Enter Building Type" v-model="editDormData.building_type">
@@ -457,63 +523,86 @@
                                     </div>
                                     <span class="text-danger mb-3" v-if="errors.editDormData?.occupancy_type">{{
                                         errors.editDormData.occupancy_type[0] }}</span>
+                                    <div class="mt-2"><span>Number of Rooms</span>
+                                        <div class="form-floating mb-2">
+                                            <div class="mb-3 mt-3 d-flex align-items-center gap-2">
 
-
-                                    <div class="form-floating mb-2">
-                                        <input type="text" class="form-control" id="Optional"
-                                            v-model="editDormData.newAmenities" placeholder="Optional Add Amenities">
-                                        <label for="Optional">(Optional) Add Amenities</label>
-                                    </div>
-                                    <span class="text-danger small" v-if="errors.editDormData?.newAmenities">
-                                        {{ errors.editDormData.newAmenities[0] }}
-                                    </span>
-
-                                    <div class="mb-2">
-                                        <button type="button" class="btn btn-outline-secondary w-100"
-                                            @click="addnewAmenity()">Add Amenity</button>
-
+                                                <button type="button" class="btn btn-outline-danger"
+                                                    @click="updatedecreamnentRooms()"><span
+                                                        class="fw-bold">-</span></button>
+                                                <input type="text" class="form-control w-100 text-center"
+                                                    id="total_rooms" placeholder="0" v-model="editDormData.total_rooms"
+                                                    readonly>
+                                                <button type="button" class="btn btn-outline-success"
+                                                    @click="updateincreamentRooms()"><span
+                                                        class="fw-bold">+</span></button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="mb-2">
                                         <button type="button" @click="updateImages()"
                                             class="btn btn-outline-dark w-100">
-                                            🖼️ Update Images
-
+                                            <i class="bi bi-image me-2"></i> Update Images
                                         </button>
-
-
                                     </div>
                                     <div class="d-grid gap-2 mt-3">
 
                                         <button type="submit" class="btn btn-outline-success w-100">
-                                            ➕ Update Dorm
+                                            <i class="fas fa-edit me-2"></i> Update Dorm
                                         </button>
-
                                     </div>
                                 </div>
-
-                                <div
-                                    class="col-md-4 d-flex flex-column justify-content-center align-items-center text-center p-4">
-                                    <a class="navbar-brand d-flex align-items-center mb-2" href="#">
-                                        <img :src="getAssetPath('images/Logo/logo.png')" alt="Company Logo" width="80"
-                                            class="me-2">
-                                        <span class="logo-text fw-bold fs-4 ">DormHub</span>
-                                    </a>
-
-                                    <div class="mt-3">
-                                        <p class="text-muted small mb-1">
-                                            📍 Click <strong>View Map</strong> to locate your dormitory.
-                                        </p>
-                                        <p class="text-muted small">
-                                            ✅ Ensure all required fields are filled before submitting.
-                                        </p>
+                                <!-- Right Column -->
+                                <div class="col-md-4">
+                                    <div class="form-floating mb-2">
+                                        <input type="text" class="form-control" id="Optional" v-model="newrules"
+                                            placeholder="Optional Add Rules and Policies">
+                                        <label for="Optional">(Optional) Add Rules and Policies</label>
                                     </div>
+                                    <button class="btn btn-outline-primary w-100" type="button" @click="addNewRule()"><i
+                                            class="fas fa-plus me-2"></i>Add Rule</button>
+                                    <span class="text-danger small" v-if="errors.newrules">
+                                        {{ errors.newrules[0] }}
+                                    </span>
+                                    <div class="border rounded p-2">
+                                        <div class="row fw-bold border-bottom py-2 text-center">
+                                            <div class="col">Rules and policies</div>
+                                            <div class="col-3">Actions</div>
+                                        </div>
+
+                                        <div v-for="rule in editDormData.rules_and_policy"
+                                            :key="rule.pivot ? rule.pivot.id : rule.id"
+                                            class="row align-items-center py-2 border-bottom text-center">
+                                            <div class="col">
+                                                <input type="text" readonly class="form-control text-center"
+                                                    v-model="rule.rules_name" placeholder="Rule name" />
+                                            </div>
+                                            <div class="col-3 d-flex justify-content-center gap-2">
+                                                <button class="btn btn-sm btn-outline-danger" type="button"
+                                                    @click.prevent="deleteRulesAndPolicies(rule.pivot.id)">
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
                                 </div>
+                                <div class="col-md-4">
+
+                                </div>
+
+
 
                             </div>
                         </div>
                     </form>
                 </div>
+
             </div>
+
+
         </div>
 
         <!-- Update Map View -->
@@ -542,9 +631,9 @@
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg rounded-4">
                     <!-- Modal Header -->
-                    <div class="modal-header bg-primary text-white rounded-top-4">
+                    <div class="modal-header b text-dark rounded-top-4">
                         <h5 class="modal-title" id="tenantModalLabel">Dormitory Information</h5>
-                        <button type="button" class="btn-close btn-close-white" @click="VisibleDisplayDataModal = false"
+                        <button type="button" class="btn-close btn-close-dark" @click="VisibleDisplayDataModal = false"
                             aria-label="Close"></button>
                     </div>
 
@@ -593,7 +682,13 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Email:</label>
                                     <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contact_email
-                                    }}</div>
+                                        }}</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Description:</label>
+                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.description }}
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Amenities:</label>
@@ -606,10 +701,16 @@
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Description:</label>
-                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.description }}
+                                    <label class="form-label fw-bold">Rules and Policy:</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span v-for="rule in selectedDorm?.rules_and_policy" :key="rule.id"
+                                            class="badge bg-primary text-white px-3 py-2 shadow-sm"
+                                            style="font-size: 0.9rem;">
+                                            {{ rule.rules_name }}
+                                        </span>
                                     </div>
                                 </div>
+
                             </div>
 
                             <!-- Right Column -->
@@ -617,11 +718,11 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Phone:</label>
                                     <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contact_phone
-                                    }}</div>
+                                        }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Available Rooms:</label>
-                                    <div class="p-2 border rounded bg-light">{{ selectedDorm?.available_rooms }}</div>
+                                    <label class="form-label fw-bold">Total Rooms:</label>
+                                    <div class="p-2 border rounded bg-light">{{ selectedDorm?.total_rooms }}</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Registration Date:</label>
@@ -629,10 +730,17 @@
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Rules:</label>
+                                    <label class="form-label fw-bold">Occupancy Type:</label>
                                     <div class="p-2 border rounded bg-light text-break"
                                         style="max-height: 120px; overflow-y: auto;">
-                                        {{ selectedDorm?.rules }}
+                                        {{ selectedDorm?.occupancy_type }}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Building type:</label>
+                                    <div class="p-2 border rounded bg-light text-break"
+                                        style="max-height: 120px; overflow-y: auto;">
+                                        {{ selectedDorm?.building_type }}
                                     </div>
                                 </div>
                             </div>
@@ -655,9 +763,8 @@
                     <!-- Body -->
                     <div class="modal-body bg-white">
                         <div class="container mx-auto">
-                            <h2 class="text-2xl font-semibold mb-4 text-center">drop or click here to upload dormitory
-                                images</h2>
-                            <div class="nav-pills w-100 bg-info">
+
+                            <div class="nav-pills w-100 ">
                                 <ul class="nav mb-3 justify-content-center flex-wrap">
                                     <li class="" v-for="(step, index) in steps" :key="index">
                                         <button class="btn btn-primary m-2" :class="{ active: currentStep === index }"
@@ -669,24 +776,28 @@
                             </div>
                             <!-- Step 0: Room Image Upload -->
                             <div v-if="currentStep === 0">
-                                <div class="border border-secondary rounded-3 p-4 mb-3 text-center"
-                                    style="cursor: pointer;" @click="triggerRoomImage1">
+                                <div class="border border-secondary rounded-3 p-4 mb-3 text-center bg-light hover-shadow"
+                                    style="cursor: pointer; transition: all 0.3s;" @click="triggerRoomImage1">
+
+                                    <!-- Hidden File Input -->
                                     <input ref="RoomsImages1Input" class="d-none" type="file" accept="image/*"
                                         @change="handleroomImage1" />
 
                                     <!-- Icon + Text -->
-                                    <div class="d-flex flex-column align-items-center text-center mb-3">
-                                        <h5 class="text-secondary mt-2">Click to Upload Dorm Main Image </h5>
-                                        <small class="text-muted">Click to browse and select an image file</small>
+                                    <div class="d-flex flex-column align-items-center justify-content-center">
+                                        <i class="fa-solid fa-image fa-2x text-secondary mb-2"></i>
+                                        <h5 class="text-secondary mb-1">Click to Upload Dorm Main Image</h5>
+                                        <small class="text-muted">JPG, PNG or GIF – Max 5MB</small>
                                     </div>
                                 </div>
+
 
                                 <!-- Image Preview -->
                                 <div v-if="roomImage1Preview" class="text-center mb-3">
                                     <img :src="roomImage1Preview" alt="Uploaded Room Image"
                                         class="img-fluid rounded mb-2" style="max-height: 250px;" />
                                     <div>
-                                        <button type="button" @click="removeRoomImages1" class="btn btn-sm">
+                                        <button type="button" @click="removeRoomImages1" class="btn btn-danger mt-3">
                                             Remove Uploaded Image
                                         </button>
                                     </div>
@@ -695,15 +806,18 @@
 
                             <!-- Step 1: Room Image 2 Upload -->
                             <div v-if="currentStep === 1">
-                                <div class="border border-secondary rounded-3 p-4 mb-3 text-center"
-                                    style="cursor: pointer;" @click="triggerRoomImage2">
+                                <div class="border border-secondary rounded-3 p-4 mb-3 text-center bg-light hover-shadow"
+                                    style="cursor: pointer; transition: all 0.3s;" @click="triggerRoomImage2">
+
+                                    <!-- Hidden File Input -->
                                     <input ref="RoomsImages2Input" class="d-none" type="file" accept="image/*"
                                         @change="handleroomImage2" />
 
                                     <!-- Icon + Text -->
-                                    <div class="d-flex flex-column align-items-center text-center mb-3">
-                                        <h5 class="text-secondary mt-2">Click to Upload Dorm Room Image 2</h5>
-                                        <small class="text-muted">Click to browse and select an image file</small>
+                                    <div class="d-flex flex-column align-items-center justify-content-center">
+                                        <i class="fa-solid fa-image fa-2x text-secondary mb-2"></i>
+                                        <h5 class="text-secondary mb-1">Click to Upload Dorm Room Image 2</h5>
+                                        <small class="text-muted">JPG, PNG or GIF – Max 5MB</small>
                                     </div>
                                 </div>
 
@@ -712,7 +826,7 @@
                                     <img :src="roomImage2Preview" alt="Uploaded Room Image"
                                         class="img-fluid rounded mb-2" style="max-height: 250px;" />
                                     <div>
-                                        <button type="button" @click="removeRoomImages2" class="btn btn-sm">
+                                        <button type="button" @click="removeRoomImages2" class="btn btn-danger mt-3">
                                             Remove Uploaded Image
                                         </button>
                                     </div>
@@ -721,15 +835,18 @@
 
                             <!-- Step 2: Room Image 3 Upload -->
                             <div v-if="currentStep === 2">
-                                <div class="border border-secondary rounded-3 p-4 mb-3 text-center"
-                                    style="cursor: pointer;" @click="triggerRoomImage3">
+                                <div class="border border-secondary rounded-3 p-4 mb-3 text-center bg-light hover-shadow"
+                                    style="cursor: pointer; transition: all 0.3s;" @click="triggerRoomImage3">
+
+                                    <!-- Hidden file input -->
                                     <input ref="RoomsImages3Input" class="d-none" type="file" accept="image/*"
                                         @change="handleroomImage3" />
 
-                                    <!-- Icon + Text -->
-                                    <div class="d-flex flex-column align-items-center text-center mb-3">
-                                        <h5 class="text-secondary mt-2">Click to Upload Dorm Room Image 3</h5>
-                                        <small class="text-muted">Click to browse and select an image file</small>
+                                    <!-- Icon and Text -->
+                                    <div class="d-flex flex-column align-items-center justify-content-center">
+                                        <i class="fa-solid fa-image fa-2x text-secondary mb-2"></i>
+                                        <h5 class="text-secondary mb-1">Click to Upload Dorm Room Image 3</h5>
+                                        <small class="text-muted">JPG, PNG or GIF – Max 5MB</small>
                                     </div>
                                 </div>
 
@@ -738,7 +855,7 @@
                                     <img :src="roomImage3Preview" alt="Uploaded Room Image"
                                         class="img-fluid rounded mb-2" style="max-height: 250px;" />
                                     <div>
-                                        <button type="button" @click="removeRoomImages3" class="btn btn-sm">
+                                        <button type="button" @click="removeRoomImages3" class="btn btn-danger">
                                             Remove Uploaded Image
                                         </button>
                                     </div>
@@ -767,8 +884,10 @@
 
                     </div>
 
+
                     <!-- Footer -->
                 </div>
+
             </div>
         </div>
         <!--Update Images-->
@@ -785,8 +904,7 @@
                     <!-- Body -->
                     <div class="modal-body bg-white">
                         <div class="container mx-auto">
-                            <h2 class="text-2xl font-semibold mb-4 text-center">Edit Dormitory Photos</h2>
-                            <div class="nav-pills w-100 bg-info">
+                            <div class="nav-pills w-100 ">
                                 <ul class="nav mb-3 justify-content-center flex-wrap">
                                     <li class="" v-for="(step, index) in steps" :key="index">
                                         <button class="btn btn-primary m-2"
@@ -800,25 +918,29 @@
                             <div v-if="editcurrentStep === 0">
                                 <div class="border border-secondary rounded-3 p-4 mb-3 text-center"
                                     style="cursor: pointer;" @click="edittriggerRoomImage1">
+
                                     <input ref="editRoomsImages1Input" class="d-none" type="file" accept="image/*"
                                         @change="edithandleroomImage1" />
 
                                     <!-- Icon + Text -->
                                     <div class="d-flex flex-column align-items-center text-center mb-3">
-                                        <h5 class="text-secondary mt-2">Change Main Dorm Room Photo</h5>
-                                        <small class="text-muted">Click to upload a new image from your device</small>
-
+                                        <h5 class="text-secondary mt-2">Update Main Room Image</h5>
+                                        <small class="text-muted">Click here to choose a new photo from your
+                                            device</small>
                                     </div>
                                 </div>
 
+
                                 <!-- Image Preview -->
-                                <div v-if="editDormData.roomImage1Preview" class="text-center mb-3">
-                                    <img :src="editDormData.roomImage1Preview" alt="Uploaded Room Image"
-                                        class="img-fluid rounded mb-2" style="max-height: 250px;" />
+                                <div v-if="editDormData.roomImage1Preview || editDormData.roomImage1"
+                                    class="text-center mb-3">
+                                    <img :src="editDormData.roomImage1Preview || editDormData.roomImage1"
+                                        alt="Uploaded Room Image" class="img-fluid rounded mb-2"
+                                        style="max-height: 250px;" />
                                     <div class="mt-2">
                                         <button type="button" @click="editremoveRoomImages1"
-                                            class="btn btn-outline-danger btn-sm">
-                                            🗑️ Remove Image
+                                            class="btn btn-danger btn-sm">
+                                            Remove Image
                                         </button>
                                     </div>
                                 </div>
@@ -827,26 +949,30 @@
                             <div v-if="editcurrentStep === 1">
                                 <div class="border border-secondary rounded-3 p-4 mb-3 text-center"
                                     style="cursor: pointer;" @click="edittriggerRoomImage2">
+
                                     <input ref="editRoomsImages2Input" class="d-none" type="file" accept="image/*"
                                         @change="edithandleroomImage2" />
 
                                     <!-- Icon + Text -->
                                     <div class="d-flex flex-column align-items-center text-center mb-3">
-                                        <h5 class="text-secondary mt-2">Change Secondary Dorm Photo</h5>
-                                        <small class="text-muted">Click to upload a new image from your device</small>
-
+                                        <h5 class="text-secondary mt-2">Update Secondary Room Image</h5>
+                                        <small class="text-muted">Click here to select a new photo from your
+                                            device</small>
                                     </div>
                                 </div>
 
+
                                 <!-- Image Preview -->
-                                <div v-if="editDormData.roomImage2Preview" class="text-center mb-3">
-                                    <img :src="editDormData.roomImage2Preview" alt="Uploaded Room Image"
-                                        class="img-fluid rounded mb-2" style="max-height: 250px;" />
+                                <div v-if="editDormData.roomImage2Preview || editDormData.roomImage2"
+                                    class="text-center mb-3">
+                                    <img :src="editDormData.roomImage2Preview || editDormData.roomImage2"
+                                        alt="Uploaded Room Image" class="img-fluid rounded mb-2"
+                                        style="max-height: 250px;" />
                                     <div>
                                         <div class="mt-2">
                                             <button type="button" @click="editremoveRoomImages2"
-                                                class="btn btn-outline-danger btn-sm">
-                                                🗑️ Remove Image
+                                                class="btn btn-danger btn-sm">
+                                                Remove Image
                                             </button>
                                         </div>
                                     </div>
@@ -856,25 +982,29 @@
                             <div v-if="editcurrentStep === 2">
                                 <div class="border border-secondary rounded-3 p-4 mb-3 text-center"
                                     style="cursor: pointer;" @click="edittriggerRoomImage3">
+
                                     <input ref="editRoomsImages3Input" class="d-none" type="file" accept="image/*"
                                         @change="edithandleroomImage3" />
 
                                     <!-- Icon + Text -->
                                     <div class="d-flex flex-column align-items-center text-center mb-3">
-                                        <h5 class="text-secondary mt-2">Change Third Dorm Photo</h5>
-                                        <small class="text-muted">Click to upload a new image from your device</small>
-
+                                        <h5 class="text-secondary mt-2">Update Third Room Image</h5>
+                                        <small class="text-muted">Click here to choose a new photo from your
+                                            device</small>
                                     </div>
                                 </div>
 
+
                                 <!-- Image Preview -->
-                                <div v-if="editDormData.roomImage3Preview" class="text-center mb-3">
-                                    <img :src="editDormData.roomImage3Preview" alt="Uploaded Room Image"
-                                        class="img-fluid rounded mb-2" style="max-height: 250px;" />
+                                <div v-if="editDormData.roomImage3Preview || editDormData.roomImage3"
+                                    class="text-center mb-3">
+                                    <img :src="editDormData.roomImage3Preview || editDormData.roomImage3"
+                                        alt="Uploaded Room Image" class="img-fluid rounded mb-2"
+                                        style="max-height: 250px;" />
                                     <div>
                                         <button type="button" @click="editremoveRoomImages3"
-                                            class="btn btn-outline-danger btn-sm">
-                                            🗑️ Remove Image
+                                            class="btn btn-danger btn-sm">
+                                            Remove Image
                                         </button>
                                     </div>
                                 </div>
@@ -904,9 +1034,13 @@
                     <!-- Footer -->
                 </div>
             </div>
+
         </div>
+
     </div>
     <Modalconfirmation ref="modal" />
+    <Toastcomponents ref="toast" />
+
 
     <!-- Modal Footer -->
 
@@ -917,6 +1051,7 @@ import axios from 'axios';
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
+import { debounce } from 'lodash';
 
 
 export default {
@@ -931,6 +1066,9 @@ export default {
     data() {
         return {
             searchTerm: '',
+            debouncedSearchTearm: '',
+            selectedLocation: '',
+            selectedAvailability: '',
             VisibleAddModal: false,
             VisibleMap: false,
             UpdateVisibleMap: false,
@@ -940,10 +1078,8 @@ export default {
             VisibleImagePostModal: false,
             VisibleUpdateImagePostModal: false,
             amenitiesModal: false,
-
-
             steps: ["Upload Images 1 ", "Upload Images 2", "Upload Images 3"],
-
+            rulesandpoliciesModal: false,
             currentStep: 0,
             roomImage1Preview: "",
             roomImage1File: "",
@@ -957,16 +1093,16 @@ export default {
             total_rooms: 1,
             contact_email: "",
             contact_phone: "",
-            rules: "",
             contact_phone: "",
             availability: "",
             occupancy_type: "",
-            room_features: "",
             building_type: "",
             longitude: "",
             latitude: "",
             amenities: [''],
             inputamenities: '',
+            rules: [''],
+            inputrules: '',
             errors: {},
             errorsEdit: {},
             dorms: [],
@@ -984,16 +1120,17 @@ export default {
                 contact_phone: "",
                 availability: "",
                 occupancy_type: "",
-                room_features: "",
                 building_type: "",
-                rules: "",
                 latitude: "",
                 longitude: "",
                 newAmenities: '',
+                roomImage1: '',
                 roomImage1Preview: "",
                 roomImage1File: "",
+                roomImage2: '',
                 roomImage2Preview: "",
                 roomImage2File: "",
+                roomImage3: '',
                 roomImage3Preview: "",
                 roomImage3File: "",
                 image_id: "",
@@ -1005,10 +1142,11 @@ export default {
                 }
             },
             editcurrentStep: 0,
-
             lastPage: 1,
             currentPage: 1,
-            newAmenity: ''
+            newAmenity: '',
+            newrules: "",
+
         };
     },
     methods: {
@@ -1017,12 +1155,28 @@ export default {
             this.$refs.modal.visible = true;
 
         },
+        handlePagination(page) {
+            this.currentPage = page;
+
+            if (this.filterMode === 'search') {
+                this.fetchDorms(page, this.searchTerm.toLowerCase());
+            } else if (this.filterMode === 'location') {
+                this.dropdownLocation(page);
+            } else if (this.filterMode === 'availability') {
+                this.dropdownAvailability(page);
+            }
+            else {
+                // default fallback
+                this.fetchDorms(page);
+            }
+        },
+
         //list of dormitories and search
-        async fetchDorms(page = 1) {
+        async fetchDorms(page = 1, term = '') {
             this.$refs.loader.loading = true;
             try {
                 const response = await axios.get('/SearchDorms', {
-                    params: { page, search: this.searchTerm || '' },
+                    params: { page, search: term },
                     headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
                 });
 
@@ -1031,6 +1185,8 @@ export default {
                     this.currentPage = response.data.dorms.current_page;
                     this.lastPage = response.data.dorms.last_page;
                     this.$refs.loader.loading = false;
+                    this.selectedAvailability = '';
+                    this.selectedLocation = '';
 
                 } else {
                     console.error("Failed to fetch dorms:", response.data.message);
@@ -1042,9 +1198,51 @@ export default {
                 ;
             }
         },
-        onSearch() {
-            this.currentPage = 1; // Reset to the first page
-            this.fetchDorms(1); // Fetch dorms with the search term
+
+        async dropdownLocation(page = 1) {
+            this.$refs.loader.loading = true;
+            try {
+                const response = await axios.get('/filter-locations', {
+                    params: { page: this.currentPage, location: this.selectedLocation },
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+                });
+                if (response.data.status === "success") {
+                    this.$refs.loader.loading = false;
+
+                    this.dorms = response.data.dorms.data;
+                    this.currentPage = response.data.dorms.current_page;
+                    this.lastPage = response.data.dorms.last_page;
+                } else {
+                    console.error("Failed to fetch dorms by location:", response.data.message);
+                    this.$refs.loader.loading = false;
+
+                }
+            }
+            catch (error) {
+                console.error("Error fetching dorms by location:", error);
+                this.$refs.loader.loading = false;
+
+            } finally {
+                this.$refs.loader.loading = false;
+            }
+
+        },
+        async dropdownAvailability(page = 1) {
+            this.$refs.loader.loading = true;
+            const response = await axios.get('/filter-availability', {
+                params: { page: this.currentPage, availability: this.selectedAvailability },
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+            });
+            if (response.data.status === "success") {
+                this.dorms = response.data.dorms.data;
+                this.currentPage = response.data.dorms.current_page;
+                this.lastPage = response.data.dorms.last_page;
+                this.$refs.loader.loading = false;
+
+            } else {
+                console.error("Failed to fetch dorms by availability:", response.data.message);
+                this.$refs.loader.loading = false;
+            }
         },
         //view Dorm data
         async viewDorm(dormId) {
@@ -1110,10 +1308,8 @@ export default {
             formData.append('total_rooms', this.total_rooms);
             formData.append('contact_email', this.contact_email);
             formData.append('contact_phone', this.contact_phone);
-            formData.append('rules', this.rules);
             formData.append('availability', this.availability);
             formData.append('occupancy_type', this.occupancy_type);
-            formData.append('room_features', this.room_features);
             formData.append('building_type', this.building_type);
             formData.append('roomImage1File', this.roomImage1File);
             formData.append('roomImage2File', this.roomImage2File);
@@ -1146,6 +1342,7 @@ export default {
                     this.fill();
                     this.amenitiesModal = true;
                     this.errors = {};
+                    this.currentStep = 0;
                     this.dormId = response.data.dormId;
                     await this.fetchDorms(); // Refresh dorm list
                 } else {
@@ -1195,10 +1392,8 @@ export default {
             formData.append('total_rooms', this.total_rooms);
             formData.append('contact_email', this.contact_email);
             formData.append('contact_phone', this.contact_phone);
-            formData.append('rules', this.rules);
             formData.append('availability', this.availability);
             formData.append('occupancy_type', this.occupancy_type);
-            formData.append('room_features', this.room_features);
             formData.append('building_type', this.building_type);
             try {
                 const response = await axios.post('/input-text', formData, {
@@ -1249,10 +1444,11 @@ export default {
                 URL.revokeObjectURL(this.roomImage1Preview);
             }
             this.roomImage1Preview = null;
-            this.roomImage1File = "";
+            this.roomImage1File = null;
             // Add null check for safety
             if (this.$refs.roomImage1Preview) {
-                this.$refs.roomImage1Preview.value = ''; // Reset file input
+                this.$refs.roomImage1Preview.value = '';
+                this.$refs.roomImage1File = '';
             }
         },
         //image 2
@@ -1327,7 +1523,7 @@ export default {
             this.errors.amenities = [];
 
             const confirmed = await this.$refs.modal.show({
-                title: 'Adding Dorm',
+                title: 'Adding new Aminity',
                 message: `Confirm adding this amenity to your dorm?`,
                 functionName: 'Add new Aminity (Optional)'
             });
@@ -1338,9 +1534,6 @@ export default {
             }
 
             this.$refs.loader.loading = true;
-
-            // Clear previous errors
-
             const formData = new FormData();
             formData.append('amenities', this.editDormData.newAmenities);
             formData.append('dorm_id', this.editDormData.dorm_id);
@@ -1357,7 +1550,7 @@ export default {
                 if (res.status === 'success') {
                     this.$refs.loader.loading = false;
 
-                    this.$refs.toast.showToast(' added successfully.');
+                    this.$refs.toast.showToast(this.editDormData.newAmenities + 'added successfully.');
                     //this.editDormData.newAmenities = '';
                     this.VisibleUpdateModal = false;
                     this.errors = {};
@@ -1402,6 +1595,164 @@ export default {
                     this.errors.editDormData.amenities = ['Network or unknown error occurred.'];
                     this.$refs.toast.showToast('Network or unknown error occurred.', 'error');
                 }
+            }
+
+
+        },
+        addRulesAndPoliciesModal() {
+            this.rulesandpoliciesModal = true;
+            this.errors = {};
+            this.rules = [''];
+        },
+        async addRulesAndpolicy() {
+            const formData = new FormData();
+            formData.append('rules', this.rules.join(','));
+            formData.append('dorm_id', this.dormId);
+            try {
+                const confirmed = await this.$refs.modal.show({
+                    title: 'Adding Rules and Policies',
+                    message: `Are you sure you want to Add Rules and Policies?`,
+                    functionName: 'Add new Rules and Policies (Optional)'
+                });
+
+                if (!confirmed) {
+                    this.$refs.loader.loading = false;
+                    return;
+                }
+
+                this.$refs.loader.loading = true;
+
+                const response = await axios.post('/add-rules', formData, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (response.data.status === "success") {
+                    this.$refs.loader.loading = false;
+                    this.$refs.toast.showToast(response.data.message, 'success');
+                    this.rules = [''];
+                    this.errors = {};
+                    this.inputrules = '';
+                } else {
+                    this.$refs.loader.loading = false;
+                    this.$refs.toast.showToast(response.data.message, 'danger');
+                }
+            } catch (error) {
+                this.$refs.loader.loading = false;
+
+                if (error.response && error.response.status === 422) {
+                    const validationErrors = error.response.data.message;
+                    // let messages = Object.values(validationErrors).flat().join('\n');
+                    this.errors.rules = [validationErrors];
+
+                } else {
+                    console.error("Error adding rules:", error);
+                }
+            }
+        },
+        async deleteRulesAndPolicies(id) {
+            this.rulesId = id;
+            const confirmed = await this.$refs.modal.show({
+                title: 'Delete Rule',
+                message: 'Are you sure you want to delete this Rule?',
+                functionName: 'Delete Rule',
+
+            });
+
+            if (!confirmed) return;
+
+            this.$refs.loader.loading = true;
+            if (this.rulesId) {
+
+                try {
+                    const response = await axios.delete(`/delete-rules/${this.rulesId}`, {
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+
+                    this.$refs.loader.loading = false;
+
+                    if (response.data.status === "success") {
+                        this.$refs.toast.showToast(response.data.message, 'success');
+                        this.fetchDorms();
+                        this.VisibleUpdateModal = false;
+                    } else {
+                        this.$refs.toast.showToast('Failed to delete rules. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    this.$refs.loader.loading = false;
+                    console.error("Error deleting rules:", error);
+                    console.log("Deleting rule with ID:", this.rulesId);
+
+                }
+            } else {
+                console.warn("No dorm ID provided for deleting amenities.");
+            }
+        },
+        async addNewRule() {
+            if (!this.newRule === "") {
+                this.$refs.toast.showToast('Please enter a rule before adding.', 'danger');
+                return;
+            }
+            this.rules.push(this.newRule);
+            this.newRule = '';
+            this.errors = {};
+            const confirmed = await this.$refs.modal.show({
+                title: 'Adding New Rule',
+                message: `Are you sure you want to add this rule?`,
+                functionName: 'Add new Rule (Optional)'
+            });
+            if (!confirmed) {
+                this.rules.pop();
+                return;
+            }
+            this.$refs.loader.loading = true;
+            try {
+                const response = await axios.post('/add-rules', {
+                    rules: this.newrules,
+                    dorm_id: this.editDormData.dorm_id,
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (response.data.status === 'success') {
+                    this.$refs.loader.loading = false;
+                    this.$refs.toast.showToast(`${this.newrules} added successfully.`, 'success');
+                    this.VisibleUpdateModal = false;
+                    this.newrules = '';
+                } else if (response.data.errors) {
+                    this.errors.rules = [response.data.message];
+                }
+
+            } catch (error) {
+                this.$refs.loader.loading = false;
+
+                // Show Laravel validation or custom error message
+                if (error.response && error.response.data) {
+                    const res = error.response.data;
+
+                    if (res.errors && res.errors.rules) {
+                        this.errors.newrules = res.errors.rules;
+                    } else if (res.message) {
+                        this.errors.newrules = [res.message];
+
+                        this.$refs.loader.loading = false;
+                    } else {
+                        this.$refs.toast.showToast('An unexpected error occurred.', 'error');
+                        this.$refs.loader.loading = false;
+                    }
+                } else {
+                    this.$refs.toast.showToast('An unexpected error occurred.', 'error');
+                    this.$refs.loader.loading = false;
+
+                }
+            } finally {
+                this.$refs.loader.loading = false;
             }
 
 
@@ -1534,9 +1885,11 @@ export default {
             }
         },
         closeaminitiemodal() {
-            this.amenitiesModal = false;
             this.amenities = [''];
             this.inputamenities = '';
+            this.amenitiesModal = false;
+            this.errors = {};
+            this.addRulesAndPoliciesModal();
         },
 
         prevStep() {
@@ -1578,15 +1931,17 @@ export default {
                         ...response.data.dorm,
                         dorm_id: dormId,
                         roomImage1Preview: response.data.dorm.images?.main_image || null,
+                        roomImage1: response.data.dorm.images?.main_image || null,
                         roomImage1File: null,
                         roomImage2Preview: response.data.dorm.images?.secondary_image || null,
+                        roomImage2: response.data.dorm.images?.secondary_image || null,
                         roomImage2File: null,
                         roomImage3Preview: response.data.dorm.images?.third_image || null,
+                        roomImage3: response.data.dorm.images?.third_image || null,
                         roomImage3File: null,
                         image_id: response.data.dorm.images?.images_id || null,
                     };
                     this.VisibleUpdateModal = true;
-
                 } else {
                     console.error("Failed to fetch dorm details:", response.data.message);
                     alert("Failed to load dorm details for editing");
@@ -1613,9 +1968,7 @@ export default {
             formData.append('contact_phone', this.editDormData.contact_phone);
             formData.append('availability', this.editDormData.availability);
             formData.append('occupancy_type', this.editDormData.occupancy_type);
-            formData.append('room_features', this.editDormData.room_features);
             formData.append('building_type', this.editDormData.building_type);
-            formData.append('rules', this.editDormData.rules);
             try {
                 const confirmed = await this.$refs.modal.show({
                     title: 'Update Dorm',
@@ -1637,7 +1990,6 @@ export default {
                 // Hide spinner
                 if (response.data.status === "success") {
                     this.$refs.toast.showToast(response.data.message, 'success');
-
                     this.$refs.loader.loading = false;
                     this.VisibleUpdateModal = false;
                     this.errors = {};
@@ -1683,15 +2035,12 @@ export default {
                 const formData = new FormData();
 
                 if (this.editDormData.roomImage1File) {
-                    // User selected a new image file, send it
                     formData.append('roomImage1File', this.editDormData.roomImage1File);
-                    formData.append('isNewImage', 'true'); // Optional flag to indicate new image uploaded
+                    formData.append('isNewImage', 'true');
                 } else if (this.editDormData.roomImage1Preview) {
-                    // No new file, send the current image path or name to keep it
                     formData.append('existingImage', this.editDormData.roomImage1Preview);
-                    formData.append('isNewImage', 'false'); // Optional flag
+                    formData.append('isNewImage', 'false');
                 } else {
-                    // No image at all — handle accordingly (maybe send empty or alert user)
                     formData.append('existingImage', '');
                     formData.append('isNewImage', 'false');
                 }
@@ -1807,10 +2156,12 @@ export default {
             }
             this.editDormData.roomImage1Preview = null;
             this.editDormData.roomImage1File = "";
+
             // Add null check for safety
-            if (this.$refs.editDormData.editRoomsImages1Input) {
-                this.$refs.editDormData.editRoomsImages1Input.value = ''; // Reset file input
+            if (this.$refs.editRoomsImages1Input) {
+                this.$refs.editRoomsImages1Input.value = ''; // Reset file input
             }
+
         },
         //image 2
         edithandleroomImage2(event) {
@@ -1839,8 +2190,8 @@ export default {
             this.editDormData.roomImage2File = "";
 
             // Add null check for safety
-            if (this.$refs.editDormData.roomImage2Preview) {
-                this.$refs.editDormData.roomImage2Preview.value = ''; // Reset file input
+            if (this.$refs.editRoomsImages2Input) {
+                this.$refs.editRoomsImages2Input.value = ''; // Reset file input
             }
         },
         //image 3
@@ -1868,8 +2219,8 @@ export default {
             this.editDormData.roomImage3File = "";
 
             // Add null check for safety
-            if (this.$refs.editDormData.roomImage3Preview) {
-                this.$refs.editDormData.roomImage3Preview.value = ''; // Reset file input
+            if (this.$refs.editRoomsImages2Input) {
+                this.$refs.editRoomsImages2Input.value = ''; // Reset file input
             }
         },
         async editImages() {
@@ -1909,6 +2260,7 @@ export default {
                     this.editDormData.roomImage1File = null;
                     this.editDormData.roomImage2File = null;
                     this.editDormData.roomImage3File = null;
+                    this.editcurrentStep = 0;
 
                 }
             } catch (error) {
@@ -2001,39 +2353,7 @@ export default {
             }
         },
 
-        // confirmDelete() {
-        //     this.$refs.modal.visible = true;
 
-        //     if (this.currentDormId) {
-        //         this.$refs.loader.loading = true;
-
-        //         axios.delete(`/DeleteDorm/${this.currentDormId}`, {
-        //             headers: {
-        //                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        //             }
-        //         })
-        //             .then(response => {
-        //                 this.$refs.loader.loading = false;
-
-        //                 if (response.data.status === "success") {
-        //                     this.VisibleDeleteModal = false;
-        //                     this.fetchDorms(); // Refresh dorm list
-        //                     this.$refs.toast.showToast(response.data.message, 'success');
-        //                 } else {
-        //                     this.$refs.toast.showToast('Failed to delete dorm. Please try again.', 'success');
-
-        //                 }
-        //             })
-        //             .catch(error => {
-        //                 this.$refs.loader.loading = false;
-
-        //                 console.error("Error deleting dorm:", error);
-
-        //             });
-        //     } else {
-        //         console.warn("No dorm ID provided for deletion.");
-        //     }
-        // },
         // end deleting functions
         //google map api function
         getAssetPath(path) {
@@ -2231,19 +2551,9 @@ export default {
             return new Date(dateStr).toLocaleDateString('en-US', options);
         }
     },
-    computed: {
-        filteredDorms() {
-            const searchTermLower = this.searchTerm.toLowerCase();
-
-            return this.dorms.filter(dorm => {
-                return (
-                    dorm.dorm_name.toLowerCase().includes(searchTermLower) ||
-                    dorm.address.toLowerCase().includes(searchTermLower) ||
-                    dorm.contact_email?.toLowerCase().includes(searchTermLower)
-                );
-            });
-        }
-    },
+    // computed: {
+    //     this.fetchDorms();
+    // },
     mounted() {
         if (!window.google) {
             const script = document.createElement("script");
@@ -2266,6 +2576,28 @@ export default {
 
 
     watch: {
+        selectedLocation(newVal) {
+            if (newVal !== '') {
+                this.selectedAvailability = ''; // Reset availability only when location is changed
+                this.filterMode = 'location';
+                this.handlePagination(1);
+            }
+        },
+        selectedAvailability(newVal) {
+            if (newVal !== '') {
+                this.selectedLocation = ''; // Reset location only when availability is changed
+                this.filterMode = 'availability';
+                this.handlePagination(1);
+            }
+        },
+        searchTerm: {
+            handler: debounce(function (newVal) {
+                this.filterMode = 'search';
+                this.handlePagination(1);
+            }, 300),
+            immediate: false
+        },
+
         VisibleMap(val) {
             if (val) {
                 this.$nextTick(() => {

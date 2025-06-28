@@ -3,17 +3,18 @@
     <Toastcomponents ref="toast" />
     <div class=" m-5 my-4" v-if="dorm">
         <!-- Header -->
-        <div class="row mb-4 align-items-center border-bottom pb-3">
+        <div class="row mb-4 align-items-center border-bottom pb-3 shadow-sm rounded bg-light px-3 py-3">
             <div class="col-12 col-md-8">
-
-
-                <h2 class="fw-bold text-primary">{{ this.landlordname }}</h2>
-                <p class="text-muted">Posted {{ formatDate(dorm.dorm.created_at) }}</p>
+                <h2 class="fw-bold text-primary mb-1">{{ this.landlordname }}</h2>
+                <p class="text-muted mb-0"><i class="bi bi-clock"></i> Posted {{ formatDate(dorm.dorm.created_at) }}</p>
             </div>
-            <div class="col-12 col-md-4 text-md-end text-start mt-2 mt-md-0">
-                <i><button class="btn">Message</button></i>
+            <div class="col-12 col-md-4 text-md-end text-start mt-3 mt-md-0">
+                <button class="btn  px-4 rounded-pill shadow-sm">
+                    <i class="bi bi-chat-dots me-2"></i> Message
+                </button>
             </div>
         </div>
+
 
         <!-- Main Content -->
         <div class="row gy-4">
@@ -36,53 +37,54 @@
             <!-- Amenities and Room Features -->
             <div class="col-12 col-md-4">
                 <div class="bg-light rounded p-3 shadow-sm mb-3">
-                    <h5 class="fw-bold">Amenities</h5>
-
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-stars me-2 text-primary"></i>Amenities
+                    </h5>
                     <ul class="ps-3 mb-0">
                         <li v-for="(aminity, index) in displayedAmenities" :key="aminity.aminities_id">
                             {{ aminity.name }}
                         </li>
                     </ul>
-
                     <div class="text-center mt-2" v-if="amenities.length > 3">
                         <a href="#" class="text-decoration-none text-primary fw-semibold"
                             @click.prevent="showMore = !showMore">
-                            {{ showMore ? '--Show Less--' : '--More--' }}
+                            {{ showMore ? '-- Show Less --' : '-- More --' }}
                         </a>
                     </div>
                 </div>
 
-
                 <div class="bg-light rounded p-3 shadow-sm">
-                    <h5 class="fw-bold">Room Features</h5>
-                    <div>
-                        <span>
-                            {{ dorm.dorm.room_features }}
-                        </span>
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-door-open me-2 text-primary"></i>Room Features
+                    </h5>
+                    <div class="text-muted" style="white-space: pre-line;">
+                        {{ dorm.dorm.room_features }}
                     </div>
-
-
                 </div>
             </div>
 
             <!-- Rules and Contact -->
             <div class="col-12 col-md-4">
                 <div class="bg-light rounded p-3 shadow-sm mb-3">
-                    <h5 class="fw-bold">Rules & Policies</h5>
-                    <div>
-                        <span>
-                            {{ dorm.dorm.rules }}
-                        </span>
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-info-circle me-2 text-primary"></i>Rules & Policies
+                    </h5>
+                    <div class="text-muted" style="white-space: pre-line;">
+                        {{ dorm.dorm.rules }}
                     </div>
-
-
                 </div>
 
                 <div class="bg-light rounded p-3 shadow-sm">
-                    <h5 class="fw-bold">Contact Information</h5>
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-person-lines-fill me-2 text-primary"></i>Contact Information
+                    </h5>
                     <ul class="list-unstyled mb-0">
-                        <li><i class="fas fa-phone me-2 text-muted"></i>{{ dorm.dorm.contact_email }}</li>
-                        <li><i class="fas fa-envelope me-2 text-muted"></i>{{ dorm.dorm.contact_phone }}</li>
+                        <li class="mb-2">
+                            <i class="bi bi-telephone me-2 text-muted"></i>{{ dorm.dorm.contact_phone }}
+                        </li>
+                        <li>
+                            <i class="bi bi-envelope me-2 text-muted"></i>{{ dorm.dorm.contact_email }}
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -93,26 +95,62 @@
             <!-- Property Details -->
             <div class="col-12 col-md-8">
                 <div class="border rounded p-4 shadow-sm bg-white">
-                    <h4 class="fw-bold text-primary">{{ dorm.dorm.dorm_name }}</h4>
-                    <p>{{ dorm.dorm.address.replace('at the back of ', '') }}</p>
+                    <h4 class="fw-bold text-primary mb-1">
+                        <i class="bi bi-house-door-fill me-2 text-primary"></i>{{ dorm.dorm.dorm_name }}
+                    </h4>
+
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-geo-alt-fill me-2 text-secondary"></i>
+                        {{ dorm.dorm.address.replace('at the back of ', '') }}
+                    </p>
+
 
                     <div class="d-flex flex-wrap gap-2 mb-3">
-                        <span class="badge" :class="{
+                        <span class="badge d-inline-flex align-items-center px-3 py-2 fs-6" :class="{
                             'bg-success': dorm.dorm.availability === 'Available',
                             'bg-danger': dorm.dorm.availability === 'Not Available'
                         }">
+                            <i class="bi" :class="{
+                                'bi-check-circle-fill me-2': dorm.dorm.availability === 'Available',
+                                'bi-x-circle-fill me-2': dorm.dorm.availability === 'Not Available'
+                            }"></i>
                             {{ dorm.dorm.availability }}
                         </span>
                     </div>
 
 
-                    <p><strong>Location:</strong> {{ dorm.dorm.address.replace('at the back of ', '') }}</p>
-                    <p><strong>Occupancy Type:</strong> {{ dorm.dorm.occupancy_type }}</p>
-                    <p><strong>Building Type:</strong> {{ dorm.dorm.building_type }}</p>
+                    <p>
+                        <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+                        <strong>Location:</strong>
+                        {{ dorm.dorm.address.replace('at the back of ', '') }}
+                    </p>
 
-                    <p><strong>Total Capacity:</strong> {{ totalCapacity }} tenants</p>
+                    <p>
+                        <i class="bi bi-people-fill me-2 text-primary"></i>
+                        <strong>Occupancy Type:</strong>
+                        {{ dorm.dorm.occupancy_type }}
+                    </p>
 
-                    <h5 class="fw-bold mt-4">Room Pricing</h5>
+                    <p>
+                        <i class="bi bi-building me-2 text-primary"></i>
+                        <strong>Building Type:</strong>
+                        {{ dorm.dorm.building_type }}
+                    </p>
+
+                    <p>
+                        <i class="bi bi-door-open-fill me-2 text-primary"></i>
+                        <strong>Rooms Available:</strong>
+                        {{ dorm.dorm.total_rooms > 0 ? dorm.dorm.total_rooms + ' room(s)' : 'No rooms available' }}
+                    </p>
+
+
+
+                    <p class="mb-4">
+                        <i class="bi bi-person-fill-check me-2 text-primary"></i>
+                        <strong>Total Capacity:</strong> {{ totalCapacity }} tenant(s)
+                    </p>
+
+                    <h5 class="fw-bold mt-4 mb-3"><i class="bi bi-cash-coin me-2"></i>Room Pricing</h5>
                     <div class="table-responsive">
                         <table class="table table-bordered align-middle text-center">
                             <thead class="table-light">
@@ -128,8 +166,8 @@
                                 </tr>
                                 <tr v-for="room in rooms" :key="room.room_id">
                                     <td>{{ room.room_type }}</td>
-                                    <td>₱{{ room.price }}</td>
-                                    <td><!-- You can add inclusions here --></td>
+                                    <td>₱{{ room.price.toLocaleString() }}</td>
+                                    <td><!-- Add room inclusions here --></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -141,52 +179,110 @@
             <div class="col-12 col-md-4">
                 <form @submit.prevent="bookaroom" class="border rounded p-4 shadow bg-white">
 
-                    <h5 class="fw-bold mb-4 text-center text-primary">Dormitory Booking</h5>
+                    <h5 class="fw-bold mb-4 text-center text-primary">
+                        <i class="bi bi-calendar-check-fill me-2"></i>Dormitory Booking
+                    </h5>
 
                     <div class="mb-3 px-4">
-                        <label for="firstName" class="form-label">First Name</label>
-                        <input id="firstName" type="text" v-model="firstname" class="form-control"
-                            style="border: 2px solid #4edce2;" placeholder="First Name" />
-                        <span v-if="errors.firstname" class="error text-danger">{{ errors.firstname[0] }}</span>
+                        <label for="firstName" class="form-label fw-semibold">
+                            <i class="bi bi-person-fill me-2 text-primary"></i>First Name
+                        </label>
+                        <input id="firstName" type="text" v-model="firstname" class="form-control shadow-sm"
+                            style="border: 2px solid #4edce2;" placeholder="Enter your first name" />
+                        <span v-if="errors.firstname" class="error text-danger small mt-1 d-block">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.firstname[0] }}
+                        </span>
                     </div>
 
-                    <div class="mb-3 px-4">
-                        <label for="lastName" class="form-label">Last Name</label>
-                        <input id="lastName" type="text" v-model="lastname" class="form-control"
-                            style="border: 2px solid #4edce2;" placeholder="Last Name" />
-                        <span v-if="errors.lastname" class="error text-danger">{{ errors.lastname[0] }}</span>
-                    </div>
 
                     <div class="mb-3 px-4">
-                        <label for="contactNumber" class="form-label">Contact Number</label>
-                        <input id="contactNumber" type="text" v-model="contactInfo" class="form-control"
-                            style="border: 2px solid #4edce2;" placeholder="Phone or other contact" />
-                        <span v-if="errors.contactInfo" class="error text-danger">{{ errors.contactInfo[0] }}</span>
+                        <label for="lastName" class="form-label fw-semibold">
+                            <i class="bi bi-person-badge-fill me-2 text-primary"></i>Last Name
+                        </label>
+                        <input id="lastName" type="text" v-model="lastname" class="form-control shadow-sm"
+                            style="border: 2px solid #4edce2;" placeholder="Enter your last name" />
+                        <span v-if="errors.lastname" class="error text-danger small mt-1 d-block">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.lastname[0] }}
+                        </span>
                     </div>
 
+
                     <div class="mb-3 px-4">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input id="email" type="email" v-model="email" class="form-control"
+                        <label for="contactNumber" class="form-label fw-semibold">
+                            <i class="bi bi-telephone-fill me-2 text-primary"></i>Contact Number
+                        </label>
+                        <input id="contactNumber" type="text" v-model="contactInfo" class="form-control shadow-sm"
+                            style="border: 2px solid #4edce2;" placeholder="Enter your phone number" />
+                        <span v-if="errors.contactInfo" class="error text-danger small mt-1 d-block">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.contactInfo[0] }}
+                        </span>
+                    </div>
+
+
+                    <!-- Email -->
+                    <div class="mb-3 px-4">
+                        <label for="email" class="form-label fw-semibold">
+                            <i class="bi bi-envelope-fill me-2 text-primary"></i>Email Address
+                        </label>
+                        <input id="email" type="email" v-model="email" class="form-control shadow-sm"
                             style="border: 2px solid #4edce2;" placeholder="email@example.com" />
-                        <span v-if="errors.email" class="error text-danger">{{ errors.email[0] }}</span>
+                        <span v-if="errors.email" class="error text-danger small mt-1 d-block">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.email[0] }}
+                        </span>
                     </div>
 
+                    <!-- Age -->
                     <div class="mb-3 px-4">
-                        <label for="age" class="form-label">Age</label>
-                        <input id="age" type="number" v-model.number="age" class="form-control"
-                            style="border: 2px solid #4edce2;" min="15" max="60" placeholder="Age" />
-                        <span v-if="errors.age" class="error text-danger">{{ errors.age[0] }}</span>
+                        <label for="age" class="form-label fw-semibold">
+                            <i class="bi bi-person-plus-fill me-2 text-primary"></i>Age
+                        </label>
+                        <input id="age" type="number" v-model.number="age" class="form-control shadow-sm"
+                            style="border: 2px solid #4edce2;" min="15" max="60" placeholder="Enter your age" />
+                        <span v-if="errors.age" class="error text-danger small mt-1 d-block">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.age[0] }}
+                        </span>
                     </div>
 
+                    <!-- Gender -->
                     <div class="mb-3 px-4">
-                        <label for="sex" class="form-label">Sex</label>
-                        <select id="sex" v-model="sex" class="form-select" style="border: 2px solid #4edce2;">
+                        <label for="sex" class="form-label fw-semibold">
+                            <i class="bi bi-gender-ambiguous me-2 text-primary"></i>Gender
+                        </label>
+                        <select id="sex" v-model="sex" class="form-select shadow-sm" style="border: 2px solid #4edce2;">
                             <option value="" disabled>Select</option>
                             <option>Male</option>
                             <option>Female</option>
+                            <option>Other</option>
                         </select>
-                        <span v-if="errors.sex" class="error text-danger">{{ errors.sex[0] }}</span>
+                        <span v-if="errors.sex" class="error text-danger small mt-1 d-block">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.sex[0] }}
+                        </span>
                     </div>
+
+                    <!-- Move-in/out Dates -->
+                    <div class="d-flex gap-3 px-4">
+                        <!-- Move In -->
+                        <div class="mb-3 flex-fill">
+                            <label for="move_in_date" class="form-label fw-semibold">
+                                <i class="bi bi-calendar-event me-2 text-primary"></i>Move-in Date
+                            </label>
+                            <input type="date" class="form-control shadow-sm" v-model="moveInDate"
+                                @change="setMoveOutDate" id="move_in_date" />
+                        </div>
+
+                        <!-- Move Out -->
+                        <div class="mb-3 flex-fill">
+                            <label for="move_out_date" class="form-label fw-semibold">
+                                <i class="bi bi-calendar-check me-2 text-primary"></i>Move-out Date
+                            </label>
+                            <input type="date" class="form-control shadow-sm" v-model="moveOutDate" id="move_out_date"
+                                disabled />
+                        </div>
+                    </div>
+
+
+
+
 
                     <div class="px-4">
                         <button type="button" @click="submitTenantInformation" class="btn w-100 fw-bold">Submit</button>
@@ -255,8 +351,9 @@
                                 <div class="modal-body p-4">
                                     <div class="container">
                                         <h2 class="text-center mb-4 fw-bold text-primary">
-                                            Available Rooms
+                                            <i class="bi bi-door-open-fill me-2"></i>Available Rooms
                                         </h2>
+
 
                                         <div class="row g-3">
                                             <div class="col-12" v-for="room in displayedRooms" :key="room.room_id"
@@ -265,49 +362,62 @@
 
                                                 <div class="card flex-md-row shadow-lg rounded-4 overflow-hidden"
                                                     style="height: 220px;">
-                                                    <!-- Image Left -->
+                                                    <!-- Image Section -->
                                                     <div class="dorm-image" style="width: 35%; min-width: 200px;">
                                                         <img :src="room.room_images"
                                                             :alt="`Image of ${room.dorm?.dorm_name || 'Dorm'}`"
                                                             style="width: 100%; height: 100%; object-fit: cover;" />
                                                     </div>
 
-                                                    <!-- Details Right -->
+                                                    <!-- Details Section -->
                                                     <div class="p-3 d-flex flex-column justify-content-between w-100">
-                                                        <div class=" text-black px-3 py-1 rounded">
-                                                            <h5 class="mb-0">{{ room.listing_type || 'Available Dorm' }}
+                                                        <!-- Title -->
+                                                        <div class="text-black px-3 py-1">
+                                                            <h5 class="mb-0 fw-semibold">
+                                                                <i
+                                                                    class="bi bi-house-door-fill me-2 text-primary"></i>{{
+                                                                        room.listing_type || 'Available Dorm' }}
                                                             </h5>
                                                         </div>
 
+                                                        <!-- Tags -->
                                                         <div class="d-flex flex-wrap gap-2 mt-2">
-                                                            <span class="border px-3 py-1 rounded bg-light">
+                                                            <span class="badge bg-light border text-dark">
+                                                                <i class="bi bi-aspect-ratio me-1 text-secondary"></i>
                                                                 {{ room.area_sqm || 'N/A' }} sqm
                                                             </span>
-                                                            <span class="border px-3 py-1 rounded bg-light">
+                                                            <span class="badge bg-light border text-dark">
+                                                                <i
+                                                                    class="bi bi-gender-ambiguous me-1 text-secondary"></i>
                                                                 {{ room.gender_preference || 'N/A' }}
                                                             </span>
-                                                            <span class="border px-3 py-1 rounded bg-light">
-                                                                {{ room.furnishing_status || 'N/A' }}
+                                                            <span class="badge bg-light border text-dark">
+                                                                <i class="bi bi-lamp-fill me-1 text-secondary"></i> {{
+                                                                    room.furnishing_status || 'N/A' }}
                                                             </span>
                                                         </div>
+
+                                                        <!-- Price -->
                                                         <div
                                                             class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
                                                             <span class="fw-bold text-success fs-5">
-                                                                ₱{{ Number(room.price).toLocaleString() || 'N/A' }} /
-                                                                Head
+                                                                <i class="bi bi-cash-coin me-1"></i> ₱{{
+                                                                    Number(room.price).toLocaleString() || 'N/A' }} / Head
                                                             </span>
                                                         </div>
+
+                                                        <!-- Action Buttons -->
                                                         <div
                                                             class="d-flex justify-content-between align-items-center mt-3 mb-2 flex-wrap">
                                                             <a @click="openRoomDetails(room.room_id)"
-                                                                class="d-block text-center text-decoration-none px-4 py-2"
+                                                                class="text-primary text-decoration-none px-4 py-2 fw-semibold"
                                                                 style="cursor: pointer;">
-                                                                View Details
+                                                                <i class="bi bi-eye me-1"></i>View Details
                                                             </a>
-                                                            <div class="d-flex gap-2 mt-2 mt-md-0 ">
-                                                                <button type="button" class="btn btn-primary btn-sm"
+                                                            <div class="d-flex gap-2 mt-2 mt-md-0">
+                                                                <button type="button" class="btn btn-sm px-3"
                                                                     @click="paymentMethod(room.room_id)">
-                                                                    Book
+                                                                    <i class="bi bi-calendar-check me-1"></i>Book
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -315,6 +425,7 @@
                                                 </div>
                                             </div>
                                         </div>
+
 
                                         <!-- View More Logic -->
                                         <div class="mt-5 text-center">
@@ -351,52 +462,73 @@
 
                                 <!-- Modal Body -->
                                 <div class="modal-body p-4">
+                                    <div class="d-flex justify-content-center mb-3">
+                                        <img :src="roomsDetail?.room_images" class="img-fluid rounded shadow-sm "
+                                            style="max-width: 100%; height: auto;"
+                                            :alt="`Image of ${roomsDetail?.room_type || 'Room'}`" />
+                                    </div>
 
                                     <div class="row g-4 ">
+
                                         <div class="col-md-6">
+                                            <!-- Room Number -->
                                             <div class="mb-3">
-                                                <div class="p-2 border rounded bg-light text-break">{{
-                                                    roomsDetail?.room_number
-                                                }}
-                                                </div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Room Type:</label>
-                                                <div class="p-2 border rounded bg-light text-break">{{
-                                                    roomsDetail?.room_type
-                                                }}
-                                                </div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Price:</label>
-                                                <div class="p-2 border rounded bg-light text-break">₱{{
-                                                    roomsDetail?.price
-                                                }}
+                                                <label class="form-label fw-bold">
+                                                    <i class="bi bi-hash me-2 text-primary"></i>Room Number:
+                                                </label>
+                                                <div class="p-2 border rounded bg-light text-break">
+                                                    {{ roomsDetail?.room_number || 'N/A' }}
                                                 </div>
                                             </div>
 
+                                            <!-- Room Type -->
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    <i class="bi bi-door-open-fill me-2 text-primary"></i>Room Type:
+                                                </label>
+                                                <div class="p-2 border rounded bg-light text-break">
+                                                    {{ roomsDetail?.room_type || 'N/A' }}
+                                                </div>
+                                            </div>
 
+                                            <!-- Price -->
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    <i class="bi bi-cash-coin me-2 text-primary"></i>Price:
+                                                </label>
+                                                <div class="p-2 border rounded bg-light text-break">
+                                                    ₱{{ Number(roomsDetail?.price).toLocaleString() || '0' }}
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <div class="col-md-6 ">
+
+                                        <div class="col-md-6">
+                                            <!-- Availability -->
                                             <div class="mb-3">
-                                                <label class="form-label fw-bold">Availability:</label>
-                                                <div class="p-2 border rounded bg-light text-break">
-                                                    <span class="badge"
-                                                        :class="roomsDetail?.availability === 'Available' ? 'bg-success' : roomsDetail?.availability === 'Occupied' ? 'bg-danger' : 'bg-warning'">
-                                                        {{ roomsDetail?.availability }}
+                                                <label class="form-label fw-bold">
+                                                    <i class="bi bi-clipboard-check me-2 text-primary"></i>Availability:
+                                                </label>
+                                                <div class="p-2 border rounded bg-light">
+                                                    <span class="badge px-3 py-2 fs-6" :class="roomsDetail?.availability === 'Available' ? 'bg-success' :
+                                                        roomsDetail?.availability === 'Occupied' ? 'bg-danger' :
+                                                            'bg-warning text-dark'">
+                                                        {{ roomsDetail?.availability || 'Unknown' }}
                                                     </span>
                                                 </div>
                                             </div>
+
+                                            <!-- Capacity -->
                                             <div class="mb-3">
-                                                <label class="form-label fw-bold">Capacity:</label>
-                                                <div class="p-2 border rounded bg-light text-break">{{
-                                                    roomsDetail?.capacity }}
+                                                <label class="form-label fw-bold">
+                                                    <i class="bi bi-people-fill me-2 text-primary"></i>Capacity:
+                                                </label>
+                                                <div class="p-2 border rounded bg-light text-break">
+                                                    {{ roomsDetail?.capacity || 'N/A' }} tenant(s)
                                                 </div>
                                             </div>
-
-
                                         </div>
+
 
 
                                     </div>
@@ -415,10 +547,12 @@
                         <div class="modal-dialog modal-lg modal-dialog-centered">
                             <div class="modal-content shadow-lg rounded-4 overflow-hidden">
                                 <!-- Modal Header -->
-                                <div class="modal-header  text-black">
-                                    <h5 class="modal-title">Secure Payment</h5>
-                                    <button type="button" class="btn-close btn-close-black"
-                                        @click="ClosepaymentMethod"></button>
+                                <div class="modal-header text-black">
+                                    <h5 class="modal-title fw-bold">
+                                        <i class="bi bi-shield-lock-fill me-2 text-primary"></i>Secure Payment
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-black" @click="ClosepaymentMethod"
+                                        aria-label="Close"></button>
                                 </div>
 
                                 <!-- Modal Body -->
@@ -428,85 +562,121 @@
                                         <div class="row mb-1">
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label fw-bold">Firstname:</label>
-                                                    <div class="p-2 border rounded bg-light text-break">{{
-                                                        this.firstname }}</div>
+                                                    <label class="form-label fw-bold">
+                                                        <i class="bi bi-person-fill text-primary me-2"></i>Firstname:
+                                                    </label>
+                                                    <div class="p-2 border rounded bg-light text-break">
+                                                        {{ firstname || 'N/A' }}
+                                                    </div>
                                                 </div>
                                             </div>
+
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label fw-bold">Lastname:</label>
-                                                    <div class="p-2 border rounded bg-light text-break">{{
-                                                        this.lastname }}</div>
+                                                    <label class="form-label fw-bold">
+                                                        <i
+                                                            class="bi bi-person-badge-fill text-primary me-2"></i>Lastname:
+                                                    </label>
+                                                    <div class="p-2 border rounded bg-light text-break">
+                                                        {{ lastname || 'N/A' }}
+                                                    </div>
                                                 </div>
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Contact Number -->
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-telephone-fill text-primary me-2"></i>Contact Number:
+                                            </label>
+                                            <div class="p-2 border rounded bg-light text-break">
+                                                {{ contactInfo || 'N/A' }}
                                             </div>
                                         </div>
 
+                                        <!-- Contact Email -->
                                         <div class="mb-3">
-                                            <label class="form-label fw-bold">Contact Number:</label>
-                                            <div class="p-2 border rounded bg-light text-break">{{
-                                                this.contactInfo }}</div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">Contact Email:</label>
-                                            <div class="p-2 border rounded bg-light text-break">{{
-                                                this.email }}</div>
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-envelope-fill text-primary me-2"></i>Contact Email:
+                                            </label>
+                                            <div class="p-2 border rounded bg-light text-break">
+                                                {{ email || 'N/A' }}
+                                            </div>
                                         </div>
 
                                         <!-- Room Details -->
+                                        <!-- Room Number -->
                                         <div class="mb-3">
-                                            <label class="form-label fw-bold">Room Number:</label>
-                                            <div class="p-2 border rounded bg-light text-break">{{
-                                                roomsDetail?.room_number }}</div>
-                                        </div>
-                                        <div class="mb-4">
-                                            <label class="form-label fw-bold">Room Type:</label>
-                                            <div class="p-2 border rounded bg-light text-break">{{
-                                                roomsDetail?.room_type
-                                            }}</div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">Price:</label>
-                                            <div class="p-2 border rounded bg-light text-break">{{
-                                                roomsDetail?.price }}
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-hash text-primary me-2"></i>Room Number:
+                                            </label>
+                                            <div class="p-2 border rounded bg-light text-break">
+                                                {{ roomsDetail?.room_number || 'N/A' }}
                                             </div>
                                         </div>
+
+                                        <!-- Room Type -->
                                         <div class="mb-4">
-                                            <label class="form-label fw-bold">Capacity:</label>
-                                            <div class="p-2 border rounded bg-light text-break">{{
-                                                roomsDetail?.capacity
-                                            }}</div>
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-door-open-fill text-primary me-2"></i>Room Type:
+                                            </label>
+                                            <div class="p-2 border rounded bg-light text-break">
+                                                {{ roomsDetail?.room_type || 'N/A' }}
+                                            </div>
                                         </div>
+
+                                        <!-- Price -->
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-cash-coin text-primary me-2"></i>Price:
+                                            </label>
+                                            <div class="p-2 border rounded bg-light text-break">
+                                                ₱{{ Number(roomsDetail?.price).toLocaleString() || '0.00' }}
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-people-fill text-primary me-2"></i>Capacity:
+                                            </label>
+                                            <div class="p-2 border rounded bg-light text-break">
+                                                {{ roomsDetail?.capacity || 'N/A' }} tenant(s)
+                                            </div>
+                                        </div>
+
 
                                         <!-- Payment Type Input -->
                                         <div class="container py-4 mb-4">
-                                            <label for="paymentType" class="form-label fw-semibold text-dark">
-                                                Payment Method
-                                            </label>
-                                            <input type="text" class="form-control form-control-lg mb-2"
-                                                id="paymentType" v-model="payment_type"
-                                                placeholder="e.g., GCash, Bank Transfer, Maya" readonly
-                                                aria-describedby="paymentTypeHelp" />
-                                            <div id="paymentTypeHelp" class="form-text text-muted mb-3">
-                                                Specify your preferred method of payment.
+                                            <div class="mb-3">
+                                                <label for="paymentType" class="form-label fw-semibold text-dark">
+                                                    <i
+                                                        class="bi bi-credit-card-2-front-fill text-primary me-2"></i>Payment
+                                                    Method
+                                                </label>
+                                                <input type="text" class="form-control form-control-lg shadow-sm"
+                                                    id="paymentType" v-model="payment_type"
+                                                    placeholder="e.g., GCash, Bank Transfer, Maya" readonly
+                                                    aria-describedby="paymentTypeHelp" />
+                                                <div id="paymentTypeHelp" class="form-text text-muted">
+                                                    Specify your preferred method of payment.
+                                                </div>
                                             </div>
 
                                             <div
                                                 class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
                                                 <div v-for="(src, name) in payment" :key="name"
-                                                    class="text-center p-2 border rounded"
+                                                    class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
                                                     :class="{ 'border-primary bg-light': payment_type === name }"
-                                                    role="button" style="cursor: pointer;"
-                                                    @click="paymentTypeSelection(name)">
-                                                    <img :src="src" :alt="name" class="img-fluid mx-auto d-block"
+                                                    role="button" style="cursor: pointer; width: 120px; height: 130px;"
+                                                    @click="paymentTypeSelection(name)" title="Click to select">
+                                                    <img :src="src" :alt="name" class="img-fluid mb-2"
                                                         style="width: 50px; height: 50px; object-fit: contain;" />
-                                                    <small class="text-muted text-capitalize d-block mt-1">
+                                                    <small class="fw-semibold text-capitalize text-center">
                                                         {{ name.replace('_', ' ') }}
                                                     </small>
                                                 </div>
                                             </div>
-
-
 
                                         </div>
 
@@ -543,9 +713,10 @@
                                         </div>
 
                                         <!-- Submit Button -->
-                                        <button type="submit" class="btn  w-100 py-2 fw-semibold">
-                                            Make a Reservation
+                                        <button type="submit" class="btn  w-100 py-2 fw-semibold shadow-sm">
+                                            <i class="bi bi-calendar-check-fill me-2"></i>Make a Booking
                                         </button>
+
                                     </div>
                                 </div>
                             </div>
@@ -610,6 +781,8 @@ export default {
             VisibleImagePostModal: false,
             age: null,
             sex: '',
+            moveInDate: '',
+            moveOutDate: '',
             email: '',
             student_picture: "",
             dormitory_id: '',
@@ -977,8 +1150,22 @@ export default {
         },
         paymentTypeSelection(name) {
             this.payment_type = name;
-            console.log('Selected payment type:', name);
         },
+        setMoveOutDate() {
+            if (this.moveInDate) {
+                const date = new Date(this.moveInDate);
+                date.setMonth(date.getMonth() + 1);
+
+                // Adjust if date goes beyond valid month days (e.g., Feb 30)
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+
+                this.moveOutDate = `${year}-${month}-${day}`;
+            } else {
+                this.moveOutDate = '';
+            }
+        }
 
 
 

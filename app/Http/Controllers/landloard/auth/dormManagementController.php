@@ -10,6 +10,8 @@ use App\Models\Landlord\landlordDormAnimitiesModel;
 use App\Models\landlord\landlordAmintiesModel; 
 use App\Models\landlord\landlordDormManagement; 
 use App\Models\landlord\imagesDormImages;
+use App\Models\landlord\landlordDormRulesAndPolicyModel;
+use App\Models\landlord\landlordRulesAndPolicyModel;
 
 class dormManagementController extends Controller
 {
@@ -38,6 +40,105 @@ class dormManagementController extends Controller
             'landlord' => $landlord,
         ]);
     }
+     public function searchDorms(Request $request)
+    {
+        $landlordId = session('landlord_id');
+    
+        if (!$landlordId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized action. Please log in as a landlord.'
+            ], 403);
+        }
+    
+        $searchTerm = strtolower($request->input('search', ''));
+     
+        
+        $dorms = LandlordDormManagement::with('images')
+            ->where('landlord_id', $landlordId)
+            ->where(function ($query) use ($searchTerm) {
+                if (!empty($searchTerm)) {
+                    $query->whereRaw('LOWER(dorm_name) LIKE ?', ["%$searchTerm%"]);
+                }
+            })
+            ->paginate(5);
+        
+        if ($dorms->isEmpty()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'No dormitories found matching your search criteria.',
+                'dorms' => $dorms
+            ]);
+        }
+    
+        return response()->json([
+            'status' => 'success',
+            'dorms' => $dorms
+        ]);
+    }
+   public function filterLocations(Request $request)
+   {
+    $landlordId = session('landlord_id');
+    
+    if (!$landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized action. Please log in as a landlord.'
+        ], 403);
+    }
+
+    $location = strtolower($request->input('location', ''));
+
+    $dorms = LandlordDormManagement::with('images')
+        ->where('landlord_id', $landlordId)
+        ->when($location !== 'all' && !empty($location), function ($query) use ($location) {
+            // Use REGEXP to match only full words (not part of other words)
+            $query->whereRaw("LOWER(address) REGEXP ?", ['[[:<:]]' . $location . '[[:>:]]']);
+        })
+        ->paginate(5);
+    
+
+    
+
+    if ($dorms->isEmpty()) {
+        return response()->json([
+            'status' => 'success',
+            'message' => 'No dormitories found matching your search criteria.',
+            'dorms' => $dorms
+        ]);
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'dorms' => $dorms
+    ]);
+   }
+   public function filteredAvailability(Request $request)
+   {
+       $landlordId = session('landlord_id');
+       $availability = strtolower($request->input('availability', ''));
+       $dorms = LandlordDormManagement::with('images')
+           ->where('landlord_id', $landlordId)
+           ->where(function ($query) use ($availability) {
+               if (!empty($availability) && $availability !== 'all') {
+                $query->whereRaw('LOWER(availability) = ?', [$availability]);
+            }
+           })
+           ->paginate(5);
+       if ($dorms->isEmpty()) {
+           return response()->json([
+               'status' => 'success',
+               'message' => 'No dormitories found matching your search criteria.',
+               'dorms' => $dorms
+           ]);
+       }
+   
+       return response()->json([
+           'status' => 'success',
+           'dorms' => $dorms
+       ]);
+   }
+
     public function inputFieldDorm(Request $request)
     {
         try
@@ -49,10 +150,8 @@ class dormManagementController extends Controller
                 'total_rooms' => 'required|integer|min:1',
                 'contact_email' => 'required|email|max:255',
                 'contact_phone' => 'required|string|max:11|min:11',
-                'rules' => 'required|string',
                 'availability' => 'required|string',
                 'occupancy_type' => 'required|string',
-                'room_features' => 'required|string',
                 'building_type' => 'required|string',
 
             ], [
@@ -61,7 +160,6 @@ class dormManagementController extends Controller
                 'dorm_name.max' => 'The dormitory name must not exceed 255 characters.',
                 'availability.required' => 'Please enter the Availability.',
                 'occupancy_type.required' => 'Please enter the Occupancy type name.',
-                'room_features.required' => 'Please enter the Room features.',
                 'building_type.required' => 'Please enter the Building type.',
 
                 'address.required' => 'Please enter the address.',
@@ -78,7 +176,6 @@ class dormManagementController extends Controller
                 'contact_phone.required' => 'Please enter a contact phone number.',
                 'contact_phone.max' => 'The contact phone number must not exceed 11 characters.',
             
-                'rules.required' => 'Please enter the dorm rules.',
             ]);
             
             return response()->json([
@@ -187,7 +284,6 @@ class dormManagementController extends Controller
             'roomImage3File' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'availability' => 'required|string',
             'occupancy_type' => 'required|string',
-            'room_features' => 'required|string',
             'building_type' => 'required|string',
         ],[
             'roomImage3File.required' => 'Please upload an image of the room.',
@@ -214,10 +310,8 @@ class dormManagementController extends Controller
             $dorm->total_rooms = $validated['total_rooms'];
             $dorm->contact_email = $validated['contact_email'];
             $dorm->contact_phone = $validated['contact_phone'];
-            $dorm->rules = $validated['rules'] ?? null;
             $dorm->availability = $validated['availability'] ?? null;
             $dorm->occupancy_type = $validated['occupancy_type'] ?? null;
-            $dorm->room_features = $validated['room_features'] ?? null;
             $dorm->building_type = $validated['building_type'] ?? null;
             $dorm->save();
            
@@ -300,9 +394,7 @@ class dormManagementController extends Controller
                 'contact_phone' => 'required|string|min:11|max:11|regex:/^\+?[0-9]{7,11}$/',
                 'availability' => 'required|string',
                 'occupancy_type' => 'required|string',
-                'room_features' => 'required|string',
                 'building_type' => 'required|string',
-                'rules' => 'required|string|max:1000',
             ],
             [
                 'contact_phone.max' => 'The contact phone number must not exceed 11 characters.',
@@ -310,19 +402,8 @@ class dormManagementController extends Controller
                 'total_rooms.min' => 'The total rooms must be at least 1.',
                 'total_rooms.integer' => 'The total rooms must be a number.',
                 'description.max' => 'The description must not exceed 1000 characters.',
-                'rules.max' => 'The rules must not exceed 1000 characters.',
             ]);
-            
-    
             $landlordId = session('landlord_id');
-            if (!$landlordId) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Unauthorized action. Please log in as a landlord.'
-                ], 403);
-            }
-    
-            // Fetch the dorm by ID
             $dorm = landlordDormManagement::where('dorm_id', $id)->where('landlord_id', $landlordId)->first();
             if (!$dorm) {
                 return response()->json([
@@ -330,8 +411,6 @@ class dormManagementController extends Controller
                     'message' => 'Dorm not found.'
                 ], 404);
             }
-    
-            // Update dorm details
             $dorm->dorm_name = $validated['dorm_name'];
             $dorm->address = $validated['address'];
             $dorm->latitude = $validated['latitude'];
@@ -342,13 +421,8 @@ class dormManagementController extends Controller
             $dorm->contact_phone = $validated['contact_phone'];
             $dorm->availability = $validated['availability'] ?? null;
             $dorm->occupancy_type = $validated['occupancy_type'] ?? null;
-            $dorm->room_features = $validated['room_features'] ?? null;
             $dorm->building_type = $validated['building_type'] ?? null;
-            $dorm->rules = $validated['rules'] ?? null;
-    
-            // Save changes
             $dorm->save();
-    
             return response()->json([
                 'status' => 'success',
                 'message' => 'Dorm updated successfully!',
@@ -410,7 +484,7 @@ class dormManagementController extends Controller
             ], 403);
         }
         // Fetch the dorm by ID
-        $dorm = landlordDormManagement::with('amenities','images')
+        $dorm = landlordDormManagement::with('amenities','images','rulesAndPolicy')
             ->where('dorm_id', $id)
             ->where('landlord_id', $landlordId)
             ->first();
@@ -447,38 +521,7 @@ class dormManagementController extends Controller
             'landlord_id' => $landlordId
         ]);
     }
-    public function searchDorms(Request $request)
-    {
-        $landlordId = session('landlord_id');
-    
-        if (!$landlordId) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthorized action. Please log in as a landlord.'
-            ], 403);
-        }
-    
-        $searchTerm = $request->input('search', '');
-        $dorms = LandlordDormManagement::with('images')->where('landlord_id', $landlordId)
-            ->where(function ($query) use ($searchTerm) {
-                $query->where('dorm_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('address', 'like', '%' . $searchTerm . '%');
-            })
-            ->paginate(5);
-    
-        if ($dorms->isEmpty()) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'No dormitories found matching your search criteria.',
-                'dorms' => $dorms
-            ]);
-        }
-    
-        return response()->json([
-            'status' => 'success',
-            'dorms' => $dorms
-        ]);
-    }
+   
     public function AddAmenities(Request $request)
     {
         $landlordId = session('landlord_id');
@@ -577,6 +620,104 @@ class dormManagementController extends Controller
             'message' => 'Amenity removed from dorm.'
         ]);
     }
+    public function addRulesAndPolicy(Request $request)
+{
+    $landlordId = session('landlord_id');
+    if (!$landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized action. Please log in as a landlord.'
+        ], 403);
+    }
+
+    $validated = $request->validate([
+        'rules' => 'required|string|max:255',
+        'dorm_id' => 'required|integer',
+    ]);
+
+    try {
+        $rules = trim($validated['rules']);
+        $dormId = $validated['dorm_id'];
+
+        // Check if the rule already exists for this dorm
+        $existingRule = landlordRulesAndPolicyModel::where('rules_name', $rules)->first();
+
+        // If it exists globally, use it, otherwise create it
+        if (!$existingRule) {
+            $existingRule = landlordRulesAndPolicyModel::create([
+                'rules_name' => $rules
+            ]);
+        }
+
+        // Check if the dorm already has this rule assigned
+        $alreadyLinked = landlordDormRulesAndPolicyModel::where('fkdorm_id', $dormId)
+            ->where('fkrules_id', $existingRule->id)
+            ->exists();
+
+        if ($alreadyLinked) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'This rule is already linked to this dormitory.'
+            ], 400);
+        }
+
+        // Link the rule to the dorm
+        landlordDormRulesAndPolicyModel::create([
+            'fkdorm_id' => $dormId,
+            'fkrules_id' => $existingRule->id,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Rules added successfully!',
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error adding rules: ' . $e->getMessage());
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Error adding rules.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+public function deleteRulesAndPolicies($pivotId)
+    {
+        $landlordId = session('landlord_id');
+        if (!$landlordId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized. Please log in.'
+            ], 403);
+        }
+        $pivot = landlordDormRulesAndPolicyModel::find($pivotId); 
+        if (!$pivot) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Rule link not found.'
+            ], 404);
+        }
+    
+        // Check if the dorm_id belongs to the landlord
+        $ownsDorm = landlordDormManagement::where('dorm_id', $pivot->fkdorm_id)
+            ->where('landlord_id', $landlordId)
+            ->exists();
+    
+        if (!$ownsDorm) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized to delete this rule.'
+            ], 403);
+        }
+    
+        $pivot->delete(); 
+    
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Rule removed from dorm.'
+        ]);
+    }
+
     public function dormImages(Request $request)
     {
         $request->validate([
@@ -612,9 +753,6 @@ class dormManagementController extends Controller
     } else {
         $thirdImageUrl = null;
     }
-    
-
-    
         $roomImage = new imagesDormImages();
         $roomImage->dormitory_id = $request->room_id; 
         $roomImage->main_image = $mainImageUrl;

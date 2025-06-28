@@ -207,7 +207,7 @@ class dormitories extends Controller
             $results = DB::table('rooms as r')
                 ->join('dorms as d', 'r.dormitory_id', '=', 'd.dorm_id')
                 ->leftJoin('dorm_images as i', 'i.dormitory_id', '=', 'd.dorm_id')
-                ->select('d.dorm_name', 'd.address', 'r.price', 'i.main_image')
+                ->select('d.dorm_name', 'd.address', 'r.price', 'r.room_type','i.main_image')
                 ->whereNotNull('r.price')
                 ->whereRaw('LOWER(r.availability) = ?', ['available'])
                 ->get();
@@ -335,6 +335,67 @@ class dormitories extends Controller
 
     } catch (\Exception $e) {
         Log::error('Error in filtergenderpriceDormitories: ' . $e->getMessage());
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Internal server error',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+public function filterpriceGenderDormitories(Request $request)
+{
+    try {
+        $occupancyType = strtolower(trim($request->input('occupancy_type')));
+        $priceRange = urldecode($request->input('price_range'));
+
+        Log::info('Occupancy Type: ' . $occupancyType);
+        Log::info('Price Range: ' . $priceRange);
+
+        $query = DB::table('dorms as d')
+            ->join('rooms as r', 'd.dorm_id', '=', 'r.dormitory_id') // Only dorms with rooms
+            ->leftJoin('dorm_images as i', 'i.dormitory_id', '=', 'd.dorm_id')
+            ->select('d.*', 'i.main_image', 'r.price', 'r.room_type')
+            ->distinct();
+
+        // Filter by occupancy type
+        if ($occupancyType && $occupancyType !== 'all') {
+            $query->where(function($q) use ($occupancyType) {
+                if ($occupancyType === 'male') {
+                    $q->whereRaw("LOWER(d.occupancy_type) = ?", ['male only'])
+                      ->orWhereRaw("LOWER(d.occupancy_type) = ?", ['male']);
+                } elseif ($occupancyType === 'female') {
+                    $q->whereRaw("LOWER(d.occupancy_type) = ?", ['female only'])
+                      ->orWhereRaw("LOWER(d.occupancy_type) = ?", ['female']);
+                } elseif ($occupancyType === 'mixed') {
+                    $q->whereRaw("LOWER(d.occupancy_type) LIKE ?", ['mixed%']);
+                } else {
+                    $q->whereRaw("LOWER(d.occupancy_type) = ?", [$occupancyType]);
+                }
+            });
+        }
+
+        // Filter by price
+        if ($priceRange && $priceRange !== 'all') {
+            $query->where(function($q) use ($priceRange) {
+                if ($priceRange === '301+') {
+                    $q->where('r.price', '>=', 301)
+                      ->orWhereNull('r.price');
+                } elseif (strpos($priceRange, '-') !== false) {
+                    [$min, $max] = explode('-', $priceRange);
+                    $q->whereBetween('r.price', [(int)$min, (int)$max])
+                      ->orWhereNull('r.price');
+                }
+            });
+        }
+
+        $dormitories = $query->get();
+
+        return response()->json([
+            'status' => 'success',
+            'recommendations' => $dormitories,
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error in filterpriceGenderDormitories: ' . $e->getMessage());
         return response()->json([
             'status' => 'error',
             'message' => 'Internal server error',

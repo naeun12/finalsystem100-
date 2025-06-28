@@ -6,6 +6,21 @@
         <p class="text-center text-muted">Find the best places to stay near your location</p>
     </div>
 
+
+
+    <!-- Right Column: Instructions -->
+    <div class="d-flex align-items-start gap-3">
+        <img :src="logoImage" alt="Pin Logo" width="50" height="50" class="rounded" />
+        <p class="mb-0">
+            <strong>Use this pin to locate your position.</strong><br>
+            Drag the pin on the left and drop it on your desired location. This helps us suggest nearby
+            dormitories more accurately.
+        </p>
+    </div>
+
+
+
+
     <!-- Two-column layout -->
     <div class="m-2 mt-4 mb-2">
         <div class="row g-4">
@@ -30,53 +45,102 @@
             </div>
 
             <!-- Right section - Info -->
-            <div class=" col-md-4">
-                <div class="bg-white border rounded shadow-sm p-4 d-flex flex-column" style="height: 760px;">
-                    <!-- Search Input -->
-                    <div class="mb-3">
-                        <input type="text" class="form-control form-control-lg rounded-pill shadow-sm"
-                            id="searchLocation" placeholder="🔍 Search gender..." aria-label="Search Location">
+            <div class="col-md-4">
+                <div class="bg-white border rounded-4 shadow p-4 d-flex flex-column" style="height: 760px;">
+                    <!-- Section Header -->
+                    <h5
+                        class="text-dark fw-bold text-center mb-4 d-flex align-items-center justify-content-center gap-2">
+                        <img :src="logoImage" alt="Pin Logo" width="50" height="50" class="rounded" />
+                        Nearby Dormitories
+                    </h5>
+                    <div class="row mb-4">
+                        <!-- Price Range Dropdown -->
+                        <div class="col-md-6 col-lg-4 mb-2 w-50">
+                            <select class="form-select shadow-sm" v-model="selectedPriceRange"
+                                @change="dropdownPriceRange">
+                                <option disabled value="">Select Price Range (based on rooms)</option>
+                                <option value="all">All Prices</option>
+                                <option value="0-100">₱0 - ₱100</option>
+                                <option value="101-200">₱101 - ₱200</option>
+                                <option value="201-300">₱201 - ₱300</option>
+                                <option value="301+">₱301 and above</option>
+                            </select>
+                        </div>
+
+                        <!-- Occupancy Type Dropdown -->
+                        <div class="col-md-6 col-lg-4 mb-2 w-50">
+                            <select class="form-select shadow-sm" v-model="selectedGenderType"
+                                @change="dropdownGenderType">
+                                <option disabled value="">Select Occupancy Type</option>
+                                <option value="all">All Types</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Mixed">Mixed</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Recommended Dorms -->
-                    <h5 class="text-dark fw-bold text-center mb-3">🏠 Recommended Dormitories</h5>
 
+                    <!-- Scrollable List -->
+                    <!-- Scrollable List -->
                     <div class="overflow-auto" style="flex-grow: 1; max-height: 640px;">
+                        <!-- No Results -->
                         <div v-if="nearbyDorms.length === 0" class="text-center text-muted mt-5">
                             <em>No dormitories found near this location.</em>
                         </div>
 
-                        <div v-else class="row">
-                            <div class="col-12 mb-3" v-for="dorm in nearbyDorms" :key="dorm.id">
-                                <div class="border rounded shadow-sm p-3 bg-white d-flex gap-3 align-items-center dorm-card hover-shadow transition"
-                                    style="transition: all 0.3s ease-in-out; cursor: pointer;">
+                        <!-- Dorm Cards -->
+                        <div v-else class="row gy-3">
+                            <div class="col-12" v-for="dorm in nearbyDorms" :key="dorm.id">
+                                <div class="d-flex align-items-center p-3 rounded-4 shadow-sm bg-white border gap-3 hover-shadow"
+                                    style="transition: all 0.3s ease; cursor: pointer;"
+                                    @click="viewDormsDetails(dorm.dorm_id)">
                                     <!-- Dorm Image -->
-                                    <img :src="dorm.images.main_image" alt="Dorm Image" class="rounded border"
-                                        style="width: 100px; height: 100px; object-fit: cover; flex-shrink: 0;" />
+                                    <img :src="dorm.images?.main_image || dorm.main_image || '/images/default-dorm.webp'"
+                                        alt="Dorm Image" class="rounded-3 border"
+                                        style="width: 90px; height: 90px; object-fit: cover;" />
 
                                     <!-- Dorm Info -->
                                     <div class="flex-grow-1">
-                                        <h6 class="fw-bold text-primary mb-1 mb-md-2">{{ dorm.dorm_name }}</h6>
-                                        <p class="text-secondary small mb-2">
-                                            <i class="bi bi-geo-alt-fill me-1"></i> {{ dorm.address }}
+                                        <h6 class="fw-semibold text-primary mb-1">
+                                            {{ dorm.dorm_name }}
+                                        </h6>
+                                        <p class="text-secondary small mb-1 d-flex align-items-center gap-1">
+                                            <img :src="logoImage" alt="Pin Logo" width="18" height="18"
+                                                class="rounded" />
+                                            <span>{{ dorm.address }}</span>
                                         </p>
-                                        <span class="badge bg-success">📍 {{ dorm.distance_km }} km away</span>
+                                        <p class="mb-2 text-secondary small d-flex align-items-center gap-2">
+                                            <i class="fas fa-user-group text-muted"></i>
+                                            {{ dorm.occupancy_type }}
+                                        </p>
+
+
+                                        <div v-if="isPrice" class="mb-1">
+                                            <p class="mb-0 text-dark ">
+                                                ₱{{ dorm.price ? dorm.price.toLocaleString() : '0' }}
+                                            </p>
+                                        </div>
+
+                                        <span class="badge bg-success bg-opacity-75">
+                                            📍 {{ parseFloat(dorm.distance_km).toFixed(2) }} km away
+                                        </span>
                                     </div>
 
-                                    <!-- Button -->
+                                    <!-- Action Button -->
                                     <div class="ms-auto">
-                                        <button class="btn 
-                                         btn-sm rounded-pill" @click="viewDormsDetails(dorm.dorm_id)">
-                                            View Details
+                                        <button class="btn btn-sm rounded-pill">
+                                            View
                                         </button>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
+
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -94,18 +158,22 @@ export default {
     },
     data() {
         return {
+            logoImage: 'http://127.0.0.1:8000/images/Logo/logo.png',
             map: null,
             draggableMarker: null,
             nearbyDorms: [],
             markers: [],
             allDorms: '',
+            selectedPriceRange: '',
+            selectedGenderType: '',
+            isPrice: false,
+
 
 
         }
     },
     name: "DormMap",
     mounted() {
-        this.$refs.loader.loading = true;
 
         // Load Google Maps script dynamically
         if (!window.google || !window.google.maps) {
@@ -116,41 +184,37 @@ export default {
             window.initMap = () => this.initMap(); // 👈 Fix here
 
             document.head.appendChild(script);
-            this.$refs.loader.loading = false;
 
         } else {
             this.initMap();
-            this.$refs.loader.loading = false;
 
         }
     },
     methods: {
         viewDormsDetails(dormitoryId) {
             this.tenant_id = window.tenant_id;
-
-            if (!this.tenant_id) {
-                alert("tenant_id id not found");
-                return;
-            }
-
             window.location.href = `/room-details/${dormitoryId}/${this.tenant_id}`;
         },
 
         initMap() {
-            const lapuLapu = { lat: 10.3090, lng: 123.9494 };
-
+            const mandaue = { lat: 10.3283, lng: 123.9385 };   // Approximate center of Mandaue
+            const lapuLapu = { lat: 10.3090, lng: 123.9494 };  // Lapu-Lapu center
+            const centerBetween = {
+                lat: (mandaue.lat + lapuLapu.lat) / 2,
+                lng: (mandaue.lng + lapuLapu.lng) / 2
+            };
             this.map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 13,
-                center: lapuLapu,
+                zoom: 15,
+                center: centerBetween,
                 draggable: true,
                 zoomControl: true,
                 scrollwheel: true,
                 disableDoubleClickZoom: false
             });
-            this.addRadarOverlay(lapuLapu.lat, lapuLapu.lng);
-            this.fetchNearbyDorms(lapuLapu.lat, lapuLapu.lng);
+            this.addRadarOverlay(centerBetween.lat, centerBetween.lng);
+            this.fetchNearbyDorms(centerBetween.lat, centerBetween.lng);
             this.draggableMarker = new google.maps.Marker({
-                position: lapuLapu,
+                position: centerBetween,
                 map: this.map,
                 draggable: true,
                 animation: google.maps.Animation.DROP,
@@ -171,97 +235,86 @@ export default {
                 this.fetchNearbyDorms(lat, lng);
                 this.addRadarOverlay(lat, lng); // Move radar to new position
             });
-
-            // Click to fetch dorms
-            this.map.addListener('click', (e) => {
-                const lat = e.latLng.lat();
-                const lng = e.latLng.lng();
-                this.fetchNearbyDorms(lat, lng);
-                this.addRadarOverlay(lat, lng); // ➕ Move radar on map click
-
-            });
         },
-
-
         async fetchNearbyDorms(lat, lng) {
             try {
                 this.$refs.loader.loading = true;
                 const response = await axios.get(`nearby-dorms`, {
                     params: { lat, lng }
                 });
+                this.clearMarkers();
+
                 if (response.data.status === "success") {
                     this.allDorms = response.data.data;
-
-                    // Filter dormitories within 2 km
+                    this.selectedPriceRange = '';
+                    this.selectedGenderType = '';
+                    this.isPrice = false;
                     this.nearbyDorms = this.allDorms.filter(dorm => parseFloat(dorm.distance_km) <= 2);
 
-                    // Clear all existing markers first
-                    this.clearMarkers();
-
-                    if (!this.nearbyDorms.length) {
-                        this.allDorms = null;
-                        this.nearbyDorms = [];
-                        this.$refs.loader.loading = false;
-                        return;
-                    }
-
-                    // Add markers only for dorms within 2 km
                     const bounds = this.map.getBounds(); // Get current visible map area
-                    this.clearMarkers();
                     this.nearbyDorms.forEach(dorm => {
                         const lat = parseFloat(dorm.latitude);
                         const lng = parseFloat(dorm.longitude);
+                        const km = parseFloat(dorm.distance_km);
+                        if (km > 2) return;
+
                         const latLng = new google.maps.LatLng(lat, lng);
+                        if (!bounds.contains(latLng)) return;
 
                         // Check if the dorm is within the map bounds
-                        if (bounds.contains(latLng)) {
-                            const marker = new google.maps.Marker({
-                                position: { lat, lng },
-                                map: this.map,
-                                icon: {
-                                    url: '/images/tenant/allimagesResouces/dormmap.webp',
-                                    scaledSize: new google.maps.Size(40, 40)
-                                },
-                                title: `${dorm.dorm_name} (${dorm.distance_km} km)`
-                            });
+                        const marker = new google.maps.Marker({
+                            position: { lat, lng },
+                            map: this.map,
+                            icon: {
+                                url: '/images/tenant/allimagesResouces/dormmap.webp',
+                                scaledSize: new google.maps.Size(40, 40)
+                            },
+                            title: `${dorm.dorm_name} (${dorm.distance_km} km)`
+                        });
 
-                            // Add InfoWindow for the marker
-                            const infoWindow = new google.maps.InfoWindow({
-                                content: `
+                        const infoWindow = new google.maps.InfoWindow({
+                            content: `
                             <div style="max-width: 250px;">
                                 <h6>${dorm.dorm_name}</h6>
                                 <p style="margin:0;">${dorm.address}</p>
                                 <small><b>Distance:</b> ${dorm.distance_km} km</small>
-                            </div>
-                        `
-                            });
+                            </div>`
+                        });
 
-                            marker.addListener("click", () => {
-                                infoWindow.open(this.map, marker);
-                            });
+                        marker.addListener("click", () => {
+                            infoWindow.open(this.map, marker);
+                        });
 
-                            this.markers.push(marker); // Store marker to clear later
-                        }
+                        this.markers.push(marker);
+
+
                     });
-
-                    // Update radar overlay to the new position
                     this.addRadarOverlay(lat, lng);
                     this.$refs.loader.loading = false;
+                    console.log("Nearby Dorms Count:", this.nearbyDorms.length);
+                    console.log("Clearing markers:", this.markers.length);
+
                 }
             } catch (error) {
                 console.error('Error fetching dorms:', error);
                 this.nearbyDorms = [];
                 this.allDorms = null;
+                this.clearMarkers();
+                this.$refs.loader.loading = false;
+
             }
         },
         clearMarkers() {
-            if (this.markers.length) {
-                this.markers.forEach(marker => marker.setMap(null));
-                this.markers = [];
+            if (this.markers && this.markers.length > 0) {
+                this.markers.forEach(marker => {
+                    if (marker && typeof marker.setMap === 'function') {
+                        marker.setMap(null); // removes marker from map
+                    }
+                });
             }
+            this.markers = []; // Clear tracking
+
         },
-
-
         addRadarOverlay(lat, lng) {
             const radar = document.getElementById("radarPulse");
             // Remove radar from old parent
@@ -291,7 +344,93 @@ export default {
             };
             overlayView.setMap(this.map);
             this.radarOverlay = overlayView;
+        },
+        onDragStart(event) {
+            this.offsetX = event.offsetX;
+            this.offsetY = event.offsetY;
+        },
+        onDragEnd(event) {
+            const containerRect = event.target.closest('.row').getBoundingClientRect();
+            this.pinX = event.pageX - containerRect.left - this.offsetX;
+            this.pinY = event.pageY - containerRect.top - this.offsetY;
+        },
+
+        async dropdownPriceRange() {
+            try {
+                const lat = this.draggableMarker.getPosition().lat();
+                const lng = this.draggableMarker.getPosition().lng();
+
+                const response = await axios.post('/price-range',
+                    {
+                        price_range: this.selectedPriceRange,
+                        lat: lat,
+                        lng: lng
+
+                    });
+                if (this.combinePriceAndGender && this.selectedGenderType !== 'all') {
+                    await this.combinePriceAndGender();
+                    this.isPrice = true;
+
+                    return;
+                }
+                if (response.status === 200 && response.data.status === 'success') {
+                    this.nearbyDorms = response.data.data;
+                    this.isPrice = true;
+
+                }
+            } catch (error) {
+                this.nearbyDorms = [];
+
+            }
+        },
+        async dropdownGenderType() {
+            try {
+                const lat = this.draggableMarker.getPosition().lat();
+                const lng = this.draggableMarker.getPosition().lng();
+                const response = await axios.post('/selected-gender-type', {
+                    gender_type: this.selectedGenderType,
+                    lat: lat,
+                    lng: lng
+                });
+                if (this.combinePriceAndGender && this.selectedPriceRange !== 'all') {
+                    await this.combinePriceAndGender();
+
+                    return;
+                }
+
+                if (response.data.status === 'success') {
+                    this.nearbyDorms = response.data.data;
+                    this.isPrice = false;
+                }
+            } catch (error) {
+                console.error('Gender filter error:', error);
+                this.nearbyDorms = [];
+            }
+        },
+        async combinePriceAndGender() {
+            try {
+                const lat = this.draggableMarker.getPosition().lat();
+                const lng = this.draggableMarker.getPosition().lng();
+                const response = await axios.post('/filter-price-gender', {
+                    price_range: this.selectedPriceRange,
+                    gender_type: this.selectedGenderType,
+                    lat: lat,
+                    lng: lng
+                });
+                if (response.status === 200 && response.data.status === "success") {
+                    this.nearbyDorms = response.data.data;
+                    this.isPrice = true;
+
+                }
+
+            }
+            catch (error) {
+                console.error('Combined filter error:', error);
+                this.nearbyDorms = [];
+            }
         }
+
+
 
 
     }

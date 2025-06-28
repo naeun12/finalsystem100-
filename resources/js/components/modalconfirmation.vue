@@ -12,11 +12,10 @@
                 </div>
 
                 <div class="d-flex justify-content-between gap-3 px-4 pb-4">
-                    <button type="button" class="btn btn-outline-secondary flex-fill" @click="cancel"
-                        style="font-weight: 600;">
+                    <button type="button" class="btn  flex-fill" @click="cancel" style="font-weight: 600;">
                         Cancel
                     </button>
-                    <button type="button" class="btn btn-primary flex-fill" @click="confirm" style="font-weight: 600;">
+                    <button type="button" class="btn  flex-fill" @click="confirm" style="font-weight: 600;">
                         {{ functionName }}
                     </button>
                 </div>

@@ -61,6 +61,16 @@ protected static function booted()
         });
     });
 }
+public function rulesAndPolicy()
+{
+    return $this->belongsToMany(
+        \App\Models\landlord\landlordRulesAndPolicyModel::class,
+        'rules_and_policy_dorm',
+        'fkdorm_id',
+        'fkrules_id',
+
+    )->withPivot('id');
+}
 public function images()
 {
     return $this->hasOne(imagesDormImages::class, 'dormitory_id', 'dorm_id');
@@ -69,6 +79,7 @@ public function rooms()
 {
     return $this->hasMany(landlordRoomModel::class, 'dormitory_id', 'dorm_id');
 }
+
 public function landlord()
 {
     return $this->belongsTo(landlordAccountModel::class, 'landlord_id', 'landlord_id');
