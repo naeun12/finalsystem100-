@@ -61,6 +61,7 @@ class dormManagementController extends Controller
                     $query->whereRaw('LOWER(dorm_name) LIKE ?', ["%$searchTerm%"]);
                 }
             })
+            ->orderBy('created_at', 'desc')
             ->paginate(5);
         
         if ($dorms->isEmpty()) {
@@ -95,11 +96,8 @@ class dormManagementController extends Controller
             // Use REGEXP to match only full words (not part of other words)
             $query->whereRaw("LOWER(address) REGEXP ?", ['[[:<:]]' . $location . '[[:>:]]']);
         })
+        ->orderBy('created_at', 'desc')
         ->paginate(5);
-    
-
-    
-
     if ($dorms->isEmpty()) {
         return response()->json([
             'status' => 'success',
@@ -124,6 +122,7 @@ class dormManagementController extends Controller
                 $query->whereRaw('LOWER(availability) = ?', [$availability]);
             }
            })
+           ->orderBy('created_at', 'desc')
            ->paginate(5);
        if ($dorms->isEmpty()) {
            return response()->json([

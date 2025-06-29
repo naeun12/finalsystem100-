@@ -4,18 +4,67 @@
         <Loader ref="loader" />
         <Toastcomponents ref="toast" />
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="text-primary fw-bold">Post Room</h1>
-            <div>
-                <button class="btn btn-outline-primary" @click="VisibleAddModal = true">
-                    Add Room
+        <div class="d-flex justify-content-end align-items-center mb-4">
+            <div class="col-md-6 col-lg-4 mb-2 d-flex justify-content-between gap-2">
+                <button class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2 flex-fill"
+                    @click="viewDormitories">
+                    <i class="bi bi-building"></i>
+                    View Dormitories
+                </button>
+                <button class="btn btn-outline-success d-flex align-items-center justify-content-center gap-2 flex-fill"
+                    @click="AddModal()">
+                    <i class="bi bi-plus-circle"></i>
+                    Add New Room
                 </button>
             </div>
+
         </div>
 
         <!-- Search Bar -->
-        <input type="text" v-model="searchTerm" placeholder="🔍 Search Room..." class="form-control mb-4 shadow-sm" />
 
+        <div class="mb-1 d-flex gap-2 flex-wrap justify-content-start w-100">
+            <div class="col-md-6 col-lg-2 mb-2">
+                <select class="form-select shadow-sm">
+
+                    <option disabled value="">Select room type</option>
+                    <option value="all">All Room Types</option>
+                    <option value="single">Single Room</option>
+                    <option value="double">Double Room</option>
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-2 mb-2">
+                <select class="form-select shadow-sm">
+
+                    <option disabled value="">Select Availability</option>
+                    <option value="all">All Availability</option>
+                    <option value="Available">Available</option>
+                    <option value="Not Available">Not Available</option>
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-2 mb-2">
+                <select class="form-select shadow-sm">
+
+                    <option disabled value="">Select gender preferences</option>
+                    <option value="all">All Preferences</option>
+
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-2 mb-2">
+                <select class="form-select shadow-sm" v-model="selectedDormitory" @change="filterRoomsByDormitory">
+
+                    <option disabled value="">Select Dormitories</option>
+                    <option value="all">All Dormitories</option>
+                    <option v-for="dorm in dorms" :key="dorm.dorm_id">
+                        <a class="dropdown-item d-flex justify-content-between align-items-center" href="#"
+                            @click.prevent="dormId(dorm)">
+                            <span>{{ dorm.dorm_name }}</span>
+                        </a>
+                    </option>
+                </select>
+            </div>
+
+
+        </div>
         <!-- Table -->
         <div class="table-responsive shadow-sm rounded mt-4">
             <table class="table table-bordered table-hover align-middle mb-0">
@@ -25,8 +74,8 @@
                         <th>Room No</th>
                         <th>Room Type</th>
                         <th>Price (₱)</th>
-                        <th>Availability</th>
-                        <th>Capacity</th>
+                        <th>Availability Status</th>
+                        <th>Gender Preferences</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -42,19 +91,27 @@
                                 {{ room.availability }}
                             </span>
                         </td>
-                        <td>{{ room.capacity }}</td>
+                        <td>{{ room.gender_preference }}</td>
+
                         <td>
                             <div class="d-flex justify-content-center gap-2">
-                                <button class="btn btn-sm btn-outline-success" @click="ViewRoom(room.room_id)">
-                                    View
+                                <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1"
+                                    @click="ViewRoom(room.room_id)">
+                                    <i class="bi bi-eye"></i>
+
                                 </button>
-                                <button class="btn btn-sm btn-outline-primary" @click="editRoom(room.room_id)">
-                                    Update
+                                <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+                                    @click="editRoom(room.room_id)">
+                                    <i class="bi bi-pencil-square"></i>
+
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" @click="deleteRoom(room.room_id)">
-                                    Delete
+                                <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+                                    @click="deleteRoom(room.room_id)">
+                                    <i class="bi bi-trash"></i>
+
                                 </button>
                             </div>
+
                         </td>
                     </tr>
 
@@ -93,8 +150,8 @@
                                 </ul>
                             </div>
                         </div>
-                        <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
-                            @click="triggerroomImagePreview3">
+                        <div class="border border-secondary rounded-3 p-4 text-center" v-if="VisibleImage"
+                            style="cursor: pointer;" @click="triggerroomImagePreview3">
                             <input ref="RoomsImages3Input" class="d-none" type="file" accept="image/*"
                                 @change="handleroomImagePreview3" />
 
@@ -104,13 +161,18 @@
                                 <small class="text-muted">Click to browse and select an image file</small>
                             </div>
                         </div>
+                        <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <span class="text-danger small mb-3" v-if="errors.roomImageFile">{{ errors.roomImageFile[0]
+                            }}</span>
+                        </div>
+
 
                         <!-- Image Preview -->
                         <div v-if="roomImagePreview" class="text-center mb-3">
                             <img :src="roomImagePreview" alt="Uploaded Room Image" class="img-fluid rounded mb-2"
                                 style="max-height: 250px;" />
                             <div>
-                                <button type="button" @click="removeroomImagePreviews3" class="btn btn-sm">
+                                <button type="button" @click="removeroomImagePreviews3" class="btn btn-danger btn-sm">
                                     Remove Uploaded Image
                                 </button>
                             </div>
@@ -144,7 +206,8 @@
                                         <option value="Studio-Type Room">Studio-Type Room</option>
                                         <option value="Partitioned Bedspace (Cubicle Style)">Partitioned Bedspace
                                             (Cubicle Style)</option>
-                                        <option value="Loft Room / Mezzanine Type">Loft Room / Mezzanine Type</option>
+                                        <option value="Loft Room / Mezzanine Type">Loft Room / Mezzanine Type
+                                        </option>
                                     </select>
                                     <label for="roomType">Room Type</label>
                                 </div>
@@ -179,6 +242,8 @@
                                         v-model="price" min="0" step="0.01">
                                     <label for="price">Price (₱)</label>
                                 </div>
+                                <span class="text-danger small" v-if="errors.price">{{ errors.price[0]
+                                }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="bedType" v-model="listing_type" required>
                                         <option value="" disabled selected>Select Bed Type</option>
@@ -221,22 +286,8 @@
 
 
                                 <span class="text-danger small" v-if="errors.price">{{ errors.price[0] }}</span>
-                                <div class="mb-2 mt-2">
-                                    <label for="capacity">Capacity</label>
 
-                                </div>
-                                <div class="d-flex align-items-center mb-2">
 
-                                    <button class="btn btn-outline-danger me-2" @click="decrementcapacity">-</button>
-                                    <div class="flex-grow-1">
-                                        <input type="text" readonly class="form-control" id="capacity"
-                                            v-model="capacity" placeholder="0">
-                                    </div>
-                                    <button class="btn btn-outline-success ms-2" @click="incrementcapacity">+</button>
-                                </div>
-
-                                <span class="text-danger small" v-if="errors.capacity">{{ errors.capacity[0]
-                                }}</span>
                             </div>
                             <div class="d-grid gap-2 mt-4">
 
@@ -346,9 +397,11 @@
                                         Select Room Type</option>
                                     <option value="Single Room">Single Room</option>
                                     <option value="Double Room / Shared Room">Double Room / Shared Room</option>
-                                    <option value="Bedspace / Multi-Sharing Room">Bedspace / Multi-Sharing Room</option>
+                                    <option value="Bedspace / Multi-Sharing Room">Bedspace / Multi-Sharing Room
+                                    </option>
                                     <option value="Studio-Type Room">Studio-Type Room</option>
-                                    <option value="Partitioned Bedspace (Cubicle Style)">Partitioned Bedspace (Cubicle
+                                    <option value="Partitioned Bedspace (Cubicle Style)">Partitioned Bedspace
+                                        (Cubicle
                                         Style)</option>
                                     <option value="Loft Room / Mezzanine Type">Loft Room / Mezzanine Type</option>
                                 </select>
@@ -421,18 +474,7 @@
                                 errors.editData.gender_preference[0]
                             }}</span>
 
-                            <div class="d-flex align-items-center mb-2">
-                                <button class="btn btn-outline-danger me-2" @click="editdecrementcapacity">-</button>
-                                <div class="flex-grow-1">
-                                    <input type="text" readonly class="form-control" id="capacity"
-                                        v-model="editData.capacity" placeholder="0">
-                                </div>
-                                <button class="btn btn-outline-success ms-2" @click="editincrementcapacity">+</button>
-                            </div>
 
-                            <span class="text-danger small" v-if="errors.editData?.capacity">{{
-                                errors.editData.capacity[0]
-                            }}</span>
 
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" @click="updateRoom" class="btn btn-outline-primary btn-lg">
@@ -485,11 +527,7 @@
                                 <div class="p-2 border rounded bg-light text-break">₱{{ selectedRoom?.price }}
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Capacity:</label>
-                                <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.capacity }}
-                                </div>
-                            </div>
+
                             <label class="form-label fw-bold">Dorm Name:</label>
                             <div class="p-2 border rounded bg-light text-break w-100"
                                 style="max-height: 100px;  overflow-y: auto;">
@@ -547,10 +585,7 @@
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-outline-success px-4"
-                        @click="VisibleDisplayDataModal = false">OK</button>
-                </div>
+
             </div>
         </div>
     </div>
@@ -576,16 +611,15 @@ export default {
         Toastcomponents,
         Loader,
         Modalconfirmation
-
-
     },
     data() {
         return {
-            searchTerm: "",
             VisibleAddModal: false,
             VisibleDeleteModal: false,
             VisibleUpdateModal: false,
             VisibleDisplayDataModal: false,
+            VisibleImage: false,
+            selectedDormitory: '',
             loading: false,
             dorms: window.allRooms || [],
             dormsId: "",
@@ -595,7 +629,6 @@ export default {
             availibilityArray: ['Available'],
             editavailibilityArray: ['Available', 'Under Maintenance'],
             price: "",
-            capacity: '',
             listing_type: '',
             bedOptions: {
                 'Single Room': ['Single Bed', 'Private Room with Bed'],
@@ -620,7 +653,6 @@ export default {
                 availability: '',
                 price: '',
                 amenities: '',
-                capacity: '',
                 listing_type: '',
                 bedOptions: {
                     'Single Room': ['Single Bed', 'Private Room with Bed'],
@@ -632,7 +664,6 @@ export default {
                 },
                 area_sqm: '',
                 gender_preference: '',
-                capacity: '',
                 roomImagePreview: '',
                 roomImageFile: '',
             },
@@ -646,17 +677,10 @@ export default {
         dormId(dorm) {
             this.dormsId = dorm.dorm_id;
         },
-
-
-        decrementcapacity() {
-            if (this.capacity > this.roomCapacityRange.min) {
-                this.capacity--;
-            }
-        },
-        incrementcapacity() {
-            if (this.capacity < this.roomCapacityRange.max) {
-                this.capacity++;
-            }
+        AddModal() {
+            this.VisibleAddModal = true;
+            this.VisibleImage = true;
+            this.emptyfill();
         },
         handleroomImagePreview3(event) {
             const file = event.target.files[0];
@@ -666,8 +690,7 @@ export default {
                     URL.revokeObjectURL(this.roomImagePreview);
                 }
                 this.roomImageFile = file;
-
-
+                this.VisibleImage = false;
                 this.roomImagePreview = URL.createObjectURL(file);
             }
         },
@@ -683,6 +706,7 @@ export default {
             }
             this.roomImagePreview = null;
             this.roomImageFile = '';
+            this.VisibleImage = true;
 
             // Add null check for safety
             if (this.$refs.roomImagePreview) {
@@ -710,7 +734,6 @@ export default {
                 formData.append('roomType', this.roomType);
                 formData.append('availability', this.availability);
                 formData.append('price', this.price);
-                formData.append('capacity', this.capacity);
                 formData.append('listing_type', this.listing_type);
                 formData.append('area_sqm', this.area_sqm);
                 formData.append('gender_preference', this.gender_preference);
@@ -791,16 +814,7 @@ export default {
 
         },
 
-        editdecrementcapacity() {
-            if (this.editData.capacity > this.editroomCapacityRange.min) {
-                this.editData.capacity--;
-            }
-        },
-        editincrementcapacity() {
-            if (this.editData.capacity < this.editroomCapacityRange.max) {
-                this.editData.capacity++;
-            }
-        },
+
 
         async editRoom(roomId) {
 
@@ -831,18 +845,7 @@ export default {
                 alert("An error occurred while loading dorm details");
             }
         },
-        editroom_type(newType) {
-            const ranges = {
-                'Single Room': { min: 1, max: 1 },
-                'Double Room / Shared Room': { min: 1, max: 2 },
-                'Studio-Type Room': { min: 1, max: 3 },
-                'Loft Room / Mezzanine Type': { min: 2, max: 4 },
-                'Partitioned Bedspace (Cubicle Style)': { min: 1, max: 1 },
-                'Bedspace / Multi-Sharing Room': { min: 4, max: 6 },
-            };
-            const selectedRange = ranges[newType] || { min: 0, max: 0 };
-            this.editData.capacity = selectedRange.min;
-        },
+
         edithandleroomImagePreview3(event) {
             const file = event.target.files[0];
             if (file) {
@@ -880,7 +883,6 @@ export default {
             formData.append('room_type', this.editData.room_type);
             formData.append('availability', this.editData.availability);
             formData.append('price', this.editData.price);
-            formData.append('capacity', this.editData.capacity);
             formData.append('listing_type', this.editData.listing_type);
             formData.append('area_sqm', this.editData.area_sqm);
             formData.append('gender_preference', this.editData.gender_preference);
@@ -980,11 +982,9 @@ export default {
                 room_type: '',
                 availability: '',
                 price: '',
-                capacity: '',
                 listing_type: '',
                 area_sqm: '',
                 gender_preference: '',
-                capacity: '',
                 roomImagePreview: '',
                 roomImageFile: '',
 
@@ -998,8 +998,7 @@ export default {
             this.roomType = "";
             this.availability = '';
             this.price = "";
-            this.capacity = '';
-            this.amenities = "";
+            this.furnishing_status = "";
             this.listing_type = '';
             this.area_sqm = '';
             this.gender_preference = '';
@@ -1058,18 +1057,7 @@ export default {
     },
     watch: {
 
-        roomType(newType) {
-            const ranges = {
-                'Single Room': { min: 1, max: 1 },
-                'Double Room / Shared Room': { min: 1, max: 2 },
-                'Studio-Type Room': { min: 1, max: 3 },
-                'Loft Room / Mezzanine Type': { min: 2, max: 4 },
-                'Partitioned Bedspace (Cubicle Style)': { min: 1, max: 1 },
-                'Bedspace / Multi-Sharing Room': { min: 4, max: 6 },
-            };
-            const selectedRange = ranges[newType] || { min: 0, max: 0 };
-            this.capacity = selectedRange.min;
-        },
+
 
     },
 

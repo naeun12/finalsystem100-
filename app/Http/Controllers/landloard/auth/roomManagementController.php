@@ -48,7 +48,6 @@ class roomManagementController extends Controller
         'roomNumber' => ['required','string','max:255',],
         'roomType' => 'required|string|max:255',
         'availability' => 'required|string|max:255',
-        'capacity' => 'required|integer|min:1',
         'listing_type' => 'required|string|max:255',
         'area_sqm' => 'required|string|max:255',
         'gender_preference' => 'required|string|max:255',
@@ -57,49 +56,46 @@ class roomManagementController extends Controller
         'price' => 'required|numeric|min:0',
     ], [
         // Custom error messages
-        'dormsId.required' => 'Dormitory ID is required.',
-        'dormsId.integer' => 'Dormitory ID must be an integer.',
-    
-        'roomNumber.required' => 'Room number is required.',
-        'roomNumber.string' => 'Room number must be a string.',
-        'roomNumber.max' => 'Room number must not exceed 255 characters.',
-    
-        'roomType.required' => 'Room type is required.',
-        'roomType.string' => 'Room type must be a string.',
-        'roomType.max' => 'Room type must not exceed 255 characters.',
-    
-        'availability.required' => 'Availability status is required.',
-        'availability.string' => 'Availability must be a string.',
-        'availability.max' => 'Availability must not exceed 255 characters.',
-    
-        'capacity.required' => 'Capacity is required.',
-        'capacity.integer' => 'Capacity must be a number.',
-        'capacity.min' => 'Capacity must be at least 1.',
-    
-        'listing_type.required' => 'Bed type is required.',
-        'listing_type.string' => 'Bed type must be a string.',
-        'listing_type.max' => 'Bed type must not exceed 255 characters.',
-    
-        'area_sqm.required' => 'Room area (sqm) is required.',
-        'area_sqm.string' => 'Room area must be a string.',
-        'area_sqm.max' => 'Room area must not exceed 255 characters.',
-    
-        'gender_preference.required' => 'Gender preference is required.',
-        'gender_preference.string' => 'Gender preference must be a string.',
-        'gender_preference.max' => 'Gender preference must not exceed 255 characters.',
-    
-        'furnishing_status.required' => 'Furnishing status is required.',
-        'furnishing_status.string' => 'Furnishing status must be a string.',
-        'furnishing_status.max' => 'Furnishing status must not exceed 255 characters.',
-    
-        'roomImageFile.required' => 'Room image is required.',
-        'roomImageFile.image' => 'The uploaded file must be an image.',
-        'roomImageFile.mimes' => 'The room image must be a file of type: jpg, jpeg, png, webp.',
-        'roomImageFile.max' => 'The room image may not be greater than 2MB.',
-    
-        'price.required' => 'Price is required.',
-        'price.numeric' => 'Price must be a valid number.',
-        'price.min' => 'Price must not be negative.',
+        'dormsId.required' => 'Please select a dormitory.',
+'dormsId.integer' => 'Invalid dormitory selection.',
+
+'roomNumber.required' => 'Please enter the room number.',
+'roomNumber.string' => 'Room number must be text.',
+'roomNumber.max' => 'Room number must be 255 characters or fewer.',
+
+'roomType.required' => 'Please select a room type.',
+'roomType.string' => 'Room type must be text.',
+'roomType.max' => 'Room type must be 255 characters or fewer.',
+
+'availability.required' => 'Please select availability status.',
+'availability.string' => 'Availability must be text.',
+'availability.max' => 'Availability must be 255 characters or fewer.',
+
+'listing_type.required' => 'Please select a bed type.',
+'listing_type.string' => 'Bed type must be text.',
+'listing_type.max' => 'Bed type must be 255 characters or fewer.',
+
+'area_sqm.required' => 'Please enter the room area in square meters.',
+'area_sqm.string' => 'Room area must be text.',
+'area_sqm.max' => 'Room area must be 255 characters or fewer.',
+
+'gender_preference.required' => 'Please select a gender preference.',
+'gender_preference.string' => 'Gender preference must be text.',
+'gender_preference.max' => 'Gender preference must be 255 characters or fewer.',
+
+'furnishing_status.required' => 'Please specify the furnishing status.',
+'furnishing_status.string' => 'Furnishing status must be text.',
+'furnishing_status.max' => 'Furnishing status must be 255 characters or fewer.',
+
+'roomImageFile.required' => 'Please upload a room image.',
+'roomImageFile.image' => 'The uploaded file must be an image.',
+'roomImageFile.mimes' => 'Accepted image formats: jpg, jpeg, png, webp.',
+'roomImageFile.max' => 'Image size must not exceed 2MB.',
+
+'price.required' => 'Please enter the room price.',
+'price.numeric' => 'Price must be a valid number.',
+'price.min' => 'Price cannot be negative.',
+
     ]);
 
     if ($validator->fails()) {
@@ -124,7 +120,6 @@ class roomManagementController extends Controller
         $room->landlord_id = $landlordId;
         $room->room_number = $request->input('roomNumber');
         $room->availability = $request->input('availability');
-        $room->capacity = $request->input('capacity');
         $room->room_type = $request->input('roomType');
         $room->furnishing_status = $request->input('furnishing_status');
         $room->listing_type = $request->input('listing_type');
@@ -197,7 +192,7 @@ class roomManagementController extends Controller
             ->join('dorms as dorms', 'rooms.dormitory_id', '=', 'dorms.dorm_id')
             ->where('rooms.room_id', $id)
             ->where('rooms.landlord_id', $landlordId)
-            ->select('rooms.*', 'dorms.dorm_name', 'dorms.address', 'dorms.contact_email', 'dorms.contact_phone', 'dorms.rules')
+            ->select('rooms.*', 'dorms.dorm_name', 'dorms.address', 'dorms.contact_email', 'dorms.contact_phone')
             ->first();
     
         // Check if the room exists
@@ -228,7 +223,6 @@ class roomManagementController extends Controller
         'room_number' => ['required','string','max:255'],
         'room_type' => 'required|string|max:255',
         'availability' => 'required|string|max:255',
-        'capacity' => 'required|integer|min:1',
         'listing_type' => 'required|string|max:255',
         'area_sqm' => 'required|string|max:255',
         'gender_preference' => 'required|string|max:255',
@@ -249,9 +243,7 @@ class roomManagementController extends Controller
         'availability.string' => 'Availability must be a string.',
         'availability.max' => 'Availability must not exceed 255 characters.',
     
-        'capacity.required' => 'Capacity is required.',
-        'capacity.integer' => 'Capacity must be a number.',
-        'capacity.min' => 'Capacity must be at least 1.',
+       
     
         'listing_type.required' => 'Bed type is required.',
         'listing_type.string' => 'Bed type must be a string.',
@@ -303,7 +295,6 @@ class roomManagementController extends Controller
     $room->room_number = $validated['room_number'];
     $room->room_type = $validated['room_type'];
     $room->availability = $validated['availability'];
-    $room->capacity = $validated['capacity'];
     $room->furnishing_status = $request->input('furnishing_status');
     $room->listing_type = $request->input('listing_type');
     $room->area_sqm = $request->input('area_sqm');
