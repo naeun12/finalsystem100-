@@ -111,10 +111,17 @@ Route::middleware([LandlordAuth::class])->group(function () {
      Route::delete('/delete-amenities/{id}', [dormManagementController::class, 'DeleteAmenities'])->name('delete.amenities');
     //functions for landlord room management
     Route::post('/addRoom', [roomManagementController::class, 'addRoom'])->name('addRoom');
+    Route::post('/add-roomfeatures', [roomManagementController::class, 'addRoomFeatures'])->name('add.roomfeatures');
+    Route::delete('/delete-roomfeatures/{pivotId}', [roomManagementController::class, 'deleteRoomFeatures'])->name('delete.roomfeatures');
+
     Route::post('/update-room/{id}', [roomManagementController::class, 'UpdateRoom'])->name('update.room');
     Route::post('/upload-images',[imagesDormImages::class,'roomImages'])->name('upload-images');
     Route::delete('/DeleteRoom/{id}', [roomManagementController::class, 'DeleteRoom'])->name('DeleteRoom');
     Route::get('/ListRooms', [roomManagementController::class, 'ListRooms'])->name('ListRooms');
+    Route::get('/get-rooms-by-dorm/{dormId}', [roomManagementController::class, 'getRoomsByDorm'])->name('get.rooms.by.dorm');
+    Route::get('/get-rooms-by-gender/{gender}', [roomManagementController::class, 'getRoomsByGender'])->name('get.rooms.by.gender');
+    Route::get('/get-rooms-by-availability/{availability}', [roomManagementController::class, 'getRoomsByAvailability'])->name('get.rooms.by.availability');
+    Route::get('/get-rooms-by-room-type', [roomManagementController::class, 'getRoomsByRoomType'])->name('get.rooms.by.room.type');
     Route::get('/ViewRoom/{id}', [roomManagementController::class, 'ViewRoom'])->name('ViewRoom');
     Route::get('/SearchRooms', [roomManagementController::class, 'searchRooms'])->name('SearchRooms');
     //functions for tenant screening

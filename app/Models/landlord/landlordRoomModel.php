@@ -37,7 +37,15 @@ class landlordRoomModel extends Model
 {
     return $this->belongsTo(landlordDormManagement::class, 'dormitory_id', 'dorm_id');
 }
-
+public function features()
+{
+    return $this->belongsToMany(
+        'App\Models\landlord\landlordRoomFeaturesModel', // Adjust the namespace as needed
+        'room_features_rooms', // Pivot table name
+        'fkroom_id', // Foreign key in the pivot table
+        'fkfeature_id' // Foreign key in the pivot table
+    )->withPivot('fkroom_id', 'fkfeature_id'); // Include pivot timestamps if needed
+}
 
 }
 

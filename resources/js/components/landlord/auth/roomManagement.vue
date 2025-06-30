@@ -24,28 +24,40 @@
 
         <div class="mb-1 d-flex gap-2 flex-wrap justify-content-start w-100">
             <div class="col-md-6 col-lg-2 mb-2">
-                <select class="form-select shadow-sm">
+                <select class="form-select shadow-sm" v-model="selectedRoomType" @change="filterRoomsByRoomType">
 
                     <option disabled value="">Select room type</option>
                     <option value="all">All Room Types</option>
-                    <option value="single">Single Room</option>
-                    <option value="double">Double Room</option>
+                    <option value="Single Room">Single Room</option>
+                    <option value="Double Room">Double Room</option>
+                    <option value="Bedspace / Multi-Sharing Room">Bedspace / Multi-Sharing Room</option>
+                    <option value="Studio-Type Room">Studio-Type Room</option>
+                    <option value="Partitioned Bedspace (Cubicle Style)">Partitioned Bedspace (Cubicle Style)</option>
+                    <option value="Loft Room / Mezzanine Type">Loft Room / Mezzanine Type</option>
                 </select>
             </div>
             <div class="col-md-6 col-lg-2 mb-2">
-                <select class="form-select shadow-sm">
+                <select class="form-select shadow-sm" v-model="selectedAvailability"
+                    @change="filterRoomsByAvailability">
 
                     <option disabled value="">Select Availability</option>
                     <option value="all">All Availability</option>
                     <option value="Available">Available</option>
                     <option value="Not Available">Not Available</option>
+                    <option value="Under Maintenance">Under Maintenance</option>
+
                 </select>
             </div>
             <div class="col-md-6 col-lg-2 mb-2">
-                <select class="form-select shadow-sm">
+                <select class="form-select shadow-sm" v-model="selectedGender" @change="filterRoomsByGender"
+                    :value="selectedGender">
 
                     <option disabled value="">Select gender preferences</option>
                     <option value="all">All Preferences</option>
+                    <option value="Male Only">Male </option>
+                    <option value="Female Only">Female </option>
+                    <option value="Any Gender">Any Gender</option>
+
 
                 </select>
             </div>
@@ -54,11 +66,8 @@
 
                     <option disabled value="">Select Dormitories</option>
                     <option value="all">All Dormitories</option>
-                    <option v-for="dorm in dorms" :key="dorm.dorm_id">
-                        <a class="dropdown-item d-flex justify-content-between align-items-center" href="#"
-                            @click.prevent="dormId(dorm)">
-                            <span>{{ dorm.dorm_name }}</span>
-                        </a>
+                    <option v-for="dorm in dorms" :key="dorm.dorm_id" :value="dorm.dorm_id">
+                        <span>{{ dorm.dorm_name }}</span>
                     </option>
                 </select>
             </div>
@@ -79,7 +88,7 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody v-if="rooms && rooms.length">
                     <tr class="text-center align-middle" v-for="room in rooms" :key="room.room_id">
                         <td>{{ room.room_id }}</td>
                         <td>{{ room.room_number }}</td>
@@ -118,6 +127,31 @@
                 </tbody>
             </table>
         </div>
+        <div v-if="lastPage > 1" class="d-flex justify-content-center align-items-center my-3">
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    <li :class="['page-item', { disabled: currentPage === 1 }]">
+                        <button class="page-link" :disabled="currentPage === 1"
+                            @click="handlePagination(currentPage - 1)" aria-label="Previous">
+                            <span aria-hidden="true">&laquo; Prev</span>
+                        </button>
+                    </li>
+
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            Page {{ currentPage }} of {{ lastPage }}
+                        </span>
+                    </li>
+
+                    <li :class="['page-item', { disabled: currentPage === lastPage }]">
+                        <button class="page-link" :disabled="currentPage === lastPage"
+                            @click="handlePagination(currentPage + 1)" aria-label="Next">
+                            <span aria-hidden="true">Next &raquo;</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
 
         <!--modal add room-->
         <div v-if="VisibleAddModal" class="modal fade show d-block w-100" tabindex="-1"
@@ -125,8 +159,10 @@
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content shadow-lg rounded-4">
                     <div class="modal-header bg-outline-primary text-black">
-                        <h5 class="modal-title">Add Room</h5>
-                        <button type="button" class="btn-close" @click="VisibleAddModal = false"></button>
+                        <h5 class="modal-title">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Add Room
+                        </h5> <button type="button" class="btn-close" @click="VisibleAddModal = false"></button>
                     </div>
 
                     <div class="modal-body px-3 px-md-4">
@@ -307,6 +343,38 @@
         </div>
 
     </div>
+    <div class="modal fade show d-block w-100" v-if="visibleRoomFeaturesModal" tabindex="-1"
+        style="background-color: rgba(0,0,0,0.5);" @click.self="visibleRoomFeaturesModal = false">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header  text-dark rounded-top-4">
+                    <h5 class="modal-title d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-plus text-primary"></i>
+                        Add Room Features <span class="text-muted small">(Optional)</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-dark" @click="visibleRoomFeaturesModal = false"
+                        aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div v-for="(feature, index) in roomFeatures" :key="index" class="form-floating mb-3">
+                        <input type="text" class="form-control mb-2" v-model="roomFeatures[index]"
+                            :id="'feature' + index" placeholder="Enter room feature" />
+                        <label :for="'feature' + index">Room Feature {{ index + 1 }}</label>
+                        <span class="text-danger mb-3 " v-if="errors.roomFeatures">{{ errors.roomFeatures[0]
+                        }}</span>
+
+                    </div>
+
+                    <button class="btn btn-primary mb-4" @click="addRoomFeatures"
+                        :disabled="addRoomFeatures.length >= 4"
+                        :title="addRoomFeatures.length >= 4 ? 'Max 4 features allowed' : 'Add Room Feature'">
+                        <i class="fa-solid fa-plus"></i> Add Room Feature
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 
@@ -360,14 +428,14 @@
                     </div>
 
                     <!-- Image Preview -->
-                    <div v-if="editData.roomImagePreview" class="text-center mb-3">
+                    <div v-if="editData.roomImagePreview" class="text-center mb-3 " style="height: 350px;">
                         <img :src="editData.roomImagePreview" alt="Uploaded Room Image" class="img-fluid rounded mb-2"
-                            style="max-height: 250px;" />
+                            style="max-height: 350px; width: 100%;" />
 
                     </div>
                     <div class="row g-4">
                         <!-- Column 1 -->
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-floating mb-3">
                                 <input type="text" class="form-control" readonly placeholder="Dorm ID"
                                     v-model="editData.dormitory_id">
@@ -425,7 +493,7 @@
                         </div>
 
                         <!-- Column 2 -->
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-floating mb-2">
                                 <input type="number" class="form-control" id="price" placeholder="Price"
                                     v-model="editData.price" min="0" step="0.01">
@@ -481,9 +549,50 @@
                                     Update Room
                                 </button>
                             </div>
+
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control" id="Optional" v-model="newRoomFeature"
+                                    placeholder="Optional Add Rooms Features">
+                                <label for="Optional">(Optional) Add Rooms Features</label>
+                            </div>
+                            <span class="text-danger small" v-if="errors.newRoomFeature">
+                                {{ errors.newRoomFeature[0] }}
+                            </span>
+                            <div class="mb-2">
+                                <button type="button" class="btn btn-outline-secondary w-100"
+                                    @click="addnewRoomFeatures()">
+                                    <i class="fas fa-plus me-2"></i> Add Room Features
+                                </button>
+                            </div>
+                            <div class="border rounded p-2">
+                                <div class="row fw-bold border-bottom py-2 text-center">
+                                    <div class="col">Room Feature</div>
+                                    <div class="col-3">Actions</div>
+                                </div>
+
+                                <div v-for="feature in editData.features" :key="feature.id"
+                                    class="row align-items-center py-2 border-bottom text-center">
+                                    <div class="col">
+                                        <input type="text" readonly class="form-control text-center"
+                                            v-model="feature.feature_name" placeholder="Feature name" />
+                                    </div>
+                                    <div class="col-3 d-flex justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-outline-danger"
+                                            @click.prevent="deleteRoomFeatures(feature.id)">
+                                            Delete
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+
                 </div>
+
 
 
                 <div class="modal-footer">
@@ -500,14 +609,17 @@
             <div class="modal-content border-0 shadow-lg rounded-4">
                 <!-- Modal Header -->
                 <div class="modal-header bg-outline-primary text-black  rounded-top-4">
-                    <h5 class="modal-title">Room Details</h5>
-                    <button type="button" class="btn-close btn-close-black" @click="VisibleDisplayDataModal = false"
-                        aria-label="Close"></button>
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Room Details
+                    </h5> <button type="button" class="btn-close btn-close-black"
+                        @click="VisibleDisplayDataModal = false" aria-label="Close"></button>
                 </div>
 
                 <!-- Modal Body -->
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding: 1.5rem;">
-                    <img :src="selectedRoom?.room_images" class="img-fluid mb-3" alt="...">
+                    <img :src="selectedRoom?.room_images" class="img-fluid mb-3 rounded " alt="Room Image"
+                        style="width: 100%;  height: 300px; object-fit: cover;">
                     <div class="row g-4 ">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -531,9 +643,19 @@
                             <label class="form-label fw-bold">Dorm Name:</label>
                             <div class="p-2 border rounded bg-light text-break w-100"
                                 style="max-height: 100px;  overflow-y: auto;">
-                                {{ selectedRoom?.dorm_name
+                                {{ selectedRoom?.dorm.dorm_name
                                 }}
 
+                            </div>
+                            <label class="form-label fw-bold">Room Features:</label>
+                            <div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span v-for="feature in selectedRoom?.features" :key="feature.id"
+                                        class="badge bg-primary text-white px-3 py-2 shadow-sm"
+                                        style="font-size: 0.9rem;">
+                                        {{ feature.feature_name }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -550,7 +672,7 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Contact Email:</label>
                                 <div class="p-2 border rounded bg-light text-break"> {{
-                                    selectedRoom?.contact_email
+                                    selectedRoom?.dorm.contact_email
                                 }}
 
                                 </div>
@@ -558,7 +680,7 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Contact Phone:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{
-                                    selectedRoom?.contact_phone
+                                    selectedRoom?.dorm.contact_phone
                                 }}
                                 </div>
                             </div>
@@ -571,10 +693,11 @@
                                     <label class="form-label fw-bold">Address:</label>
                                     <div class="p-2 border rounded bg-light text-break w-100"
                                         style="max-height: 100px;  overflow-y: auto;">
-                                        {{ selectedRoom?.address
+                                        {{ selectedRoom?.dorm.address
                                         }}
 
                                     </div>
+
                                 </div>
                             </div>
 
@@ -594,6 +717,7 @@
     <!--Images Post Modal-->
 
 
+    <Toastcomponents ref="toast" />
 
     <Modalconfirmation ref="modal" />
 
@@ -620,7 +744,11 @@ export default {
             VisibleDisplayDataModal: false,
             VisibleImage: false,
             selectedDormitory: '',
-            loading: false,
+            selectedGender: '',
+            selectedAvailability: '',
+            selectedRoomType: '',
+            currentPage: 1,
+            lastPage: 1,
             dorms: window.allRooms || [],
             dormsId: "",
             roomNumber: "",
@@ -645,6 +773,8 @@ export default {
             roomImageFile: '',
             getRoomID: '',
             editSelectedID: '',
+            roomFeatures: [''],
+            visibleRoomFeaturesModal: false,
             editData:
             {
                 dormitory_id: '',
@@ -669,7 +799,8 @@ export default {
             },
             errors: {},
             rooms: [],
-            selectedRoom: null,
+            selectedRoom: {},
+            newRoomFeature: '',
             currentRoomID: null,
         };
     },
@@ -677,10 +808,168 @@ export default {
         dormId(dorm) {
             this.dormsId = dorm.dorm_id;
         },
+        handlePagination(page) {
+            if (page < 1 || page > this.lastPage) return;
+            this.currentPage = page;
+
+            // 👇 Priority check (only one filter is expected at a time)
+            if (this.selectedAvailability && this.selectedAvailability !== 'all') {
+                this.filterRoomsByAvailability(page);
+            } else if (this.selectedDormitory && this.selectedDormitory !== 'all') {
+                this.filterRoomsByDormitory(page);
+            } else if (this.selectedGender && this.selectedGender !== 'all') {
+                this.filterRoomsByGender(page);
+            } else if (this.selectedRoomType && this.selectedRoomType !== 'all') {
+                this.filterRoomsByRoomType(page);
+            } else {
+                this.fetchRooms(page);
+            }
+        },
+
+        async fetchRooms(page = 1) {
+            this.$refs.loader.loading = true;
+
+            try {
+                const response = await axios.get('/ListRooms', {
+                    params: { page: page },
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                this.rooms = response.data.rooms.data;
+                this.currentPage = response.data.rooms.current_page;
+                this.lastPage = response.data.rooms.last_page;
+                this.$refs.loader.loading = false;
+
+            } catch (error) {
+                console.error('Error fetching rooms:', error);
+            }
+        },
+        async filterRoomsByDormitory(page = 1) {
+            try {
+                this.$refs.loader.loading = true;
+                if (this.selectedDormitory === 'all') {
+                    this.fetchRooms(1);
+                } else {
+                    const response = await axios.get(`/get-rooms-by-dorm/${this.selectedDormitory}`,
+                        {
+                            params: { page: page },
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            }
+                        });
+                    this.rooms = response.data.rooms.data;
+                    this.currentPage = response.data.rooms.current_page;
+                    this.lastPage = response.data.rooms.last_page;
+                    this.selectedAvailability = '';
+                    this.selectedGender = '';
+                    this.selectedRoomType = '';
+                    this.$refs.loader.loading = false;
+
+                }
+            }
+            catch (error) {
+
+            }
+        },
+        async filterRoomsByGender(page = 1) {
+            try {
+                this.$refs.loader.loading = true;
+                if (this.selectedGender === 'all') {
+                    this.fetchRooms(1);
+                    return;
+                }
+                const response = await axios.get(`/get-rooms-by-gender/${this.selectedGender}`, {
+                    params: { page: page },
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                this.selectedAvailability = '';
+                this.selectedRoomType = '';
+                this.selectedDormitory = '';
+                this.rooms = response.data.rooms.data;
+                this.currentPage = response.data.rooms.current_page;
+                this.lastPage = response.data.rooms.last_page;
+                this.$refs.loader.loading = false;
+
+            } catch (error) {
+                console.error('Error fetching rooms by gender:', error);
+            }
+            finally {
+                this.$refs.loader.loading = false;
+
+            }
+        },
+        async filterRoomsByAvailability(page = 1) {
+            try {
+                this.$refs.loader.loading = true;
+                if (this.selectedAvailability === 'all') {
+                    await this.fetchRooms(1);
+                    return;
+                }
+                const response = await axios.get(`/get-rooms-by-availability/${this.selectedAvailability}`, {
+                    params: { page: page },
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                this.rooms = response.data.rooms.data;
+                this.currentPage = response.data.rooms.current_page;
+                this.lastPage = response.data.rooms.last_page;
+                this.selectedGender = '';
+                this.selectedRoomType = '';
+                this.selectedDormitory = '';
+                this.$refs.loader.loading = false;
+
+            } catch (error) {
+                console.error('Error fetching rooms by availability:', error);
+            }
+            finally {
+                this.$refs.loader.loading = false;
+
+            }
+        },
+        async filterRoomsByRoomType(page = 1) {
+            try {
+                this.$refs.loader.loading = true;
+                if (this.selectedRoomType === 'all') {
+                    this.fetchRooms(1);
+                    return;
+                }
+                const response = await axios.get('/get-rooms-by-room-type', {
+                    params: { page: page, roomType: this.selectedRoomType },
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                this.selectedAvailability = '';
+                this.selectedGender = '';
+                this.selectedDormitory = '';
+                this.rooms = response.data.rooms.data;
+                this.currentPage = response.data.rooms.current_page;
+                this.lastPage = response.data.rooms.last_page;
+                this.$refs.loader.loading = false;
+
+            } catch (error) {
+                console.error('Error fetching rooms by room type:', error);
+            }
+            finally {
+                this.$refs.loader.loading = false;
+
+            }
+        },
+        clearFiltered() {
+            this.selectedAvailability = '';
+            this.selectedDormitory = '';
+            this.selectedGender = '';
+            this.selectedRoomType = '';
+        },
         AddModal() {
             this.VisibleAddModal = true;
             this.VisibleImage = true;
             this.emptyfill();
+            this.clearFiltered();
         },
         handleroomImagePreview3(event) {
             const file = event.target.files[0];
@@ -751,9 +1040,10 @@ export default {
                     this.fetchRooms();
                     this.emptyfill();
                     this.getRoomID = response.data.room_id;
+                    this.roomFeaturesModal();
+                    this.VisibleAddModal = false;
                 } else if (response.data.errors) {
                     this.$refs.loader.loading = false;
-
                     this.errors = response.data.errors;
                 }
 
@@ -762,9 +1052,6 @@ export default {
 
                 if (error.response && error.response.status === 422) {
                     this.errors = error.response.data.errors;
-                    this.$refs.toast.showToast('Please check your fields', 'danger');
-
-
                 } else {
                     this.$refs.loader.loading = false;
 
@@ -773,23 +1060,58 @@ export default {
                 }
             }
         },
-
-        async fetchRooms() {
-            this.$refs.loader.loading = true;
-
+        roomFeaturesModal() {
+            this.visibleRoomFeaturesModal = true;
+            this.errors = {};
+        },
+        async addRoomFeatures() {
+            const formData = new FormData();
+            formData.append('features', this.roomFeatures.join(','));
+            formData.append('room_id', this.getRoomID);
             try {
-                const response = await axios.get('/ListRooms', {
+                const confirmed = await this.$refs.modal.show({
+                    title: 'Adding Room Features',
+                    message: `Are you sure you want to Add Room Features?`,
+                    functionName: 'Add new Room Features (Optional)'
+                });
+
+                if (!confirmed) {
+                    this.$refs.loader.loading = false;
+                    return;
+                }
+
+                this.$refs.loader.loading = true;
+
+                const response = await axios.post('/add-roomfeatures', formData, {
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
                 });
-                this.rooms = response.data.rooms || [];
+
+                if (response.data.status === "success") {
+                    this.$refs.loader.loading = false;
+                    this.$refs.toast.showToast(response.data.message, 'success');
+                    this.roomFeatures = ['']; // Reset room features
+                    this.errors = {};
+                } else {
+                    this.$refs.loader.loading = false;
+                    this.$refs.toast.showToast(response.data.message, 'danger');
+                }
+            } catch (error) {
                 this.$refs.loader.loading = false;
 
-            } catch (error) {
-                console.error('Error fetching rooms:', error);
+                if (error.response && error.response.status === 422) {
+                    const validationErrors = error.response.data.message;
+                    // let messages = Object.values(validationErrors).flat().join('\n');
+                    this.errors.rules = [validationErrors];
+
+                } if (error.response.status === 400) {
+                    const message = error.response.data.message || 'Something went wrong.';
+                    this.errors.rules = [message];
+                }
             }
         },
+
         async ViewRoom(roomId) {
             try {
                 this.$refs.loader.loading = true;
@@ -813,9 +1135,6 @@ export default {
             }
 
         },
-
-
-
         async editRoom(roomId) {
 
             this.$refs.loader.loading = true;
@@ -844,6 +1163,105 @@ export default {
                 console.error("Error fetching dorm details:", error);
                 alert("An error occurred while loading dorm details");
             }
+        },
+        async deleteRoomFeatures(id) {
+            this.rulesId = id;
+            const confirmed = await this.$refs.modal.show({
+                title: 'Delete Feature',
+                message: 'Are you sure you want to delete this Feature?',
+                functionName: 'Delete Feature',
+
+            });
+
+            if (!confirmed) return;
+
+            this.$refs.loader.loading = true;
+            if (this.rulesId) {
+
+                try {
+                    const response = await axios.delete(`/delete-roomfeatures/${this.rulesId}`, {
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+
+                    this.$refs.loader.loading = false;
+
+                    if (response.data.status === "success") {
+                        this.$refs.toast.showToast(response.data.message, 'success');
+                        this.VisibleUpdateModal = false;
+                    } else {
+                        this.$refs.toast.showToast('Failed to delete rules. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    this.$refs.loader.loading = false;
+                    console.error("Error deleting rules:", error);
+                    console.log("Deleting rule with ID:", this.rulesId);
+
+                }
+            } else {
+                console.warn("No dorm ID provided for deleting amenities.");
+            }
+        },
+        async addnewRoomFeatures() {
+
+
+            this.errors = {};
+            const confirmed = await this.$refs.modal.show({
+                title: 'Adding New Room Feature',
+                message: `Are you sure you want to add this room feature?`,
+                functionName: 'Add new Room Feature (Optional)'
+            });
+
+            this.$refs.loader.loading = true;
+            try {
+                const response = await axios.post('/add-roomfeatures', {
+                    features: this.newRoomFeature,
+                    room_id: this.editData.room_id,
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (response.data.status === 'success') {
+                    this.$refs.loader.loading = false;
+                    this.$refs.toast.showToast(`${this.newRoomFeature} added successfully.`, 'success');
+                    this.VisibleUpdateModal = false;
+                    this.newRoomFeature = '';
+                    this.errors = {};
+                } else if (response.data.errors) {
+                    this.errors.newRoomFeature = [response.data.message];
+                }
+
+            } catch (error) {
+                this.$refs.loader.loading = false;
+
+                // Show Laravel validation or custom error message
+                if (error.response && error.response.data) {
+                    const res = error.response.data;
+
+                    if (res.errors && res.errors.newRoomFeature) {
+                        this.errors.newRoomFeature = res.errors.newRoomFeature;
+                    } else if (res.message) {
+                        this.errors.newRoomFeature = [res.message];
+
+                        this.$refs.loader.loading = false;
+                    } else {
+                        this.$refs.toast.showToast('An unexpected error occurred.', 'error');
+                        this.$refs.loader.loading = false;
+                    }
+                } else {
+                    this.$refs.toast.showToast('An unexpected error occurred.', 'error');
+                    this.$refs.loader.loading = false;
+
+                }
+            } finally {
+                this.$refs.loader.loading = false;
+            }
+
+
         },
 
         edithandleroomImagePreview3(event) {
@@ -910,7 +1328,7 @@ export default {
                 });
 
                 if (response.data.status === "success") {
-                    this.fetchRooms();
+                    this.handlePagination(this.currentPage);
                     this.$refs.toast.showToast(response.data.message, 'success');
                     this.VisibleUpdateModal = false;
                     this.errors = {};
@@ -973,8 +1391,6 @@ export default {
 
             }
         },
-
-
         updateEmpty() {
             this.editData = {
                 room_id: '',
@@ -1012,18 +1428,32 @@ export default {
 
     },
     mounted() {
-        this.fetchRooms();
-
+        this.handlePagination();
+        // this.fetchRooms();
+    },
+    watch:
+    {
+        ListRooms(newVal) {
+            if (newVal !== '') {
+                this.filterMode = 'list';
+                this.handlePagination(1);
+            }
+        },
+        selectedDormitory(newVal) {
+            this.filterRoomsByDormitory(newVal);
+        },
+        selectedGender(newVal) {
+            this.filterRoomsByGender(newVal);
+        },
+        selectedAvailability(newVal) {
+            this.filterRoomsByAvailability(newVal);
+        },
+        selectedRoomType(newVal) {
+            this.filterRoomsByRoomType(newVal);
+        }
     },
     computed: {
-        filteredRooms() {
-            if (!this.searchTerm) return this.rooms;
-            return this.rooms.filter(room =>
-                Object.values(room).some(val =>
-                    String(val).toLowerCase().includes(this.searchTerm.toLowerCase())
-                )
-            );
-        },
+
         filteredBeds() {
             return this.bedOptions[this.roomType] || [];
         },
@@ -1031,29 +1461,7 @@ export default {
             return this.bedOptions[this.editData.room_type] || [];
         },
 
-        roomCapacityRange() {
-            const ranges = {
-                'Single Room': { min: 1, max: 1 },
-                'Double Room / Shared Room': { min: 1, max: 2 },
-                'Studio-Type Room': { min: 1, max: 3 },
-                'Loft Room / Mezzanine Type': { min: 2, max: 4 },
-                'Partitioned Bedspace (Cubicle Style)': { min: 1, max: 1 },
-                'Bedspace / Multi-Sharing Room': { min: 4, max: 6 },
-            };
-            return ranges[this.roomType] || { min: 0, max: 0 };
-        },
 
-        editroomCapacityRange() {
-            const ranges = {
-                'Single Room': { min: 1, max: 1 },
-                'Double Room / Shared Room': { min: 1, max: 2 },
-                'Studio-Type Room': { min: 1, max: 3 },
-                'Loft Room / Mezzanine Type': { min: 2, max: 4 },
-                'Partitioned Bedspace (Cubicle Style)': { min: 1, max: 1 },
-                'Bedspace / Multi-Sharing Room': { min: 4, max: 6 },
-            };
-            return ranges[this.editData.room_type] || { min: 0, max: 0 };
-        },
     },
     watch: {
 

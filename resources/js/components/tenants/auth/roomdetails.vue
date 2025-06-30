@@ -47,15 +47,15 @@
                     </ul>
                     <div class="text-center mt-2" v-if="amenities.length > 3">
                         <a href="#" class="text-decoration-none text-primary fw-semibold"
-                            @click.prevent="showMore = !showMore">
-                            {{ showMore ? '-- Show Less --' : '-- More --' }}
+                            @click.prevent="amenitiesShowMore = !amenitiesShowMore">
+                            {{ amenitiesShowMore ? '-- Show Less --' : '-- More --' }}
                         </a>
                     </div>
                 </div>
 
                 <div class="bg-light rounded p-3 shadow-sm">
                     <h5 class="fw-bold mb-3">
-                        <i class="bi bi-door-open me-2 text-primary"></i>Room Features
+                        <i class="bi bi-door-open me-2 text-primary"></i>Feedback and Review
                     </h5>
                     <div class="text-muted" style="white-space: pre-line;">
                         {{ dorm.dorm.room_features }}
@@ -70,7 +70,17 @@
                         <i class="bi bi-info-circle me-2 text-primary"></i>Rules & Policies
                     </h5>
                     <div class="text-muted" style="white-space: pre-line;">
-                        {{ dorm.dorm.rules }}
+                        <ul class="ps-3 mb-0">
+                            <li v-for="(rule, index) in displayedRulesAndPolicy" :key="rule.id">
+                                {{ rule.rules_name }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="text-center mt-2" v-if="rulesAndPolicy.length > 3">
+                        <a href="#" class="text-decoration-none text-primary fw-semibold"
+                            @click.prevent="rulesAndPolicyShowMore = !rulesAndPolicyShowMore">
+                            {{ rulesAndPolicyShowMore ? '-- Show Less --' : '-- More --' }}
+                        </a>
                     </div>
                 </div>
 
@@ -771,6 +781,7 @@ export default {
             rooms: [],
             roomsDetail: null,
             amenities: [],
+            rulesAndPolicy: [],
             visibleRooms: 2,
             landlord_id: '',
             room_id: '',
@@ -797,7 +808,8 @@ export default {
             totalCapacity: 0,
             PaymentPicturePreview: '',
             PaymentPictureFile: '',
-            showMore: false,
+            amenitiesShowMore: false,
+            rulesAndPolicyShowMore: false,
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
 
 
@@ -824,9 +836,11 @@ export default {
             try {
                 const res = await axios.get('/dorm-details', { params: { dormitory_id: this.dormitory_id } });
                 this.loadImagesFromData(res.data);
+                console.log('data', res.data);
                 this.dorm = res.data;
                 this.rooms = res.data.dorm.rooms || [];
                 this.amenities = res.data.dorm.amenities || [];
+                this.rulesAndPolicy = res.data.dorm.rules_and_policy || [];
                 this.landlordname = res.data.landlord?.firstname + ' ' + res.data.landlord?.lastname;
                 this.landlord_id = res.data.landlord?.landlord_id;
                 this.totalCapacity = res.data.totalcapacity;
@@ -1181,7 +1195,10 @@ export default {
     },
     computed: {
         displayedAmenities() {
-            return this.showMore ? this.amenities : this.amenities.slice(0, 3);
+            return this.amenitiesShowMore ? this.amenities : this.amenities.slice(0, 3);
+        },
+        displayedRulesAndPolicy() {
+            return this.rulesAndPolicyShowMore ? this.rulesAndPolicy : this.rulesAndPolicy.slice(0, 3);
         },
         displayedRooms() {
             return this.rooms.slice(0, this.visibleRooms);

@@ -41,12 +41,12 @@ class roomdetailsController extends Controller
         $dorm = landlordDormManagement::with([
             'amenities',
             'images',
+            'rulesAndPolicy',
             'landlord',
             'rooms' => function ($query) {
                 $query->where('availability', 'Available');
             }
         ])->where('dorm_id', $dormitory_id)->first(); 
-        $totalCapacity = $dorm->totalCapacity();
 
         if (!$dorm) {
             return response()->json([
@@ -58,7 +58,6 @@ class roomdetailsController extends Controller
             'status' => 'success',
             'dorm' => $dorm,
             'landlord' => $dorm->landlord,
-            'totalcapacity' => $totalCapacity,
             
 
         ]);

@@ -10,7 +10,8 @@ use App\Http\Controllers\Controller;
 use App\Models\landlord\landlordAccountModel;
 use App\Models\landlord\landlordRoomModel;
 use App\Models\landlord\landlordDormManagement;
-
+use App\Models\landlord\landlordRoomFeaturesModel;
+use App\Models\landlord\landlordRoomFeaturesRoomModel;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -41,6 +42,50 @@ class roomManagementController extends Controller
         'dorms' => $dorms,
     ]);
     }
+    public function getRoomsByDorm($dormId)
+    {
+        $landlordId = session('landlord_id');
+        $rooms = landlordRoomModel::where('landlord_id', $landlordId)
+            ->where('dormitory_id', $dormId)
+            ->with('dorm')
+            ->paginate(5);
+            return response()->json([
+                'rooms' => $rooms // ✅ this is important!
+            ]);   
+    }
+    public function getRoomsByGender($gender)
+    {
+        $landlordId = session('landlord_id');
+        $rooms = landlordRoomModel::where('landlord_id', $landlordId)
+            ->where('gender_preference', $gender)
+            ->paginate(5);
+        return response()->json([
+            'rooms' => $rooms 
+        ]);
+    }
+    public function getRoomsByAvailability($availability)
+    {
+        $landlordId = session('landlord_id');
+        $rooms = landlordRoomModel::where('landlord_id', $landlordId)
+            ->where('availability', $availability)
+            ->paginate(5);
+        return response()->json([
+            'rooms' => $rooms 
+        ]);
+    }
+    public function getRoomsByRoomType(Request $request)
+    {
+        $roomType = $request->query('roomType'); // or $request->input('type')
+
+        $landlordId = session('landlord_id');
+        $rooms = landlordRoomModel::where('landlord_id', $landlordId)
+            ->where('room_type', $roomType)
+            ->paginate(5);
+        return response()->json([
+            'rooms' => $rooms 
+        ]);
+    }
+
     public function addRoom(Request $request)
 {
     $validator = Validator::make($request->all(), [
@@ -170,14 +215,75 @@ class roomManagementController extends Controller
             ], 403);
         }
     
-        $rooms = landlordRoomModel::where('landlord_id', $landlordId)->get();
-    
+        $rooms = landlordRoomModel::where('landlord_id', $landlordId)
+        ->orderBy('created_at', 'desc')
+        ->paginate(5);    
         return response()->json([
             'status' => 'success',
             'rooms' => $rooms
         ]);
     }
-    public function ViewRoom($id)
+    public function addRoomFeatures(Request $request)
+    {
+        $landlordId = session('landlord_id');
+        if (!$landlordId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized action. Please log in as a landlord.'
+            ], 403);
+        }
+    
+        $validated = $request->validate([
+            'features' => 'required|string|max:255',
+            'room_id' => 'required|integer',
+        ]);
+    
+        try {
+            $features = trim($validated['features']);
+            $roomId = $validated['room_id'];
+
+            // Check if the feature already exists for this room
+            $existingFeature = landlordRoomFeaturesModel::where('feature_name', $features)->first();
+
+            // If it exists globally, use it, otherwise create it
+            if (!$existingFeature) {
+                $existingFeature = landlordRoomFeaturesModel::create([
+                    'feature_name' => $features
+                ]);
+            }
+
+            // Check if the room already has this feature assigned
+            $alreadyLinked = landlordRoomFeaturesRoomModel::where('fkroom_id', $roomId)
+                ->where('fkfeature_id', $existingFeature->id)
+                ->exists();
+    
+            if ($alreadyLinked) {
+                return response()->json([
+                'status' => 'error',
+                    'message' => 'This feature is already linked to this room.'
+                ], 400);
+            }
+
+            // Link the feature to the room
+            landlordRoomFeaturesRoomModel::create([
+                'fkroom_id' => $roomId,
+                'fkfeature_id' => $existingFeature->id,
+            ]);
+    
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Features added successfully!',
+            ]);
+    
+        } catch (\Exception $e) {
+            \Log::error('Error adding features: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error adding features.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }    public function ViewRoom($id)
     {
         $landlordId = session('landlord_id');
         if (!$landlordId) {
@@ -188,12 +294,13 @@ class roomManagementController extends Controller
         }
     
         // Fetch the room by ID with its dorm info
-        $room = DB::table('rooms as rooms')
-            ->join('dorms as dorms', 'rooms.dormitory_id', '=', 'dorms.dorm_id')
-            ->where('rooms.room_id', $id)
-            ->where('rooms.landlord_id', $landlordId)
-            ->select('rooms.*', 'dorms.dorm_name', 'dorms.address', 'dorms.contact_email', 'dorms.contact_phone')
-            ->first();
+        $room = landlordRoomModel::with(['dorm', 'features'])
+        ->where('room_id', $id)
+        ->where('landlord_id', $landlordId)
+        ->first();
+    
+    
+    
     
         // Check if the room exists
         if (!$room) {
@@ -310,8 +417,6 @@ class roomManagementController extends Controller
     } else {
         $room->room_images = $request->input('existingImage'); // retain old image
     }
-
-
     try {
         $room->save();
 
@@ -327,6 +432,43 @@ class roomManagementController extends Controller
         ], 500);
     }
 }
+
+public function deleteRoomFeatures($pivotId)
+    {
+        $landlordId = session('landlord_id');
+        if (!$landlordId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized. Please log in.'
+            ], 403);
+        }
+        $pivot = landlordRoomFeaturesRoomModel::find($pivotId); 
+        if (!$pivot) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Feature link not found.'
+            ], 404);
+        }
+    
+        // Check if the dorm_id belongs to the landlord
+        $ownsRoom = landlordRoomModel::where('room_id', $pivot->fkroom_id)
+            ->where('landlord_id', $landlordId)
+            ->exists();
+
+        if (!$ownsRoom) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized to delete this feature.'
+            ], 403);
+        }
+    
+        $pivot->delete(); 
+    
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Feature removed from room.'
+        ]);
+    }
     public function DeleteRoom($id)
     {
         $landlordId = session('landlord_id');
