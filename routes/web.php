@@ -24,8 +24,8 @@ use App\Http\Controllers\landloard\auth\ReviewandFeedbackController;
 use App\Http\Controllers\landloard\auth\BookingController;
 use App\Http\Controllers\tenant\auth\dormitoriesmapcontroller;
 use App\Http\Controllers\tenant\auth\dormitories;
-
-
+use App\Http\Controllers\tenant\auth\bookingprocess\selectionRoomController;
+use App\Http\Controllers\tenant\auth\bookingprocess\bookroomController;
 use App\Models\Landlord;
 
 
@@ -139,10 +139,14 @@ Route::middleware([LandlordAuth::class])->group(function () {
 Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/homepage/{tenant_id}', [homepageController::class, 'homepage'])->name('homepage');
     Route::get('/tenant/dorms/lapu-lapu', [homepageController::class, 'dormLapuLapu']);
-    Route::get('/tenant/dorms/mandaue', [homepageController::class, 'dormMandaeu']);
-    // Route::get('/list-dorms', [homepageController::class, 'Listdorms'])->name('list.dorms');
-  
+    Route::get('/tenant/dorms/mandaue', [homepageController::class, 'dormMandaeu']);  
     Route::get('/room-details/{dormitory_id}/{tenant_id}', [roomdetailsController::class, 'roomDetails'])->name('room.details');
+    Route::get('/room-selection/{dormitoryID}/{tenantID}', [selectionRoomController::class, 'SelectionRoom'])->name('room.selection');
+    Route::get('/available-room/{dormitoryID}', [selectionRoomController::class, 'availableRooms'])->name('available.room');
+    Route::get('/view-room-details/{id}', [selectionRoomController::class, 'ViewRoomDetails'])->name('view.room.details');
+    Route::get('/booking-process/{roomId}/{tenantID}', [bookroomController::class, 'bookRoom'])->name('room.selection');
+    Route::get('/get-room-details/{roomID}', [bookroomController::class, 'getRoom'])->name('get.room.details');
+
     Route::post('/tenant-information', [roomdetailsController::class, 'tenantInformation'])->name('tenant.information');
     Route::post('/tenant-idPicture', [roomdetailsController::class, 'uploadTenantId'])->name('tenant.idPicture');
 

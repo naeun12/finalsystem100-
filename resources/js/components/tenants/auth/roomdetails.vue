@@ -1,6 +1,7 @@
 <template>
     <Loader ref="loader" />
     <Toastcomponents ref="toast" />
+
     <div class=" m-5 my-4" v-if="dorm">
         <!-- Header -->
         <div class="row mb-4 align-items-center border-bottom pb-3 shadow-sm rounded bg-light px-3 py-3">
@@ -105,60 +106,69 @@
             <!-- Property Details -->
             <div class="col-12 col-md-8">
                 <div class="border rounded p-4 shadow-sm bg-white">
-                    <h4 class="fw-bold text-primary mb-1">
-                        <i class="bi bi-house-door-fill me-2 text-primary"></i>{{ dorm.dorm.dorm_name }}
-                    </h4>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="fw-bold text-primary mb-1">
+                                <i class="bi bi-house-door-fill me-2 text-primary"></i>{{ dorm.dorm.dorm_name }}
+                            </h4>
 
-                    <p class="text-muted mb-3">
-                        <i class="bi bi-geo-alt-fill me-2 text-secondary"></i>
-                        {{ dorm.dorm.address.replace('at the back of ', '') }}
-                    </p>
+                            <p class="text-muted mb-3">
+                                <i class="bi bi-geo-alt-fill me-2 text-secondary"></i>
+                                {{ dorm.dorm.address.replace('at the back of ', '') }}
+                            </p>
 
 
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        <span class="badge d-inline-flex align-items-center px-3 py-2 fs-6" :class="{
-                            'bg-success': dorm.dorm.availability === 'Available',
-                            'bg-danger': dorm.dorm.availability === 'Not Available'
-                        }">
-                            <i class="bi" :class="{
-                                'bi-check-circle-fill me-2': dorm.dorm.availability === 'Available',
-                                'bi-x-circle-fill me-2': dorm.dorm.availability === 'Not Available'
-                            }"></i>
-                            {{ dorm.dorm.availability }}
-                        </span>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge d-inline-flex align-items-center px-3 py-2 fs-6" :class="{
+                                    'bg-success': dorm.dorm.availability === 'Available',
+                                    'bg-danger': dorm.dorm.availability === 'Not Available'
+                                }">
+                                    <i class="bi" :class="{
+                                        'bi-check-circle-fill me-2': dorm.dorm.availability === 'Available',
+                                        'bi-x-circle-fill me-2': dorm.dorm.availability === 'Not Available'
+                                    }"></i>
+                                    {{ dorm.dorm.availability }}
+                                </span>
+                            </div>
+                            <p>
+                                <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+                                <strong>Location:</strong>
+                                {{ dorm.dorm.address.replace('at the back of ', '') }}
+                            </p>
+
+                            <p>
+                                <i class="bi bi-people-fill me-2 text-primary"></i>
+                                <strong>Occupancy Type:</strong>
+                                {{ dorm.dorm.occupancy_type }}
+                            </p>
+
+                            <p>
+                                <i class="bi bi-building me-2 text-primary"></i>
+                                <strong>Building Type:</strong>
+                                {{ dorm.dorm.building_type }}
+                            </p>
+
+                            <p>
+                                <i class="bi bi-door-open-fill me-2 text-primary"></i>
+                                <strong>Rooms Available:</strong>
+                                {{ dorm.dorm.total_rooms > 0 ? dorm.dorm.total_rooms + ' room(s)' : 'No rooms available'
+                                }}
+                            </p>
+                            <p class="mb-4">
+                                <i class="bi bi-person-fill-check me-2 text-primary"></i>
+                                <strong>Total Capacity:</strong> {{ totalCapacity }} tenant(s)
+                            </p>
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <div class="ratio ratio-4x3">
+                                <div id="map" style="width: 100%; height: 300px;"></div>
+                            </div>
+                        </div>
+
                     </div>
 
-
-                    <p>
-                        <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
-                        <strong>Location:</strong>
-                        {{ dorm.dorm.address.replace('at the back of ', '') }}
-                    </p>
-
-                    <p>
-                        <i class="bi bi-people-fill me-2 text-primary"></i>
-                        <strong>Occupancy Type:</strong>
-                        {{ dorm.dorm.occupancy_type }}
-                    </p>
-
-                    <p>
-                        <i class="bi bi-building me-2 text-primary"></i>
-                        <strong>Building Type:</strong>
-                        {{ dorm.dorm.building_type }}
-                    </p>
-
-                    <p>
-                        <i class="bi bi-door-open-fill me-2 text-primary"></i>
-                        <strong>Rooms Available:</strong>
-                        {{ dorm.dorm.total_rooms > 0 ? dorm.dorm.total_rooms + ' room(s)' : 'No rooms available' }}
-                    </p>
-
-
-
-                    <p class="mb-4">
-                        <i class="bi bi-person-fill-check me-2 text-primary"></i>
-                        <strong>Total Capacity:</strong> {{ totalCapacity }} tenant(s)
-                    </p>
 
                     <h5 class="fw-bold mt-4 mb-3"><i class="bi bi-cash-coin me-2"></i>Room Pricing</h5>
                     <div class="table-responsive">
@@ -289,11 +299,6 @@
                                 disabled />
                         </div>
                     </div>
-
-
-
-
-
                     <div class="px-4">
                         <button type="button" @click="submitTenantInformation" class="btn w-100 fw-bold">Submit</button>
                     </div>
@@ -752,22 +757,18 @@ import axios from 'axios';
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
-
-
-
+import { nextTick } from 'vue';
 export default {
     components: {
         Toastcomponents,
         Loader,
         Modalconfirmation
-
-
     },
-
     data() {
         return {
             landlordname: [],
             landlordImage: null,
+            tenant_id: '',
             mainImage: '',
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
             id_picture: '/images/tenant/allimagesResouces/vector-id-card-icon.jpg',
@@ -779,6 +780,8 @@ export default {
             },
             images: [],
             rooms: [],
+            lng: '',
+            lat: '',
             roomsDetail: null,
             amenities: [],
             rulesAndPolicy: [],
@@ -811,9 +814,16 @@ export default {
             amenitiesShowMore: false,
             rulesAndPolicyShowMore: false,
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
-
-
         };
+    },
+    mounted() {
+        const element = document.getElementById('RoomDetails');
+        this.dormitory_id = element.dataset.dormId;
+        this.tenant_id = element.dataset.tenantId;
+
+        this.displayDorms();
+        this.dormLocation();
+
     },
     methods: {
         changeMainImage(imgSrc) {
@@ -836,8 +846,9 @@ export default {
             try {
                 const res = await axios.get('/dorm-details', { params: { dormitory_id: this.dormitory_id } });
                 this.loadImagesFromData(res.data);
-                console.log('data', res.data);
                 this.dorm = res.data;
+                this.lat = res.data.dorm.latitude || '';
+                this.lng = res.data.dorm.longitude || '';
                 this.rooms = res.data.dorm.rooms || [];
                 this.amenities = res.data.dorm.amenities || [];
                 this.rulesAndPolicy = res.data.dorm.rules_and_policy || [];
@@ -866,26 +877,22 @@ export default {
             this.idPicturePreview = '';
             this.idPictureFile = '';
             this.selectedRoomId = '';
-
         },
-        validationForm() {
-
-            this.errors = {};
-            if (!this.firstname) this.errors.firstname = ['Please enter your firstmane.'];
-            if (!this.lastname) this.errors.lastname = ['Please enter your lastname.'];
-            if (!this.contactInfo) this.errors.contactInfo = ['Please enter your Contact number.'];
-            if (!this.email) this.errors.email = ['Please enter your email.'];
-            if (!this.age) this.errors.age = ['Please enter your age.'];
-            if (!this.sex) this.errors.sex = ['Please enter your sex.'];
-
-
-            return Object.keys(this.errors).length === 0;
-
+        getInformationData() {
+            const data = {
+                firstname: this.firstname,
+                lastname: this.lastname,
+                email: this.email,
+                contactInfo: this.contactInfo,
+                age: this.age,
+                sex: this.sex,
+                idPicturePreview: this.idPicturePreview, // base64 or path
+            };
+            localStorage.setItem('tenantInfo', JSON.stringify(data)); // ✅ Store it
 
         },
         async submitTenantInformation() {
             this.$refs.loader.loading = true;
-
             const formData = new FormData();
             formData.append('firstname', this.firstname);
             formData.append('lastname', this.lastname);
@@ -915,10 +922,7 @@ export default {
                 if (error.response && error.response.status === 422) {
                     this.errors = error.response.data.errors || {};
                 }
-
-
             }
-
         },
         async tenantIdpicture() {
             this.$refs.loader.loading = true;
@@ -934,12 +938,11 @@ export default {
                     }
                 });
                 if (response.data.status === 'success') {
+                    this.getInformationData(); // ✅ Call before redirect
+
                     this.$refs.loader.loading = false;
                     this.VisibleImagePostModal = false;
-
-                    if (this.VisibleImagePostModal == false) {
-                        this.openRoomModal = true;
-                    }
+                    window.location.href = `/room-selection/${this.dormitory_id}/${this.tenant_id}`;
 
                 }
             } catch (error) {
@@ -953,26 +956,18 @@ export default {
             }
 
         },
-
-
         closeImageModal() {
             this.VisibleImagePostModal = false;
             this.idPicturePreview = '';
             this.idPictureFile = '';
 
         },
-        openRoomDetails(roomId) {
-            console.log("Viewing details for room:", roomId);
-            // Insert your own logic here (e.g., open a detailed modal or navigate to another view)
-        },
+
         showLessRooms() {
             this.visibleRooms = Math.max(2, this.visibleRooms - 2);
         },
         // Function to proceed with booking/payment
-        paymentMethod(roomId) {
-            console.log("Booking room:", roomId);
-            // Insert your own logic here (e.g., redirect to payment or booking form)
-        },
+
         async openRoomDetails(roomId) {
             this.selectedRoomId = roomId;
             this.$refs.loader.loading = true;
@@ -983,7 +978,6 @@ export default {
                     this.roomsDetail = response.data.room;
                     this.$refs.loader.loading = false;
                     this.openRoomDetailsModal = true;
-
                 }
 
 
@@ -1179,19 +1173,70 @@ export default {
             } else {
                 this.moveOutDate = '';
             }
+        },
+        initMap() {
+            const mapDiv = document.getElementById("map");
+            const dormMap = { lat: this.lat, lng: this.lng };
+            const customStyle = [
+                {
+                    featureType: "poi",
+                    elementType: "labels",
+                    stylers: [{ visibility: "off" }]
+                }
+            ];
+
+            // Initialize the map first
+            const mapLapu = new google.maps.Map(mapDiv, {
+                zoom: 15,
+                center: dormMap,
+                draggable: false,
+                styles: customStyle
+            });
+
+            // Now place the marker
+            new google.maps.Marker({
+                position: dormMap,
+                map: mapLapu,
+                title: this.dorm.dorm.dorm_name || "Dorm Location",
+                icon: {
+                    url: '/images/tenant/allimagesResouces/dormmap.webp',
+                    scaledSize: new google.maps.Size(40, 40),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(20, 40)
+                }
+            });
+        },
+
+        dormLocation() {
+
+            if (!window.google || !window.google.maps) {
+                const script = document.createElement("script");
+                script.src =
+                    "https://maps.googleapis.com/maps/api/js?key=AIzaSyCyQYH_O-3v9vW6ba_V653qgVECSxII0GU&callback=initMap";
+                script.async = true;
+                window.initMap = () => this.initMap(); // 👈 Fix here
+
+                document.head.appendChild(script);
+
+            } else {
+                this.initMap();
+
+            }
+
         }
-
-
-
-
-    },
-    mounted() {
-        this.dormitory_id = document.getElementById('RoomDetails').dataset.dormId;
-        this.displayDorms();
 
     },
     watch: {
+        dorm(newVal) {
+            if (newVal && newVal.dorm && newVal.dorm.latitude && newVal.dorm.longitude) {
+                this.lat = parseFloat(newVal.dorm.latitude);
+                this.lng = parseFloat(newVal.dorm.longitude);
 
+                this.$nextTick(() => {
+                    this.dormLocation(); // or this.initMap() if already loaded
+                });
+            }
+        }
     },
     computed: {
         displayedAmenities() {

@@ -15,6 +15,8 @@ import Notification from './components/landlord/auth/Notification.vue';
 import homepage from './components/tenants/auth/homepage.vue';
 import tenant from './components/tenants/tenantLogin.vue';
 import RoomDetails from './components/tenants/auth/roomdetails.vue';
+import roomSelection from './components/tenants/auth/bookingProcess/roomSelection.vue';
+import roomBook from './components/tenants/auth/bookingProcess/bookRoom.vue';
 import dormitoriesMap from './components/tenants/auth/dormitoriesmap.vue';
 import dormitories from './components/tenants/auth/dormitories.vue';
 
@@ -107,8 +109,17 @@ const dormitoriesController = document.querySelector('#dormitories');
 
 if (dormitoriesController) {
     createApp(dormitories).mount('#dormitories');
-
 }
+const roomSelectionController = document.querySelector('#roomSelection');
+if (roomSelectionController) {
+    createApp(roomSelection).mount('#roomSelection');
+}
+const roomBookController = document.querySelector('#roomBook');
+
+if (roomBookController) {
+    createApp(roomBook).mount('#roomBook');
+}
+
 
 
 

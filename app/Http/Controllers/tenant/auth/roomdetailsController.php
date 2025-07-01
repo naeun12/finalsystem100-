@@ -31,12 +31,12 @@ class roomdetailsController extends Controller
         $title = 'Tenant room Details - Dormhub';
         return view('tenant.auth.roomdetails',['title' => 'Room Details',
         'dormitory_id' => $dormitory_id,
-        'tenant_id',$tenant,'cssPath' => asset('css/tenantpage/auth/roomdetails.css')]);
+        'tenant_id' => $tenant_id,
+        'tenant' => $tenant,
+        'cssPath' => asset('css/tenantpage/auth/roomdetails.css')]);
     }
     public function ViewDorms(Request $request)
     {
-       
-
         $dormitory_id = $request->query('dormitory_id');
         $dorm = landlordDormManagement::with([
             'amenities',
