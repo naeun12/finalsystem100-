@@ -143,6 +143,12 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/room-details/{dormitory_id}/{tenant_id}', [roomdetailsController::class, 'roomDetails'])->name('room.details');
     Route::get('/room-selection/{dormitoryID}/{tenantID}', [selectionRoomController::class, 'SelectionRoom'])->name('room.selection');
     Route::get('/available-room/{dormitoryID}', [selectionRoomController::class, 'availableRooms'])->name('available.room');
+    Route::get('/occupied-room/{dormitoryID}', [selectionRoomController::class, 'occupiedRooms'])->name('occupied.room');
+    Route::get('/under-maintenace-room/{dormitoryID}', [selectionRoomController::class, 'maintenanceRooms'])->name('under.maintenace.room');
+    Route::get('/filter-price-range/{dormitoryID}', [selectionRoomController::class, 'selectedPriceRange']);
+    Route::get('/filter-gender/{dormitoryID}', [selectionRoomController::class, 'filterGender']);
+    Route::post('/reserved-room', [selectionRoomController::class, 'reservation'])->name('reserved.room');
+
     Route::get('/view-room-details/{id}', [selectionRoomController::class, 'ViewRoomDetails'])->name('view.room.details');
     Route::get('/booking-process/{roomId}/{tenantID}', [bookroomController::class, 'bookRoom'])->name('room.selection');
     Route::get('/get-room-details/{roomID}', [bookroomController::class, 'getRoom'])->name('get.room.details');

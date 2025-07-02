@@ -1,6 +1,6 @@
 @include('tenant.auth.partials.header')
 @if (session('tenant_logged_in'))
-    <nav class="navbar navbar-expand-lg navbar-light bg-light d-flex justify-items-end custom-navbar-border mb-1">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light d-flex justify-content-end custom-navbar-border mb-1">
         <div class="container-fluid  d-flex justify-content-between align-items-center">
             <!-- Logo -->
             <a class="navbar-brand d-flex align-items-center text-black" href="#">

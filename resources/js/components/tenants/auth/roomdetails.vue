@@ -802,7 +802,7 @@ export default {
             dormitory_id: '',
             dorm: null,
             idPicturePreview: '',
-            idPictureFile: '',
+            idPictureFile: null,
             openPaymentModel: false,
             openRoomModal: false,
             openRoomDetailsModal: false,
@@ -886,7 +886,8 @@ export default {
                 contactInfo: this.contactInfo,
                 age: this.age,
                 sex: this.sex,
-                idPicturePreview: this.idPicturePreview, // base64 or path
+                idPicturePreview: this.idPicturePreview,
+                idPictureFile: this.idPictureFile
             };
             localStorage.setItem('tenantInfo', JSON.stringify(data)); // ✅ Store it
 
@@ -929,6 +930,7 @@ export default {
 
             const formData = new FormData();
             formData.append('tenant_picture', this.idPictureFile);
+
             try {
                 const response = await axios.post('/tenant-idPicture', formData, {
                     withCredentials: true,
@@ -938,8 +940,19 @@ export default {
                     }
                 });
                 if (response.data.status === 'success') {
-                    this.getInformationData(); // ✅ Call before redirect
+                    const imageUrl = response.data.image_url;
 
+                    const data = {
+                        firstname: this.firstname,
+                        lastname: this.lastname,
+                        email: this.email,
+                        contactInfo: this.contactInfo,
+                        age: this.age,
+                        sex: this.sex,
+                        idPicturePreview: this.idPicturePreview,
+                        imageUrl: imageUrl
+                    };
+                    localStorage.setItem('tenantInfo', JSON.stringify(data));
                     this.$refs.loader.loading = false;
                     this.VisibleImagePostModal = false;
                     window.location.href = `/room-selection/${this.dormitory_id}/${this.tenant_id}`;
@@ -1097,15 +1110,15 @@ export default {
         handleidPictre(event) {
             const file = event.target.files[0];
             if (file) {
-                // Create object URL and revoke previous one if exists
                 if (this.idPicturePreview) {
-                    URL.revokeObjectURL(this.idPicturePreview);
+                    URL.revokeObjectURL(this.idPicturePreview); // Clear old preview
                 }
-                this.idPictureFile = file;
 
+                this.idPictureFile = file;
                 this.idPicturePreview = URL.createObjectURL(file);
             }
         },
+
 
         triggeridPictureImage() {
             if (this.$refs.idPicturesInput) {

@@ -120,14 +120,23 @@ class roomdetailsController extends Controller
             'tenant_picture.max'      => 'The image must not be larger than 2MB.',
            
         ]);
+        if ($request->hasFile('tenant_picture')) {
+            $image1 = $request->file('tenant_picture');
+            $image1Name = time() . '_1.' . $image1->getClientOriginalExtension();
+            $image1Path = $image1->storeAs('public/uploads/roomImages', $image1Name);
+            $mainImageUrl = asset('storage/uploads/roomImages/' . $image1Name);
+        }
         try
         {
-            return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success',       
+            'image_url' => $mainImageUrl,
+        ]);
         }
         catch(\Illuminate\Validation\ValidationException $e)
         {
             return response()->json([
                 'status' => 'error',
+                
                 'message' => $e->errors(),
             ], 422);
     
