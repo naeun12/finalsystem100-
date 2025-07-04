@@ -1,5 +1,6 @@
 <template>
     <Loader ref="loader" />
+    <Toastcomponents ref="toast" />
     <Modalconfirmation ref="modal" />
 
     <div class="container-fluid py-3 m-0">
@@ -84,7 +85,8 @@
                     </a>
                     <div class="d-flex gap-2 mt-2 mt-md-0">
                         <div v-if="chooseStatus === 'Occupied'">
-                            <button type="button" class="button-costumize btn-sm px-3" @click="reserveRoom(room)">
+                            <button type="button" class="button-costumize btn-sm px-3"
+                                @click="openReservationModal(room)">
                                 <i class="bi bi-calendar-check me-1"></i>Reserve this room
                             </button>
                         </div>
@@ -114,59 +116,48 @@
                         <h5 class="modal-title">Room Details</h5>
                         <button type="button" class="btn-close" @click="CloseRoomDetails()"></button>
                     </div>
-
-                    <!-- Modal Body -->
                     <div class="modal-body p-4">
-                        <div class="d-flex justify-content-center mb-3">
-                            <img :src="roomsDetail?.room_images" class="img-fluid rounded shadow-sm w-100"
+                        <!-- Image Preview -->
+                        <div class="text-center mb-4">
+                            <img :src="roomsDetail?.room_images" class="img-fluid rounded-3 shadow w-100"
                                 style="max-height: 300px; object-fit: cover;"
                                 :alt="`Image of ${roomsDetail?.room_type || 'Room'}`" />
                         </div>
 
-
-
-                        <div class="row g-4 ">
-
+                        <!-- Room Info -->
+                        <div class="row g-4">
+                            <!-- Left Column -->
                             <div class="col-md-6">
-                                <!-- Room Number -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">
-                                        <i class="bi bi-hash me-2 text-primary"></i>Room Number:
+                                <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
+                                    <label class="form-label fw-semibold text-secondary">
+                                        <i class="bi bi-hash me-2 text-primary"></i> Room Number
                                     </label>
-                                    <div class="p-2 border rounded bg-light text-break">
-                                        {{ roomsDetail?.room_number || 'N/A' }}
-                                    </div>
+                                    <div class="text-dark fw-medium">{{ roomsDetail?.room_number || 'N/A' }}</div>
                                 </div>
 
-                                <!-- Room Type -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">
-                                        <i class="bi bi-door-open-fill me-2 text-primary"></i>Room Type:
+                                <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
+                                    <label class="form-label fw-semibold text-secondary">
+                                        <i class="bi bi-door-open-fill me-2 text-primary"></i> Room Type
                                     </label>
-                                    <div class="p-2 border rounded bg-light text-break">
-                                        {{ roomsDetail?.room_type || 'N/A' }}
-                                    </div>
+                                    <div class="text-dark fw-medium">{{ roomsDetail?.room_type || 'N/A' }}</div>
                                 </div>
 
-                                <!-- Price -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">
-                                        <i class="bi bi-cash-coin me-2 text-primary"></i>Price:
+                                <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
+                                    <label class="form-label fw-semibold text-secondary">
+                                        <i class="bi bi-cash-coin me-2 text-primary"></i> Price
                                     </label>
-                                    <div class="p-2 border rounded bg-light text-break">
-                                        ₱{{ Number(roomsDetail?.price).toLocaleString() || '0' }}
-                                    </div>
+                                    <div class="text-dark fw-medium">₱{{ Number(roomsDetail?.price).toLocaleString() ||
+                                        '0' }}</div>
                                 </div>
                             </div>
 
-
+                            <!-- Right Column -->
                             <div class="col-md-6">
-                                <!-- Availability -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">
-                                        <i class="bi bi-clipboard-check me-2 text-primary"></i>Availability:
+                                <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
+                                    <label class="form-label fw-semibold text-secondary">
+                                        <i class="bi bi-clipboard-check me-2 text-primary"></i> Availability
                                     </label>
-                                    <div class="p-2 border rounded bg-light">
+                                    <div>
                                         <span class="badge px-3 py-2 fs-6" :class="roomsDetail?.availability === 'Available' ? 'bg-success' :
                                             roomsDetail?.availability === 'Occupied' ? 'bg-danger' :
                                                 'bg-warning text-dark'">
@@ -175,48 +166,132 @@
                                     </div>
                                 </div>
 
-                                <!-- Capacity -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">
-                                        <i class="bi bi-people-fill me-2 text-primary"></i>Tenant Name:
+                                <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
+                                    <label class="form-label fw-semibold text-secondary">
+                                        <i class="bi bi-people-fill me-2 text-primary"></i> Tenant Name
                                     </label>
-                                    <div class="p-2 border rounded bg-light text-break">
-                                        Lance Monsanto
-                                    </div>
+                                    <div class="text-dark fw-medium">Lance Monsanto</div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">
-                                        <i class="bi bi-calendar-event-fill me-2 text-primary"></i>Lease Expiration
-                                        Date:
+                                <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
+                                    <label class="form-label fw-semibold text-secondary">
+                                        <i class="bi bi-calendar-event-fill me-2 text-primary"></i> Lease Expiration
+                                        Date
                                     </label>
-                                    <div class="p-2 border rounded bg-light text-break">
-                                        June 23, 2025
-                                    </div>
+                                    <div class="text-dark fw-medium">June 23, 2025</div>
                                 </div>
-
                             </div>
-
-
-
                         </div>
                     </div>
 
-                    <!-- Modal Footer -->
+                    <!-- Modal Body -->
                     <div class="modal-footer justify-content-center">
                         <button type="button" class="button-costumize  px-4" @click="CloseRoomDetails()">OK</button>
                     </div>
                 </div>
+                <!-- Modal Footer -->
 
             </div>
         </div>
     </div>
+    <div v-if="reservationDetailsModal" class="modal fade show d-block w-100" tabindex="-1"
+        style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg rounded-4 overflow-hidden">
+
+                <!-- Modal Header -->
+                <div class="modal-header  text-white">
+                    <h5 class="modal-title">Room Details</h5>
+                    <button type="button" class="btn-close" @click="reservationDetailsModal = false"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4">
+                    <!-- Image Preview -->
+                    <div class="text-center mb-4">
+                        <img :src="this.imageUrl" class="img-fluid rounded-3 shadow w-100"
+                            style="max-height: 300px; object-fit: cover;"
+                            :alt="`Image of ${roomsDetail?.room_type || 'Room'}`" />
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="row g-4 mb-3">
+                        <div class="col-md-6">
+                            <div class="bg-light border rounded-3 p-3 h-100 shadow-sm">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-person-circle me-2 text-primary"></i> Firstname
+                                </label>
+                                <div class="text-dark fw-medium">{{ this.firstname || 'N/A' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light border rounded-3 p-3 h-100 shadow-sm">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-person-circle me-2 text-primary"></i> Lastname
+                                </label>
+                                <div class="text-dark fw-medium">{{ this.lastname || 'N/A' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-3">
+                        <div class="col-md-6">
+                            <div class="bg-light border rounded-3 p-3 h-100 shadow-sm">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-envelope me-2 text-primary"></i> Email
+                                </label>
+                                <div class="text-dark fw-medium text-break">{{ this.email || 'N/A' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light border rounded-3 p-3 h-100 shadow-sm">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-telephone me-2 text-primary"></i> Contact Number
+                                </label>
+                                <div class="text-dark fw-medium text-break">{{ this.contactInfo || 'N/A' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="bg-light border rounded-3 p-3 h-100 shadow-sm">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-calendar-check me-2 text-primary"></i> Age
+                                </label>
+                                <div class="text-dark fw-medium">{{ this.age || 'N/A' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light border rounded-3 p-3 h-100 shadow-sm">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-gender-ambiguous me-2 text-primary"></i> Gender
+                                </label>
+                                <div class="text-dark fw-medium">{{ this.sex || 'N/A' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal Footer -->
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="button-costumize  px-4" @click="reserveRoom()"> <i
+                            class="bi bi-check-circle-fill"></i>
+                        Reserved this room</button>
+                </div>
+            </div>
+
+        </div>
+        <Modalconfirmation ref="modal" />
+
+    </div>
+
 </template>
 <script>
 import axios from 'axios'
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
+import { toHandlers } from 'vue';
 export default {
     components: {
         Toastcomponents,
@@ -238,6 +313,7 @@ export default {
             room_id: '',
             tenant_id: '',
             openRoomDetailsModal: false,
+            reservationDetailsModal: false,
             roomsDetail: '',
             selectedRoomId: '',
             firstname: '',
@@ -384,19 +460,29 @@ export default {
                 if (response.data.status === 'success') {
                     this.roomsDetail = response.data.room;
                     this.openRoomDetailsModal = true;
-
                 }
             }
             catch (error) {
 
             }
         },
-        async reserveRoom(room) {
-
-            alert('sadas');
-            console.log('sadas', this.imageUrl);
+        openReservationModal(room) {
             this.room_id = room.room_id;
+            this.roomNu = room.room_number;
+            this.reservationDetailsModal = true;
+        },
+        async reserveRoom() {
+
             try {
+                const confirmed = await this.$refs.modal.show({
+                    title: `Are you sure you want to choose Room #${this.roomNu || this.room_id}?`,
+                    message: `This will reserve Room #${this.roomNu || this.room_id} for you.`,
+                    functionName: 'Confirm Room Selection'
+                });
+
+                if (!confirmed) {
+                    return;
+                }
                 const formdata = new FormData();
                 formdata.append('dormitory_id', this.dormitory_id);
                 formdata.append('room_id', this.room_id);
@@ -412,7 +498,8 @@ export default {
 
                 const response = await axios.post('/reserved-room', formdata);
                 if (response.data.status === 'success') {
-                    alert('success');
+                    this.$refs.toast.showToast(response.data.message, 'success');
+                    this.reservationDetailsModal = false;
                 }
 
             } catch (error) {

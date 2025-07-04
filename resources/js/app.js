@@ -19,7 +19,7 @@ import roomSelection from './components/tenants/auth/bookingProcess/roomSelectio
 import roomBook from './components/tenants/auth/bookingProcess/bookRoom.vue';
 import dormitoriesMap from './components/tenants/auth/dormitoriesmap.vue';
 import dormitories from './components/tenants/auth/dormitories.vue';
-
+import tenantmessage from './components/tenants/auth/tenantmessage.vue';
 
 import AOS from 'aos';
 import 'aos/dist/aos.css'
@@ -118,6 +118,11 @@ const roomBookController = document.querySelector('#roomBook');
 
 if (roomBookController) {
     createApp(roomBook).mount('#roomBook');
+}
+const tenantMessageController = document.querySelector('#tenantmessage');
+
+if (tenantMessageController) {
+    createApp(tenantmessage).mount('#tenantmessage');
 }
 
 

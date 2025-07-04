@@ -37,9 +37,12 @@
                             Dormitories</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-custom-link" href="#"><i class="bi bi-chat-left-text me-1"></i>
+                        <a class="nav-link nav-custom-link {{ request()->routeIs('tenant.message') ? 'active' : '' }}"
+                            href="{{ route('tenant.message', ['tenant_id' => session('tenant_id')]) }}"><i
+                                class="bi bi-chat-left-text me-1"></i>
                             Message</a>
                     </li>
+
                 </ul>
 
                 <!-- Right: Notifications + Avatar -->

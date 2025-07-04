@@ -1,4 +1,8 @@
 <template>
+    <Toastcomponents ref="toast" />
+    <Modalconfirmation ref="modal" />
+    <Loader ref="loader" />
+
     <div class="container py-3">
         <div class="row mb-1">
             <div class="col-md-6">
@@ -103,7 +107,7 @@
             v-if="isPaymentImage" @click="triggerPaymentImage">
 
             <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
-                @change="handlePaymentPictre" />
+                @change="handlePaymentPicture" />
 
             <!-- Payment Icon -->
             <div class="d-flex flex-column align-items-center text-center mb-3">
@@ -130,7 +134,7 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="btn  w-100 py-2 fw-semibold shadow-sm">
+        <button type="submit" class="btn  w-100 py-2 fw-semibold shadow-sm" @click="bookRoom">
             <i class="bi bi-calendar-check-fill me-2"></i>Make a Booking
         </button>
 
@@ -140,7 +144,15 @@
 
 <script>
 import axios from 'axios'
+import Toastcomponents from '@/components/Toastcomponents.vue';
+import Loader from '@/components/loader.vue';
+import Modalconfirmation from '@/components/modalconfirmation.vue';
 export default {
+    components: {
+        Toastcomponents,
+        Loader,
+        Modalconfirmation
+    },
     data() {
         return {
             firstname: '',
@@ -149,6 +161,9 @@ export default {
             contactInfo: '',
             age: '',
             sex: '',
+            tenant_id: '',
+            room_id: '',
+            dormitory_id: '',
             isPaymentImage: true,
             idPicturePreview: '',
             selectedRoomId: '',
@@ -161,11 +176,11 @@ export default {
                 bank_transer: '/images/tenant/allimagesResouces/bank-transfer-logo.png',
 
             },
-            room_id: '',
             payment_type: '',
             openPaymentModel: false,
             PaymentPicturePreview: '',
-            PaymentPictureFile: '',
+            PaymentPictureFile: null,
+            imageUrl: '',
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
         }
     },
@@ -179,7 +194,7 @@ export default {
 
             }
         },
-        handlePaymentPictre(event) {
+        handlePaymentPicture(event) {
             const file = event.target.files[0];
             if (file) {
                 // Create object URL and revoke previous one if exists
@@ -210,7 +225,53 @@ export default {
         },
         paymentTypeSelection(name) {
             this.payment_type = name;
-            console.log('sd', this.room_id);
+        },
+        async bookRoom() {
+            try {
+                const confirmed = await this.$refs.modal.show({
+                    title: `Confirm Booking`,
+                    message: `Are you sure you want to book Room ${this.roomsDetail?.room_number || 'N/A'} (${this.roomsDetail?.room_type || 'Room'})?`,
+                    functionName: 'Confirm Room Booking'
+                });
+
+
+                if (!confirmed) {
+                    return;
+                }
+                const formdata = new FormData();
+                formdata.append('room_id', this.room_id);
+                formdata.append('tenant_id', this.tenant_id);
+                formdata.append('firstname', this.firstname);
+                formdata.append('lastname', this.lastname);
+                formdata.append('contact_number', this.contactInfo);
+                formdata.append('email', this.email);
+                formdata.append('age', this.age);
+                formdata.append('payment_type', this.payment_type)
+                formdata.append('gender', this.sex);
+                formdata.append('payment_image', this.PaymentPictureFile)
+                formdata.append('studentpicture_id', this.imageUrl);
+
+                const response = await axios.post('/book-room', formdata);
+                if (response.data.status === 'success') {
+                    this.$refs.toast.showToast(response.data.message, 'success');
+                    this.reservationDetailsModal = false;
+                }
+
+
+            } catch (error) {
+                if (error.response && error.response.status === 422) {
+                    const validationErrors = error.response.data.errors;
+                    let message = "";
+                    for (const key in validationErrors) {
+                        message += `${validationErrors[key][0]}\n`;  // ✅ Will show your custom message
+                    }
+                    this.$refs.toast.showToast(message.trim(), 'danger');
+                } else {
+                    this.$refs.toast.showToast('Something went wrong. Please try again.', 'danger');
+                }
+            }
+
+
         },
     },
     mounted() {
@@ -224,11 +285,10 @@ export default {
             this.age = parsed.age;
             this.sex = parsed.sex;
             this.idPicturePreview = parsed.idPicturePreview;
-            this.selectedRoomId = parsed.selectedRoomId;
-
+            this.imageUrl = parsed.imageUrl;
         }
         const element = document.getElementById('roomBook');
-        // this.dormitory_id = element.dataset.dormId;
+        this.dormitory_id = element.dataset.dormId;
         this.room_id = element.dataset.roomId;
         this.tenant_id = element.dataset.tenantId;
         this.getRoomDetails();

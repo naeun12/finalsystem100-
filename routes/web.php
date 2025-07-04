@@ -26,12 +26,9 @@ use App\Http\Controllers\tenant\auth\dormitoriesmapcontroller;
 use App\Http\Controllers\tenant\auth\dormitories;
 use App\Http\Controllers\tenant\auth\bookingprocess\selectionRoomController;
 use App\Http\Controllers\tenant\auth\bookingprocess\bookroomController;
+use App\Http\Controllers\tenant\auth\tenantmessageController;
+use App\Models\tenant\messageModel;
 use App\Models\Landlord;
-
-
-
-
-
 use App\Http\Middleware\LandlordAuth;
 
 
@@ -148,16 +145,14 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/filter-price-range/{dormitoryID}', [selectionRoomController::class, 'selectedPriceRange']);
     Route::get('/filter-gender/{dormitoryID}', [selectionRoomController::class, 'filterGender']);
     Route::post('/reserved-room', [selectionRoomController::class, 'reservation'])->name('reserved.room');
-
     Route::get('/view-room-details/{id}', [selectionRoomController::class, 'ViewRoomDetails'])->name('view.room.details');
-    Route::get('/booking-process/{roomId}/{tenantID}', [bookroomController::class, 'bookRoom'])->name('room.selection');
+    Route::get('/booking-process/{roomId}/{tenantID}', [bookroomController::class, 'bookRoomPage'])->name('room.selection');
     Route::get('/get-room-details/{roomID}', [bookroomController::class, 'getRoom'])->name('get.room.details');
-
+    Route::post('/book-room',[bookroomController::class,'bookingaRoom']);
     Route::post('/tenant-information', [roomdetailsController::class, 'tenantInformation'])->name('tenant.information');
     Route::post('/tenant-idPicture', [roomdetailsController::class, 'uploadTenantId'])->name('tenant.idPicture');
 
     Route::get('/dorm-details', [roomdetailsController::class, 'ViewDorms'])->name('dorm.details');
-    Route::post('/book-room', [roomdetailsController::class, 'bookaroom'])->name('book.room');
     Route::get('/view-room-details/{id}', [roomdetailsController::class, 'ViewRoomDetails'])->name('view.room.details');
     //map dormitories page
     Route::get('/dorm-map{tenant_id}', [dormitoriesmapcontroller::class, 'dormitoriesMap'])->name('dorm.map');
@@ -178,7 +173,13 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/dormitories/filter', [dormitories::class, 'filtergenderpriceDormitories']);
     Route::post('/filterpricegender-dormitories', [dormitories::class, 'filterpriceGenderDormitories']);
 
-    
+    //tenant message
+    Route::get('/tenant-message/{tenant_id}', [tenantmessageController::class, 'tenantmessageIndex'])->name('tenant.message');
+    Route::get('/landlord-tenant-message/{tenant_id}/{landlord_id}', [tenantmessageController::class, 'landlordtenantmessageIndex'])->name('landlord.tenant.message');
+
+    Route::post('/tenant/send-message', [tenantmessageController::class, 'sendMessage'])->name('tenant.send.message');
+    Route::get('/tenant/messages/{tenant_id}/{receiver_id}', [tenantmessageController::class, 'getMessages']);
+    Route::get('/landlord-information', [tenantmessageController::class, 'getLandlordInformation']);
 
 });
 

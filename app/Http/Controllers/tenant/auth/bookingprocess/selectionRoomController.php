@@ -105,7 +105,7 @@ public function filterGender(Request $request, $dormitoryID)
     
             return response()->json([
                 'status' => 'success',
-                'message' => 'Reservation created successfully.',
+                'message' => 'Room reserved successfully. Waiting for landlord confirmation.',
                 'data' => $reservation
             ]);
         } catch (\Exception $e) {

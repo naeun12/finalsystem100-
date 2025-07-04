@@ -17,6 +17,5 @@
         <script>
             // Get references to the sidebar and toggle button
         </script>
-
-
-        @include('landlord.auth.partials.footer')
+    </div>
+    </ @include('landlord.auth.partials.footer')

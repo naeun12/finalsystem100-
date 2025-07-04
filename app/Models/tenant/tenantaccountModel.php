@@ -47,6 +47,16 @@ class tenantaccountModel extends Authenticatable
         'password_hash', // hide your password field properly
         'remember_token',
     ];
+    public function sentNotifications()
+{
+    return $this->morphMany(Notification::class, 'sender');
+}
+
+public function receivedNotifications()
+{
+    return $this->morphMany(Notification::class, 'receiver');
+}
+
 
     // If you want to use this model for authentication
     // Make sure you extend Authenticatable instead of Model
