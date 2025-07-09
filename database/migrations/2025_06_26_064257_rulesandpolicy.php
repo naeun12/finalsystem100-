@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('rules_and_policies', function (Blueprint $table) {
+        Schema::create('rulesAndPolicies', function (Blueprint $table) {
             $table->id();
-            $table->string('rules_name');
+            $table->string('rulesName');
             $table->timestamps();
         });
     }
@@ -23,6 +23,6 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('rules_and_policies');
+        Schema::dropIfExists('rulesAndPolicies');
     }
 };

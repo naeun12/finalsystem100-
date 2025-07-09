@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\tenant\auth\bookingprocess;
 
 use App\Http\Controllers\Controller;
-use App\Models\landlord\landlordRoomModel;
-use App\Models\landlord\bookingModel;
+use App\Models\landlord\roomModel;
+use App\Models\tenant\bookingModel;
 
 use Illuminate\Http\Request;
 
@@ -16,7 +16,7 @@ class bookroomController extends Controller
     }
     public function getRoom($roomID)
     {
-        $room = landlordRoomModel::where('room_id',$roomID)->first();
+        $room = roomModel::where('roomID',$roomID)->first();
         return response()->json([
             'status' => 'success',
             'room' => $room,
@@ -56,13 +56,13 @@ class bookroomController extends Controller
                 'fktenantID'         => $request->tenant_id,
                 'firstname'          => $request->firstname,
                 'lastname'           => $request->lastname,
-                'contact_number'     => $request->contact_number,
-                'contact_email'      => $request->email,
+                'contactNumber'     => $request->contact_number,
+                'contactEmail'      => $request->email,
                 'age'                => $request->age,
                 'gender'             => $request->gender,
-                'payment_type'       => $request->payment_type,
-                'payment_image'      => $mainImageUrl,
-                'studentpicture_id'  => $request->studentpicture_id,
+                'paymentType'       => $request->payment_type,
+                'paymentImage'      => $mainImageUrl,
+                'studentpictureId'  => $request->studentpicture_id,
                 'status'             => 'pending',
             ]);
     

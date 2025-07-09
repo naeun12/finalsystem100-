@@ -83,6 +83,7 @@ export default {
                     });
                     if (response.data.status === "success") {
                         const userId = response.data.tenant.id;
+
                         const userName = response.data.tenant.firstname;
                         localStorage.setItem('tenant', JSON.stringify(response.data.tenant));
                         window.location.href = `/homepage/${userId}`;

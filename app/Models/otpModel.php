@@ -1,27 +1,27 @@
 <?php
 
-namespace App\Models\tenant;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class OtpModels extends Model
+class otpModel extends Model
 {
       
     use HasFactory, SoftDeletes;
 
     protected $table = 'otp'; 
-    protected $primaryKey = 'otp_id'; 
+    protected $primaryKey = 'otpID'; 
     public $timestamps = true; 
     protected $fillable = [
         'email',
         'otpCode',
-        'otpExpires_at',
+        'otpExpiresAt',
         'role'
 
     ];
-        protected $dates = ['otpExpires_at', 'deleted_at'];
+        protected $dates = ['otpExpiresAt', 'deleted_at'];
 
 
 

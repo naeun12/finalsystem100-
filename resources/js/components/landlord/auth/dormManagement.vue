@@ -58,12 +58,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="dorm in dorms" :key="dorm.dorm_id" class="text-center">
-                        <td>{{ dorm.dorm_id }}</td>
-                        <td class="text-truncate" style="max-width: 150px;">{{ dorm.dorm_name }}</td>
+                    <tr v-for="dorm in dorms" :key="dorm.dormID" class="text-center">
+                        <td>{{ dorm.dormID }}</td>
+                        <td class="text-truncate" style="max-width: 150px;">{{ dorm.dormName }}</td>
                         <td class="text-truncate" style="max-width: 200px;">{{ dorm.address }}</td>
-                        <td class="text-truncate" style="max-width: 200px;">{{ dorm.contact_email }}</td>
-                        <td>{{ dorm.contact_phone }}</td>
+                        <td class="text-truncate" style="max-width: 200px;">{{ dorm.contactEmail }}</td>
+                        <td>{{ dorm.contactPhone }}</td>
                         <td>
                             <span class="badge text-uppercase" :class="{
                                 'bg-success': dorm.availability === 'Available',
@@ -74,16 +74,16 @@
                             </span>
                         </td>
 
-                        <td>{{ dorm.total_rooms }}</td>
+                        <td>{{ dorm.totalRooms }}</td>
                         <td>
                             <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                <button class="btn btn-sm btn-outline-success" @click="viewDorm(dorm.dorm_id)">
+                                <button class="btn btn-sm btn-outline-success" @click="viewDorm(dorm.dormID)">
                                     <i class="fas fa-eye me-1"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-primary" @click="editDorm(dorm.dorm_id)">
+                                <button class="btn btn-sm btn-outline-primary" @click="editDorm(dorm.dormID)">
                                     <i class="fas fa-edit me-1"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" @click="deleteDorm(dorm.dorm_id)">
+                                <button class="btn btn-sm btn-outline-danger" @click="deleteDorm(dorm.dormID)">
                                     <i class="fas fa-trash me-1"></i>
                                 </button>
                             </div>
@@ -348,7 +348,7 @@
                                 placeholder="Enter rule or policy" />
                             <label :for="'rule' + index">Rule/Policy {{ index + 1 }}</label>
                             <span class="text-danger mb-3 " v-if="errors.rules">{{ errors.rules[0]
-                            }}</span>
+                                }}</span>
 
                         </div>
 
@@ -399,10 +399,10 @@
                                 <div class="col-md-4">
                                     <div class="form-floating mb-2">
                                         <input type="text" class="form-control" id="dormName"
-                                            v-model="editDormData.dorm_name" placeholder="Dorm Name">
+                                            v-model="editDormData.dormName" placeholder="Dorm Name">
                                         <label for="dormName">Dorm Name</label>
-                                        <span class="text-danger small" v-if="errors.editDormData?.dorm_name">
-                                            {{ errors.editDormData.dorm_name[0] }}
+                                        <span class="text-danger small" v-if="errors.editDormData?.dormName">
+                                            {{ errors.editDormData.dormName[0] }}
                                         </span>
                                     </div>
 
@@ -458,7 +458,7 @@
                                             class="row align-items-center py-2 border-bottom text-center">
                                             <div class="col">
                                                 <input type="text" readonly class="form-control text-center"
-                                                    v-model="amenity.name" placeholder="Amenity name" />
+                                                    v-model="amenity.aminityName" placeholder="Amenity name" />
                                             </div>
                                             <div class="col-3 d-flex justify-content-center gap-2">
                                                 <button class="btn btn-sm btn-outline-danger"
@@ -474,29 +474,29 @@
                                 <div class="col-md-4">
                                     <div class="form-floating mb-2">
                                         <input type="email" class="form-control" id="contact_email"
-                                            v-model="editDormData.contact_email" placeholder="Contact Email">
+                                            v-model="editDormData.contactEmail" placeholder="Contact Email">
                                         <label for="contact_email">Contact Email</label>
-                                        <span class="text-danger small" v-if="errors.editDormData?.contact_email">
-                                            {{ errors.editDormData.contact_email[0] }}
+                                        <span class="text-danger small" v-if="errors.editDormData?.contactEmail">
+                                            {{ errors.editDormData.contactEmail[0] }}
                                         </span>
                                     </div>
 
 
                                     <div class="form-floating mb-2">
                                         <input type="tel" class="form-control" id="contact_phone"
-                                            v-model="editDormData.contact_phone" placeholder="Contact Phone">
+                                            v-model="editDormData.contactPhone" placeholder="Contact Phone">
                                         <label for="contact_phone">Contact Phone</label>
-                                        <span class="text-danger small" v-if="errors.editDormData?.contact_phone">
-                                            {{ errors.editDormData.contact_phone[0] }}
+                                        <span class="text-danger small" v-if="errors.editDormData?.contactPhone">
+                                            {{ errors.editDormData.contactPhone[0] }}
                                         </span>
                                     </div>
                                     <div class="form-floating mb-3 mt-3">
                                         <input type="text" class="form-control" id="building_type"
-                                            placeholder="Enter Building Type" v-model="editDormData.building_type">
+                                            placeholder="Enter Building Type" v-model="editDormData.buildingType">
                                         <label for="building_type">Building Type</label>
                                     </div>
-                                    <span class="text-danger mb-3" v-if="errors.editDormData?.building_type">{{
-                                        errors.editDormData.building_type[0] }}</span>
+                                    <span class="text-danger mb-3" v-if="errors.editDormData?.buildingType">{{
+                                        errors.editDormData.buildingType[0] }}</span>
                                     <div class="form-floating mb-3 mt-3">
                                         <select class="form-select" id="availability"
                                             v-model="editDormData.availability">
@@ -510,7 +510,7 @@
                                         errors.editDormData.availability[0] }}</span>
                                     <div class="form-floating mb-3 mt-3">
                                         <select class="form-select" id="occupancy_type"
-                                            v-model="editDormData.occupancy_type">
+                                            v-model="editDormData.occupancyType">
                                             <option disabled value="">Select Occupancy Type</option>
                                             <option value="Male only">Male only</option>
                                             <option value="Female only">Female only</option>
@@ -521,8 +521,8 @@
                                         </select>
                                         <label for="occupancy_type">Occupancy Type</label>
                                     </div>
-                                    <span class="text-danger mb-3" v-if="errors.editDormData?.occupancy_type">{{
-                                        errors.editDormData.occupancy_type[0] }}</span>
+                                    <span class="text-danger mb-3" v-if="errors.editDormData?.occupancyType">{{
+                                        errors.editDormData.occupancyType[0] }}</span>
                                     <div class="mt-2"><span>Number of Rooms</span>
                                         <div class="form-floating mb-2">
                                             <div class="mb-3 mt-3 d-flex align-items-center gap-2">
@@ -531,7 +531,7 @@
                                                     @click="updatedecreamnentRooms()"><span
                                                         class="fw-bold">-</span></button>
                                                 <input type="text" class="form-control w-100 text-center"
-                                                    id="total_rooms" placeholder="0" v-model="editDormData.total_rooms"
+                                                    id="total_rooms" placeholder="0" v-model="editDormData.totalRooms"
                                                     readonly>
                                                 <button type="button" class="btn btn-outline-success"
                                                     @click="updateincreamentRooms()"><span
@@ -575,7 +575,7 @@
                                             class="row align-items-center py-2 border-bottom text-center">
                                             <div class="col">
                                                 <input type="text" readonly class="form-control text-center"
-                                                    v-model="rule.rules_name" placeholder="Rule name" />
+                                                    v-model="rule.rulesName" placeholder="Rule name" />
                                             </div>
                                             <div class="col-3 d-flex justify-content-center gap-2">
                                                 <button class="btn btn-sm btn-outline-danger" type="button"
@@ -642,21 +642,21 @@
 
                         <!-- Images Section -->
                         <div class="row mb-4 g-3">
-                            <div class="col-12 col-md-4" v-if="selectedDorm?.images?.main_image">
+                            <div class="col-12 col-md-4" v-if="selectedDorm?.images?.mainImage">
                                 <div class="image-wrapper">
-                                    <img :src="selectedDorm.images.main_image"
+                                    <img :src="selectedDorm.images.mainImage"
                                         class="img-fluid rounded shadow-sm uniform-image" alt="Main Image">
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4" v-if="selectedDorm?.images?.secondary_image">
+                            <div class="col-12 col-md-4" v-if="selectedDorm?.images?.secondaryImage">
                                 <div class="image-wrapper">
-                                    <img :src="selectedDorm.images.secondary_image"
+                                    <img :src="selectedDorm.images.secondaryImage"
                                         class="img-fluid rounded shadow-sm uniform-image" alt="Secondary Image">
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4" v-if="selectedDorm?.images?.third_image">
+                            <div class="col-12 col-md-4" v-if="selectedDorm?.images?.thirdImage">
                                 <div class="image-wrapper">
-                                    <img :src="selectedDorm.images.third_image"
+                                    <img :src="selectedDorm.images.thirdImage"
                                         class="img-fluid rounded shadow-sm uniform-image" alt="Third Image">
                                 </div>
                             </div>
@@ -669,7 +669,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Dorm Name:</label>
-                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.dorm_name }}
+                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.dormName }}
                                     </div>
                                 </div>
                                 <div class="mb-3">
@@ -681,8 +681,8 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Email:</label>
-                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contact_email
-                                    }}</div>
+                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactEmail
+                                        }}</div>
                                 </div>
 
                                 <div class="mb-3">
@@ -696,7 +696,7 @@
                                         <span v-for="amenity in selectedDorm?.amenities" :key="amenity.id"
                                             class="badge bg-primary text-white px-3 py-2 shadow-sm"
                                             style="font-size: 0.9rem;">
-                                            {{ amenity.name }}
+                                            {{ amenity.aminityName }}
                                         </span>
                                     </div>
                                 </div>
@@ -706,7 +706,7 @@
                                         <span v-for="rule in selectedDorm?.rules_and_policy" :key="rule.id"
                                             class="badge bg-primary text-white px-3 py-2 shadow-sm"
                                             style="font-size: 0.9rem;">
-                                            {{ rule.rules_name }}
+                                            {{ rule.rulesName }}
                                         </span>
                                     </div>
                                 </div>
@@ -717,12 +717,12 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Phone:</label>
-                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contact_phone
-                                    }}</div>
+                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactPhone
+                                        }}</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Total Rooms:</label>
-                                    <div class="p-2 border rounded bg-light">{{ selectedDorm?.total_rooms }}</div>
+                                    <div class="p-2 border rounded bg-light">{{ selectedDorm?.totalRooms }}</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Registration Date:</label>
@@ -733,14 +733,14 @@
                                     <label class="form-label fw-bold">Occupancy Type:</label>
                                     <div class="p-2 border rounded bg-light text-break"
                                         style="max-height: 120px; overflow-y: auto;">
-                                        {{ selectedDorm?.occupancy_type }}
+                                        {{ selectedDorm?.occupancyType }}
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Building type:</label>
                                     <div class="p-2 border rounded bg-light text-break"
                                         style="max-height: 120px; overflow-y: auto;">
-                                        {{ selectedDorm?.building_type }}
+                                        {{ selectedDorm?.buildingType }}
                                     </div>
                                 </div>
                             </div>
@@ -1112,15 +1112,15 @@ export default {
             currntamenitiesId: null,
             editDormData: {
                 dorm_id: null,
-                dorm_name: "",
+                dormName: '',
                 address: "",
                 description: "",
-                total_rooms: "",
-                contact_email: "",
-                contact_phone: "",
+                totalRooms: "",
+                contactEmail: "",
+                contactPhone: "",
                 availability: "",
-                occupancy_type: "",
-                building_type: "",
+                occupancyType: "",
+                buildingType: "",
                 latitude: "",
                 longitude: "",
                 newAmenities: '',
@@ -1246,9 +1246,10 @@ export default {
         },
         //view Dorm data
         async viewDorm(dormId) {
+            alert('sadas', dormId);
             this.$refs.loader.loading = true;
             try {
-                const response = await axios.get(`/ViewDorm/${dormId}`, {
+                const response = await axios.get(`/view-dorm/${dormId}`, {
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
@@ -1917,30 +1918,25 @@ export default {
                 }
             }
         },
-
         //end adding function
-
-
-
-
         //updating dorm functions
         async editDorm(dormId) {
             try {
-                const response = await axios.get(`/ViewDorm/${dormId}`);
+                const response = await axios.get(`/view-dorm/${dormId}`);
                 if (response.data.status === "success") {
                     this.editDormData = {
                         ...response.data.dorm,
                         dorm_id: dormId,
-                        roomImage1Preview: response.data.dorm.images?.main_image || null,
-                        roomImage1: response.data.dorm.images?.main_image || null,
+                        roomImage1Preview: response.data.dorm.images?.mainImage || null,
+                        roomImage1: response.data.dorm.images?.mainImage || null,
                         roomImage1File: null,
-                        roomImage2Preview: response.data.dorm.images?.secondary_image || null,
-                        roomImage2: response.data.dorm.images?.secondary_image || null,
+                        roomImage2Preview: response.data.dorm.images?.secondaryImage || null,
+                        roomImage2: response.data.dorm.images?.secondaryImage || null,
                         roomImage2File: null,
-                        roomImage3Preview: response.data.dorm.images?.third_image || null,
-                        roomImage3: response.data.dorm.images?.third_image || null,
+                        roomImage3Preview: response.data.dorm.images?.thirdImage || null,
+                        roomImage3: response.data.dorm.images?.thirdImage || null,
                         roomImage3File: null,
-                        image_id: response.data.dorm.images?.images_id || null,
+                        image_id: response.data.dorm.images?.imagesID || null,
                     };
                     this.VisibleUpdateModal = true;
                 } else {
@@ -1959,17 +1955,17 @@ export default {
             // Hide spinner
 
             const formData = new FormData();
-            formData.append('dorm_name', this.editDormData.dorm_name);
+            formData.append('dorm_name', this.editDormData.dormName);
             formData.append('address', this.editDormData.address);
             formData.append('description', this.editDormData.description);
             formData.append('latitude', this.editDormData.latitude);
             formData.append('longitude', this.editDormData.longitude);
-            formData.append('total_rooms', this.editDormData.total_rooms);
-            formData.append('contact_email', this.editDormData.contact_email);
-            formData.append('contact_phone', this.editDormData.contact_phone);
+            formData.append('total_rooms', this.editDormData.totalRooms);
+            formData.append('contact_email', this.editDormData.contactEmail);
+            formData.append('contact_phone', this.editDormData.contactPhone);
             formData.append('availability', this.editDormData.availability);
-            formData.append('occupancy_type', this.editDormData.occupancy_type);
-            formData.append('building_type', this.editDormData.building_type);
+            formData.append('occupancy_type', this.editDormData.occupancyType);
+            formData.append('building_type', this.editDormData.buildingType);
             try {
                 const confirmed = await this.$refs.modal.show({
                     title: 'Update Dorm',
@@ -2019,14 +2015,14 @@ export default {
             }
         },
         updateincreamentRooms() {
-            this.editDormData.total_rooms++;
+            this.editDormData.totalRooms++;
         },
         updatedecreamnentRooms() {
-            if (this.editDormData.total_rooms <= 1) {
+            if (this.editDormData.totalRooms <= 1) {
 
             }
             else {
-                this.editDormData.total_rooms--;
+                this.editDormData.totalRooms--;
             }
         },
         async editUploadImages1() {

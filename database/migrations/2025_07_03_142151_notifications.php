@@ -13,18 +13,14 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('sender_id');        // ID of who sent the notification
-            $table->string('sender_type');                  // 'landlord' or 'tenant'
-        
-            $table->unsignedBigInteger('receiver_id');      // ID of who will receive
-            $table->string('receiver_type');                // 'landlord' or 'tenant'
-        
+            $table->unsignedBigInteger('senderID');        // ID of who sent the notification
+            $table->string('senderType');                  // 'landlord' or 'tenant'
+            $table->unsignedBigInteger('receiverID');      // ID of who will receive
+            $table->string('receiverType');                // 'landlord' or 'tenant'
             $table->string('title');                        // Notification title
             $table->text('message');                        // Notification message
-        
-            $table->boolean('is_read')->default(false);     // Read status
-            $table->timestamp('read_at')->nullable();       // Optional read timestamp
-        
+            $table->boolean('isRead')->default(false);     // Read status
+            $table->timestamp('readAt')->nullable();       // Optional read timestamp
             $table->timestamps();
         });
     }

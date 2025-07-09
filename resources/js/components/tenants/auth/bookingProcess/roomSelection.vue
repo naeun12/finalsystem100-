@@ -38,7 +38,7 @@
             v-for="(room, index) in visibleRooms" :key="room.room_id">
             <!-- Image Section -->
             <div class="dorm-image" style="width: 35%; min-width: 200px;">
-                <img :src="room.room_images" :alt="`Image of ${room.dorm?.dorm_name || 'Dorm'}`"
+                <img :src="room.roomImages" :alt="`Image of ${room.dorm?.dorm_name || 'Dorm'}`"
                     style="width: 100%; height: 100%; object-fit: cover;" />
             </div>
 
@@ -48,7 +48,7 @@
                 <div class="text-black px-3 py-1">
                     <h5 class="mb-0 fw-semibold">
                         <i class="bi bi-house-door-fill me-2 text-primary"></i>{{
-                            room.listing_type || 'Available Dorm' }}
+                            room.listingType || 'Available Dorm' }}
                     </h5>
                 </div>
 
@@ -56,11 +56,11 @@
                 <div class="d-flex flex-wrap gap-2 mt-2">
                     <span class="badge bg-light border text-dark">
                         <i class="bi bi-aspect-ratio me-1 text-secondary"></i>
-                        {{ room.area_sqm || 'N/A' }} sqm
+                        {{ room.areaSqm || 'N/A' }} sqm
                     </span>
                     <span class="badge bg-light border text-dark">
                         <i class="bi bi-gender-ambiguous me-1 text-secondary"></i>
-                        {{ room.gender_preference || 'N/A' }}
+                        {{ room.genderPreference || 'N/A' }}
                     </span>
                     <span class="badge bg-light border text-dark">
                         <i class="bi bi-lamp-fill me-1 text-secondary"></i> {{
@@ -79,7 +79,7 @@
 
                 <!-- Action Buttons -->
                 <div class="d-flex justify-content-between align-items-center mt-3 mb-2 flex-wrap">
-                    <a @click="openRoomDetails(room.room_id)"
+                    <a @click="openRoomDetails(room.roomID)"
                         class="text-primary text-decoration-none px-4 py-2 fw-semibold" style="cursor: pointer;">
                         <i class="bi bi-eye me-1"></i>View Details
                     </a>
@@ -119,7 +119,7 @@
                     <div class="modal-body p-4">
                         <!-- Image Preview -->
                         <div class="text-center mb-4">
-                            <img :src="roomsDetail?.room_images" class="img-fluid rounded-3 shadow w-100"
+                            <img :src="roomsDetail?.roomImages" class="img-fluid rounded-3 shadow w-100"
                                 style="max-height: 300px; object-fit: cover;"
                                 :alt="`Image of ${roomsDetail?.room_type || 'Room'}`" />
                         </div>
@@ -132,14 +132,14 @@
                                     <label class="form-label fw-semibold text-secondary">
                                         <i class="bi bi-hash me-2 text-primary"></i> Room Number
                                     </label>
-                                    <div class="text-dark fw-medium">{{ roomsDetail?.room_number || 'N/A' }}</div>
+                                    <div class="text-dark fw-medium">{{ roomsDetail?.roomNumber || 'N/A' }}</div>
                                 </div>
 
                                 <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
                                     <label class="form-label fw-semibold text-secondary">
                                         <i class="bi bi-door-open-fill me-2 text-primary"></i> Room Type
                                     </label>
-                                    <div class="text-dark fw-medium">{{ roomsDetail?.room_type || 'N/A' }}</div>
+                                    <div class="text-dark fw-medium">{{ roomsDetail?.roomType || 'N/A' }}</div>
                                 </div>
 
                                 <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
@@ -467,8 +467,8 @@ export default {
             }
         },
         openReservationModal(room) {
-            this.room_id = room.room_id;
-            this.roomNu = room.room_number;
+            this.room_id = room.roomID;
+            this.roomNu = room.roomNumber;
             this.reservationDetailsModal = true;
         },
         async reserveRoom() {
@@ -514,15 +514,15 @@ export default {
         },
         async bookRoom(room) {
             const confirmed = await this.$refs.modal.show({
-                title: `Are you sure you want to choose Room #${room.room_number || room.room_id}?`,
-                message: `This will reserve Room #${room.room_number || room.room_id} for you.`,
+                title: `Are you sure you want to choose Room #${room.room_number || room.roomID}?`,
+                message: `This will reserve Room #${room.room_number || room.roomID} for you.`,
                 functionName: 'Confirm Room Selection'
             });
 
             if (!confirmed) {
                 return;
             }
-            this.room_id = room.room_id;
+            this.room_id = room.roomID;
 
             this.getInformationData(); // ✅ Call before redirect
             window.location.href = `/booking-process/${this.room_id}/${this.tenant_id}`;

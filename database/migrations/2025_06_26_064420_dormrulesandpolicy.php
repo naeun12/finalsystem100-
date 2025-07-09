@@ -8,24 +8,21 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('rules_and_policy_dorm', function (Blueprint $table) {
+        Schema::create('rulesAndPolicyDorm', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('fkdorm_id');
-            $table->unsignedBigInteger('fkrules_id');
+            $table->unsignedBigInteger('fkdormID');
+            $table->unsignedBigInteger('fkruleID');
             $table->timestamps();
-            // Foreign key constraints
-            $table->foreign('fkdorm_id')->references('dorm_id')->on('dorms')->onDelete('cascade');
-            $table->foreign('fkrules_id')->references('id')->on('rules_and_policies')->onDelete('cascade');
-
-
-            $table->unique(['fkdorm_id', 'fkrules_id']); // prevent duplicates
+            $table->foreign('fkdormID')->references('dormID')->on('dorms')->onDelete('cascade');
+            $table->foreign('fkruleID')->references('id')->on('rulesAndPolicies')->onDelete('cascade');
+            $table->unique(['fkdormID', 'fkruleID']); // prevent duplicates
         });
     }
 
 
     public function down()
     {
-        Schema::dropIfExists('rules_and_policy_dorm');
+        Schema::dropIfExists('rulesAndPolicyDorm');
     }
 };
 

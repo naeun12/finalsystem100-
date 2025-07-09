@@ -15,7 +15,7 @@
         </div>
 
         <script>
-            window.landlordId = @json(session('landlord_id'));
+            window.landlordId = @json(session('landlordID'));
         </script>
 
 

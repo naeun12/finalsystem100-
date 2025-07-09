@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Models\tenant;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\conversationModel; // 👈 import
 use App\Models\tenant\messageModel as Message; // 👈 import self
-use App\Models\tenant\tenantaccountModel;
-use App\Models\landlord\landlordAccountModel;
+use App\Models\tenant\tenantModel;
+use App\Models\landlord\landlordModel;
 
 class messageModel extends Model
 {
@@ -16,20 +16,20 @@ class messageModel extends Model
     protected $table = 'messages';
 
     protected $fillable = [
-        'conversation_id',
-        'sender_id',
-        'sender_role',
-        'receiver_id',
-        'receiver_role',
+        'conversationID',
+        'senderID',
+        'senderRole',
+        'receiverID',
+        'receiverRole',
         'message',
-        'reply_to_id',
-        'is_read',
-        'sent_at',
+        'replyToId',
+        'isRead',
+        'sentAt',
     ];
 
     protected $casts = [
-        'is_read' => 'boolean',
-        'sent_at' => 'datetime',
+        'isRead' => 'boolean',
+        'sentAt' => 'datetime',
     ];
 
     /**
@@ -37,11 +37,11 @@ class messageModel extends Model
      */
     public function getActualSenderAttribute()
     {
-        switch ($this->sender_role) {
+        switch ($this->senderRole) {
             case 'tenant':
-                return tenantaccountModel::find($this->sender_id);
+                return tenantModel::find($this->senderID);
             case 'landlord':
-                return landlordAccountModel::find($this->sender_id);
+                return landlordAccountModel::find($this->senderID);
             default:
                 return null;
         }
@@ -49,16 +49,17 @@ class messageModel extends Model
 
     public function conversation()
     {
-        return $this->belongsTo(conversationModel::class, 'conversation_id');
+        return $this->belongsTo(conversationModel::class, 'conversationID');
     }
 
     public function replyTo()
     {
-        return $this->belongsTo(Message::class, 'reply_to_id');
+        return $this->belongsTo(Message::class, 'replyToId');
     }
 
     public function replies()
     {
-        return $this->hasMany(Message::class, 'reply_to_id');
+        return $this->hasMany(Message::class, 'replyToId');
     }
+
 }

@@ -10,7 +10,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 
 
-class tenantaccountModel extends Authenticatable
+class tenantModel extends Authenticatable
 {
     use HasApiTokens,HasFactory, Notifiable;
 
@@ -18,14 +18,14 @@ class tenantaccountModel extends Authenticatable
 
     protected $table = 'tenants'; 
 
-    protected $primaryKey = 'tenant_id'; 
+    protected $primaryKey = 'tenantID'; 
     protected $keyType = 'string';
     public $incrementing = false;
 
     public $timestamps = true;
 
     protected $fillable = [
-        'tenant_id', 
+        'tenantID', 
         'firstname',
         'lastname',
         'password',

@@ -75,11 +75,11 @@ return [
         ],
         'landlords' => [
         'driver' => 'eloquent',
-        'model' => App\Models\landlord\landlordAccountModel::class,
+        'model' => App\Models\landlord\landlordModel::class,
     ],
     'tenants' => [
         'driver' => 'eloquent',
-        'model' => App\Models\tenant\tenantaccountModel::class,
+        'model' => App\Models\tenant\tenantModel::class,
     ],
 
         // 'users' => [

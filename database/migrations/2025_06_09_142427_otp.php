@@ -14,15 +14,14 @@ return new class extends Migration
     public function up(): void
     {
             Schema::create('otp', function (Blueprint $table) {
-            $table->id('otp_id');    
+            $table->id('otpID');    
             $table->string('email')->nullable(false);
             $table->string('otpCode')->nullable(false);
             $table->string('role')->default('user');
-            $table->timestamp('otpExpires_at')->nullable();
-                   
+            $table->timestamp('otpExpiresAt')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->index('otpExpires_at');
+            $table->index('otpExpiresAt');
 
         });
     }

@@ -38,10 +38,12 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link nav-custom-link {{ request()->routeIs('tenant.message') ? 'active' : '' }}"
-                            href="{{ route('tenant.message', ['tenant_id' => session('tenant_id')]) }}"><i
-                                class="bi bi-chat-left-text me-1"></i>
-                            Message</a>
+                            href="{{ route('tenant.message', ['tenant_id' => session('tenant_id')]) }}">
+                            <i class="bi bi-chat-left-text me-1"></i> Message
+                        </a>
                     </li>
+
+
 
                 </ul>
 

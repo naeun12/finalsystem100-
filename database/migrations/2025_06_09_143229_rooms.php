@@ -18,23 +18,21 @@ return new class extends Migration
     public function up(): void
     {
          Schema::create('rooms', function (Blueprint $table) {
-            $table->id('room_id');
-            $table->unsignedBigInteger('dormitory_id');
-            $table->string('landlord_id', 255);
-            $table->string('room_number');
-            $table->string('room_type');
+            $table->id('roomID');
+            $table->unsignedBigInteger('fkdormID');
+            $table->string('fklandlordID', 255);
+            $table->string('roomNumber');
+            $table->string('roomType');
             $table->decimal('price', 8, 2);
             $table->string('availability')->default('available');
             $table->string('furnishing_status');
-            $table->string('listing_type');
-            $table->string('area_sqm');
-            $table->string('gender_preference');
-            $table->string('room_images');
-            $table->integer('capacity')->nullable();
+            $table->string('listingType');
+            $table->string('areaSqm');
+            $table->string('genderPreference');
+            $table->string('roomImages');
             $table->timestamps();
-            // Foreign key constraint
-            $table->foreign('dormitory_id')->references('dorm_id')->on('dorms')->onDelete('cascade');
-            $table->foreign('landlord_id')->references('landlord_id')->on('landlords')->onDelete('cascade');
+            $table->foreign('fkdormID')->references('dormID')->on('dorms')->onDelete('cascade');
+            $table->foreign('fklandlordID')->references('landlordID')->on('landlords')->onDelete('cascade');
 
 
 

@@ -16,19 +16,19 @@ return new class extends Migration
             $table->string('fktenantID');
             $table->string('firstname');
             $table->string('lastname');
-            $table->string('contact_number');
-            $table->string('contact_email');
+            $table->string('contactNumber');
+            $table->string('contactEmail');
             $table->string('age');
             $table->string('gender');
             $table->string('status')->default('pending')->nullable();
-            $table->string('payment_type')->nullable();
-            $table->string('payment_image')->nullable();
-            $table->string('studentpicture_id')->nullable();
+            $table->string('paymentType')->nullable();
+            $table->string('paymentImage')->nullable();
+            $table->string('studentpictureID')->nullable();
             $table->timestamps();
             // Foreign key constraints
-            $table->foreign('fkdormitoryID')->references('dorm_id')->on('dorms')->onDelete('cascade');
-            $table->foreign('fkroomID')->references('room_id')->on('rooms')->onDelete('cascade');
-            $table->foreign('fktenantID')->references('tenant_id')->on('tenants')->onDelete('cascade');
+            $table->foreign('fkdormitoryID')->references('dormID')->on('dorms')->onDelete('cascade');
+            $table->foreign('fkroomID')->references('roomID')->on('rooms')->onDelete('cascade');
+            $table->foreign('fktenantID')->references('tenantID')->on('tenants')->onDelete('cascade');
         });
     }
 

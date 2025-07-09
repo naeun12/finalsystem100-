@@ -14,21 +14,20 @@ return new class extends Migration
    public function up(): void
     {
         Schema::create('tenants', function (Blueprint $table) {
-            $table->string('tenant_id')->unique()->primary();
+            $table->string('tenantID')->unique()->primary();
             $table->string('firstname', 55);
             $table->string('lastname', 55);
-            $table->string('password_hash', 255);
+            $table->string('password', 255);
             $table->string('email', 255)->unique();
-            $table->string('phonenumber', 11)->unique();
+            $table->string('phoneNumber', 11)->unique();
             $table->enum('gender', ['Female', 'Male']);
             $table->string('city', 255);
             $table->string('province', 255);
             $table->string('region', 255);
-            $table->string('currentaddress', 255);
-            $table->string('postalcode', 4);
-             $table->string('role')->default('tenant');
-            $table->string('profile_pic_url', 255)->nullable();
-            $table->rememberToken();
+            $table->string('currentAddress', 255);
+            $table->string('postalCode', 4);
+            $table->string('role')->default('tenant');
+            $table->string('profilePicUrl', 255)->nullable();
             $table->timestamps();
         });
     }

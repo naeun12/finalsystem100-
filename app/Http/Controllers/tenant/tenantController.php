@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\tenant;
 
-use App\Models\tenant\tenantaccountModel;
-use App\Models\tenant\OtpModels;
+use App\Models\tenant\tenantModel;
+use App\Models\otpModel;
 use App\Jobs\DeleteExpiredOtpsJob;
 
 use Illuminate\Support\Facades\Hash;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
 
 use Carbon\Carbon;
 
-class accountprocessController extends Controller
+class tenantController extends Controller
 {
     public function login()
     {
@@ -68,9 +68,9 @@ class accountprocessController extends Controller
             $passwordHash = Hash::make($request->input('password'));
 
             $tenantId = Str::uuid();
-            $verifyOtp = OtpModels::where('email',$validated['email'])
+            $verifyOtp = otpModel::where('email',$validated['email'])
             ->where('otpCode',$validated['codeotp'])
-            ->where('otpExpires_at', '>', now())
+            ->where('otpExpiresAt', '>', now())
             ->first();
             // Store the tenant data
             if(!$verifyOtp)
@@ -82,12 +82,12 @@ class accountprocessController extends Controller
             ],400);
                
             }
-             $tenant = tenantaccountModel::create([
-                'tenant_id' => $tenantId,
+             $tenant = tenantModel::create([
+                'tenantID' => $tenantId,
                 'firstname' => $validated['firstname'],
                 'lastname' => $validated['lastname'],
                 'email' => $validated['email'],
-                'password_hash' => $passwordHash,
+                'password' => $passwordHash,
                 'phonenumber' => $validated['phonenumber'],
                 'gender' => $validated['gender'],
                 'region' => $validated['region'],
@@ -160,10 +160,10 @@ class accountprocessController extends Controller
 
         // Store OTP in the database
         $expiresAt = now()->addMinutes(1);
-        OtpModels::create([
+        otpModel::create([
             'email' => $validated['email'],
             'otpCode' => $otpCode,
-            'otpExpires_at' => $expiresAt,
+            'otpExpiresAt' => $expiresAt,
         ]);
 
         return response()->json([
@@ -195,7 +195,7 @@ public function resendOtp(Request $request)
         'email.exists' => 'No OTP record found for this email.',
     ]);
     try{
-         $otpRecord = OtpModels::where('email',$validated['email']);
+         $otpRecord = otpModel::where('email',$validated['email']);
     if(!$otpRecord)
     {
         return response()->json([
@@ -206,7 +206,7 @@ public function resendOtp(Request $request)
                 $newOtpExpiresAt = now()->addMinutes(1);
                    $otpRecord->update([
             'otpCode' => $newOtp,
-            'otpExpires_at' => $newOtpExpiresAt, 
+            'otpExpiresAt' => $newOtpExpiresAt, 
         ]);
                 Mail::to($validated['email'])->send(new tenantEmailOtp($newOtp));
                  return response()->json([
@@ -244,15 +244,15 @@ public function loginTenant(Request $request)
             'password.required' => 'Please enter your password',
         ]);
     
-        $user = tenantaccountModel::where('email', $request->email)->first();
+        $user = tenantModel::where('email', $request->email)->first();
     
-        if (!$user || !\Hash::check($request->password, $user->password_hash)) {
+        if (!$user || !\Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
         }
     
     session([
         'tenant_logged_in' => true,
-        'tenant_id' => $user->tenant_id,
+        'tenant_id' => $user->tenantID,
         'tenant_firstname' => $user->firstname,
         'tenant_lastname' => $user->lastname,
         'profile_pic_url' => $user->profile_pic_url
@@ -262,7 +262,7 @@ public function loginTenant(Request $request)
             'message' => 'Login successful',
             'status' => 'success',
             'tenant' => [
-                'id' => $user->tenant_id,
+                'id' => $user->tenantID,
                 'firstname' =>$user->firstname,
                 'lastname' =>$user->lastname,
             ],

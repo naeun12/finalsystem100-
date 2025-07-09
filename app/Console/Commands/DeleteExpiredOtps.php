@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use App\Models\tenant\OtpModels;
+use App\Models\otpModel;
 
 class DeleteExpiredOtps extends Command
 {
@@ -30,8 +30,8 @@ class DeleteExpiredOtps extends Command
     {
         $now = now();
         // Soft delete expired OTPs
-       $expiredCount = OtpModels::whereNotNull('otpExpires_at') 
-            ->where('otpExpires_at', '<=', $now) 
+       $expiredCount = otpModel::whereNotNull('otpExpiresAt	') 
+            ->where('otpExpiresAt	', '<=', $now) 
             ->forceDelete(); 
 
         $this->info($expiredCount . ' expired OTPs permanently deleted.');

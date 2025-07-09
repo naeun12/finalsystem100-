@@ -5,9 +5,10 @@ namespace App\Http\Controllers\tenant\auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\landlord\landlordAccountModel;
-use App\Models\landlord\landlordRoomModel;
-use App\Models\landlord\landlordDormManagement; 
-use App\Models\tenant\tenantaccountModel; 
+use App\Models\landlord\roomModel;
+
+use App\Models\landlord\dormModel; 
+use App\Models\tenant\tenantModel; 
 
 
 
@@ -26,7 +27,7 @@ class homepageController extends Controller
             return redirect()->route('tenant-login')->with('error', 'Unauthorized access.');
         }
     
-        $tenant = tenantaccountModel::find($tenant_id);
+        $tenant = tenantModel::find($tenant_id);
         if (!$tenant) {
             return redirect()->route('tenant-login')->with('error', 'Landlord not found.');
         }
@@ -37,10 +38,10 @@ class homepageController extends Controller
     public function dormLapuLapu()
 {
     return response()->json(
-        landlordDormManagement::where('address', 'LIKE', '%Lapu-Lapu%')
-            ->select('dorm_id', 'dorm_name', 'address', 'latitude', 'longitude')
+        dormModel::where('address', 'LIKE', '%Lapu-Lapu%')
+            ->select('dormID', 'dormName', 'address', 'latitude', 'longitude')
             ->with(['images' => function ($query) {
-                $query->select('dormitory_id', 'main_image');
+                $query->select('fkdormID', 'mainImage');
             }])
             ->get()
     );
@@ -49,10 +50,10 @@ class homepageController extends Controller
 public function dormMandaeu()
 {
     return response()->json(
-        landlordDormManagement::where('address', 'LIKE', '%Mandaue%')
-            ->select('dorm_id', 'dorm_name', 'address', 'latitude', 'longitude')
+        dormModel::where('address', 'LIKE', '%Mandaue%')
+            ->select('dormID', 'dormName', 'address', 'latitude', 'longitude')
             ->with(['images' => function ($query) {
-                $query->select('dormitory_id', 'main_image');
+                $query->select('fkdormID', 'mainImage');
             }])
             ->get()
     );

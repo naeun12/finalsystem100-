@@ -66,8 +66,8 @@
 
                     <option disabled value="">Select Dormitories</option>
                     <option value="all">All Dormitories</option>
-                    <option v-for="dorm in dorms" :key="dorm.dorm_id" :value="dorm.dorm_id">
-                        <span>{{ dorm.dorm_name }}</span>
+                    <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
+                        <span>{{ dorm.dormName }}</span>
                     </option>
                 </select>
             </div>
@@ -89,10 +89,10 @@
                     </tr>
                 </thead>
                 <tbody v-if="rooms && rooms.length">
-                    <tr class="text-center align-middle" v-for="room in rooms" :key="room.room_id">
-                        <td>{{ room.room_id }}</td>
-                        <td>{{ room.room_number }}</td>
-                        <td>{{ room.room_type }}</td>
+                    <tr class="text-center align-middle" v-for="room in rooms" :key="room.roomID">
+                        <td>{{ room.roomID }}</td>
+                        <td>{{ room.roomNumber }}</td>
+                        <td>{{ room.roomType }}</td>
                         <td>{{ room.price }}</td>
                         <td>
                             <span class="badge"
@@ -100,22 +100,22 @@
                                 {{ room.availability }}
                             </span>
                         </td>
-                        <td>{{ room.gender_preference }}</td>
+                        <td>{{ room.genderPreference }}</td>
 
                         <td>
                             <div class="d-flex justify-content-center gap-2">
                                 <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1"
-                                    @click="ViewRoom(room.room_id)">
+                                    @click="ViewRoom(room.roomID)">
                                     <i class="bi bi-eye"></i>
 
                                 </button>
                                 <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
-                                    @click="editRoom(room.room_id)">
+                                    @click="editRoom(room.roomID)">
                                     <i class="bi bi-pencil-square"></i>
 
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
-                                    @click="deleteRoom(room.room_id)">
+                                    @click="deleteRoom(room.roomID)">
                                     <i class="bi bi-trash"></i>
 
                                 </button>
@@ -176,11 +176,11 @@
                                     <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li v-for="dorm in dorms" :key="dorm.dorm_id">
+                                    <li v-for="dorm in dorms" :key="dorm.dormID">
                                         <a class="dropdown-item d-flex justify-content-between align-items-center"
                                             href="#" @click.prevent="dormId(dorm)">
-                                            <span>{{ dorm.dorm_name }}</span>
-                                            <span class="badge bg-secondary">ID: {{ dorm.dorm_id }}</span>
+                                            <span>{{ dorm.dormName }}</span>
+                                            <span class="badge bg-secondary">ID: {{ dorm.dormID }}</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -199,7 +199,7 @@
                         </div>
                         <div class="mb-3 d-flex justify-content-center align-items-center">
                             <span class="text-danger small mb-3" v-if="errors.roomImageFile">{{ errors.roomImageFile[0]
-                            }}</span>
+                                }}</span>
                         </div>
 
 
@@ -222,7 +222,7 @@
                                     <label>Dorm ID</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.dormsId">{{ errors.dormsId[0]
-                                }}</span>
+                                    }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <input type="text" class="form-control" id="roomNumber" placeholder="Room Number"
@@ -230,7 +230,7 @@
                                     <label for="roomNumber">Room Number</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.roomNumber">{{ errors.roomNumber[0]
-                                }}</span>
+                                    }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="roomType" v-model="roomType">
@@ -248,7 +248,7 @@
                                     <label for="roomType">Room Type</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.roomType">{{ errors.roomType[0]
-                                }}</span>
+                                    }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="availability" v-model="availability">
@@ -260,14 +260,14 @@
                                     <label for="availability">Availability Status</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.availability">{{ errors.availability[0]
-                                }}</span>
+                                    }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <input type="number" class="form-control" id="areaSqm" v-model="area_sqm" min="1"
                                         placeholder="Enter area in sqm" required>
                                     <label for="areaSqm">Area (sqm)</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.area_sqm">{{ errors.area_sqm[0]
-                                }}</span>
+                                    }}</span>
 
                             </div>
 
@@ -279,7 +279,7 @@
                                     <label for="price">Price (₱)</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.price">{{ errors.price[0]
-                                }}</span>
+                                    }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="bedType" v-model="listing_type" required>
                                         <option value="" disabled selected>Select Bed Type</option>
@@ -291,7 +291,7 @@
                                 </div>
 
                                 <span class="text-danger small" v-if="errors.listing_type">{{ errors.listing_type[0]
-                                }}</span>
+                                    }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="furnishingStatus" v-model="furnishing_status"
                                         required>
@@ -304,7 +304,7 @@
                                 </div>
                                 <span class="text-danger small" v-if="errors.furnishing_status">{{
                                     errors.furnishing_status[0]
-                                }}</span>
+                                    }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="genderPreference" v-model="gender_preference"
@@ -318,7 +318,7 @@
                                 </div>
                                 <span class="text-danger small" v-if="errors.gender_preference">{{
                                     errors.gender_preference[0]
-                                }}</span>
+                                    }}</span>
 
 
                                 <span class="text-danger small" v-if="errors.price">{{ errors.price[0] }}</span>
@@ -362,7 +362,7 @@
                             :id="'feature' + index" placeholder="Enter room feature" />
                         <label :for="'feature' + index">Room Feature {{ index + 1 }}</label>
                         <span class="text-danger mb-3 " v-if="errors.roomFeatures">{{ errors.roomFeatures[0]
-                        }}</span>
+                            }}</span>
 
                     </div>
 
@@ -438,29 +438,29 @@
                         <div class="col-md-4">
                             <div class="form-floating mb-3">
                                 <input type="text" class="form-control" readonly placeholder="Dorm ID"
-                                    v-model="editData.dormitory_id">
+                                    v-model="editData.fkdormID">
                                 <label>Dorm ID</label>
                             </div>
                             <div class="form-floating mb-2">
                                 <input type="text" class="form-control" id="roomNumber" placeholder="Room Number"
-                                    v-model="editData.room_number">
+                                    v-model="editData.roomNumber">
                                 <label for="roomNumber">Room Number</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.room_number">{{
-                                errors.editData.room_number[0]
+                            <span class="text-danger small" v-if="errors.editData?.roomNumber">{{
+                                errors.editData.roomNumber[0]
                             }}</span>
                             <div class="form-floating mb-2 mt-2">
-                                <input type="number" class="form-control" id="areaSqm" v-model="editData.area_sqm"
+                                <input type="number" class="form-control" id="areaSqm" v-model="editData.areaSqm"
                                     min="1" placeholder="Enter area in sqm" required>
                                 <label for="areaSqm">Area (sqm)</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.area_sqm">{{
-                                errors.editData.area_sqm[0]
-                            }}</span>
+                            <span class="text-danger small" v-if="errors.editData?.areaSqm">{{
+                                errors.editData.areaSqm[0]
+                                }}</span>
 
 
                             <div class="form-floating mb-2 mt-2">
-                                <select class="form-select" id="room_type" v-model="editData.room_type">
+                                <select class="form-select" id="room_type" v-model="editData.roomType">
                                     <option value="" disabled>
                                         Select Room Type</option>
                                     <option value="Single Room">Single Room</option>
@@ -475,8 +475,8 @@
                                 </select>
                                 <label for="room_type">Room Type</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.room_type">{{
-                                errors.editData.room_type[0]
+                            <span class="text-danger small" v-if="errors.editData?.roomType">{{
+                                errors.editData.roomType[0]
                             }}</span>
                             <div class="form-floating mb-2">
                                 <select class="form-select" id="availability" v-model="editData.availability">
@@ -489,7 +489,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.availability">{{
                                 errors.editData.availability[0]
-                            }}</span>
+                                }}</span>
                         </div>
 
                         <!-- Column 2 -->
@@ -501,9 +501,9 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.price">{{
                                 errors.editData.price[0]
-                            }}</span>
+                                }}</span>
                             <div class="form-floating mb-2 mt-2">
-                                <select class="form-select" id="bedType" v-model="editData.listing_type" required>
+                                <select class="form-select" id="bedType" v-model="editData.listingType" required>
                                     <option value="" disabled>Select Bed Type</option>
                                     <option v-for="bed in editfilteredBeds" :key="bed" :value="bed">
                                         {{ bed }}
@@ -511,9 +511,9 @@
                                 </select>
                                 <label for="bedType">Bed Type</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.listing_type">{{
-                                errors.editData.listing_type[0]
-                            }}</span>
+                            <span class="text-danger small" v-if="errors.editData?.listingType">{{
+                                errors.editData.listingType[0]
+                                }}</span>
 
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="furnishingStatus" v-model="editData.furnishing_status"
@@ -527,9 +527,9 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.furnishing_status">{{
                                 errors.editData.furnishing_status[0]
-                            }}</span>
+                                }}</span>
                             <div class="form-floating mb-2 mt-2">
-                                <select class="form-select" id="genderPreference" v-model="editData.gender_preference"
+                                <select class="form-select" id="genderPreference" v-model="editData.genderPreference"
                                     required>
                                     <option value="" disabled selected>Select Gender Preference</option>
                                     <option value="Male Only">Male Only</option>
@@ -538,12 +538,9 @@
                                 </select>
                                 <label for="genderPreference">Gender Preference</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.gender_preference">{{
-                                errors.editData.gender_preference[0]
+                            <span class="text-danger small" v-if="errors.editData?.genderPreference">{{
+                                errors.editData.genderPreference[0]
                             }}</span>
-
-
-
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" @click="updateRoom" class="btn btn-outline-primary btn-lg">
                                     Update Room
@@ -576,7 +573,7 @@
                                     class="row align-items-center py-2 border-bottom text-center">
                                     <div class="col">
                                         <input type="text" readonly class="form-control text-center"
-                                            v-model="feature.feature_name" placeholder="Feature name" />
+                                            v-model="feature.featureName" placeholder="Feature name" />
                                     </div>
                                     <div class="col-3 d-flex justify-content-center gap-2">
                                         <button class="btn btn-sm btn-outline-danger"
@@ -618,20 +615,20 @@
 
                 <!-- Modal Body -->
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding: 1.5rem;">
-                    <img :src="selectedRoom?.room_images" class="img-fluid mb-3 rounded " alt="Room Image"
+                    <img :src="selectedRoom?.roomImages" class="img-fluid mb-3 rounded " alt="Room Image"
                         style="width: 100%;  height: 300px; object-fit: cover;">
                     <div class="row g-4 ">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Room Number:</label>
-                                <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.room_number
-                                }}
+                                <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.roomNumber
+                                    }}
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Room Type:</label>
-                                <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.room_type
-                                }}
+                                <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.roomType
+                                    }}
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -643,7 +640,7 @@
                             <label class="form-label fw-bold">Dorm Name:</label>
                             <div class="p-2 border rounded bg-light text-break w-100"
                                 style="max-height: 100px;  overflow-y: auto;">
-                                {{ selectedRoom?.dorm.dorm_name
+                                {{ selectedRoom?.dorm.dormName
                                 }}
 
                             </div>
@@ -653,7 +650,7 @@
                                     <span v-for="feature in selectedRoom?.features" :key="feature.id"
                                         class="badge bg-primary text-white px-3 py-2 shadow-sm"
                                         style="font-size: 0.9rem;">
-                                        {{ feature.feature_name }}
+                                        {{ feature.featureName }}
                                     </span>
                                 </div>
                             </div>
@@ -672,16 +669,16 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Contact Email:</label>
                                 <div class="p-2 border rounded bg-light text-break"> {{
-                                    selectedRoom?.dorm.contact_email
-                                }}
+                                    selectedRoom?.dorm.contactEmail
+                                    }}
 
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Contact Phone:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{
-                                    selectedRoom?.dorm.contact_phone
-                                }}
+                                    selectedRoom?.dorm.contactPhone
+                                    }}
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -777,13 +774,13 @@ export default {
             visibleRoomFeaturesModal: false,
             editData:
             {
-                dormitory_id: '',
-                room_number: '',
-                room_type: '',
+                fkdormID: '',
+                roomNumber: '',
+                roomType: '',
                 availability: '',
                 price: '',
                 amenities: '',
-                listing_type: '',
+                listingType: '',
                 bedOptions: {
                     'Single Room': ['Single Bed', 'Private Room with Bed'],
                     'Double Room / Shared Room': ['Single Bed', 'Shared Bed'],
@@ -792,8 +789,8 @@ export default {
                     'Partitioned Bedspace (Cubicle Style)': ['Single Bed'],
                     'Loft Room / Mezzanine Type': ['Single Bed', 'Bunk Bed']
                 },
-                area_sqm: '',
-                gender_preference: '',
+                areaSqm: '',
+                genderPreference: '',
                 roomImagePreview: '',
                 roomImageFile: '',
             },
@@ -806,7 +803,7 @@ export default {
     },
     methods: {
         dormId(dorm) {
-            this.dormsId = dorm.dorm_id;
+            this.dormsId = dorm.dormID;
         },
         handlePagination(page) {
             if (page < 1 || page > this.lastPage) return;
@@ -1040,6 +1037,7 @@ export default {
                     this.fetchRooms();
                     this.emptyfill();
                     this.getRoomID = response.data.room_id;
+                    console.log(this.getRoomID);
                     this.roomFeaturesModal();
                     this.VisibleAddModal = false;
                 } else if (response.data.errors) {
@@ -1068,6 +1066,7 @@ export default {
             const formData = new FormData();
             formData.append('features', this.roomFeatures.join(','));
             formData.append('room_id', this.getRoomID);
+            console.log(this.getRoomID);
             try {
                 const confirmed = await this.$refs.modal.show({
                     title: 'Adding Room Features',
@@ -1147,7 +1146,7 @@ export default {
 
                         ...response.data.room,
                         room_id: roomId,
-                        roomImagePreview: response.data.room.room_images || "",
+                        roomImagePreview: response.data.room.roomImages || "",
 
 
                     };
@@ -1296,14 +1295,14 @@ export default {
 
             const formData = new FormData();
 
-            formData.append('dormitory_id', this.editData.dormitory_id);
-            formData.append('room_number', this.editData.room_number);
-            formData.append('room_type', this.editData.room_type);
+            formData.append('dormitory_id', this.editData.fkdormID);
+            formData.append('room_number', this.editData.roomNumber);
+            formData.append('room_type', this.editData.roomType);
             formData.append('availability', this.editData.availability);
             formData.append('price', this.editData.price);
-            formData.append('listing_type', this.editData.listing_type);
-            formData.append('area_sqm', this.editData.area_sqm);
-            formData.append('gender_preference', this.editData.gender_preference);
+            formData.append('listing_type', this.editData.listingType);
+            formData.append('area_sqm', this.editData.areaSqm);
+            formData.append('gender_preference', this.editData.genderPreference);
             formData.append('furnishing_status', this.editData.furnishing_status);
             if (this.editData.roomImageFile) {
                 // User selected a new image file, send it
@@ -1458,7 +1457,7 @@ export default {
             return this.bedOptions[this.roomType] || [];
         },
         editfilteredBeds() {
-            return this.bedOptions[this.editData.room_type] || [];
+            return this.bedOptions[this.editData.roomType] || [];
         },
 
 

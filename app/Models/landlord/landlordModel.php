@@ -1,46 +1,42 @@
 <?php
 
 namespace App\Models\landlord;
-use Laravel\Sanctum\HasApiTokens;  // Import Sanctum trait
+use Laravel\Sanctum\HasApiTokens;  
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class landlordAccountModel extends Authenticatable
+class landlordModel extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;  // Add HasApiTokens here
+    use HasApiTokens, HasFactory, Notifiable; 
     protected $guard = 'landlord';
-
     protected $table = 'landlords';
-    protected $primaryKey = 'landlord_id';
+    protected $primaryKey = 'landlordID';
     public $timestamps = true;
-    public $incrementing = false;  // or false if your PK is not auto-incrementing
-
-    protected $keyType = 'string'; // or 'string' if your PK is string
-
+    public $incrementing = false;  
+    protected $keyType = 'string'; 
     protected $fillable = [
-        'landlord_id',
+        'landlordID',
         'firstname',
         'lastname',
-        'password_hash',
+        'password',
         'email',
         'phonenumber',
         'gender',
-        'profile_pic_url',
-        'goverment_id',
-        'business_permit',
-        'verify_account',
+        'profilePicUrl',
+        'govermentID',
+        'businessPermit',
         'role',
     ];
 
     public function getAuthPassword()
     {
-        return $this->password_hash;
+        return $this->password;
     }
 
     protected $hidden = [
-        'password_hash', // hide your password field properly
+        'password', // hide your password field properly
         'remember_token',
     ];
     public function sentNotifications()

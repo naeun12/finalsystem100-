@@ -49,26 +49,26 @@
 
 
             <div class="row g-4">
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3" v-for="(dorm, dorm_id) in dormitories" :key="dorm_id">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3" v-for="(dorm, dormID) in dormitories" :key="dormID">
                     <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden d-flex flex-column">
                         <div class="image-wrapper">
-                            <img :src="dorm?.images?.main_image ||
-                                dorm?.main_image ||
+                            <img :src="dorm?.images?.mainImage ||
+                                dorm?.mainImage ||
                                 'https://placehold.co/300x200?text=No+Image'
-                                " class="card-img-top" :alt="dorm.dorm_name" />
+                                " class="card-img-top" :alt="dorm.dormName" />
                         </div>
                         <div class="card-body d-flex flex-column justify-content-between flex-grow-1">
                             <div>
-                                <h5 class="card-title text-dark fw-bold">{{ dorm.dorm_name }}</h5>
+                                <h5 class="card-title text-dark fw-bold">{{ dorm.dormName }}</h5>
                                 <p class="text-muted small mb-1">
-                                    <i class="bi bi-person-fill"></i> {{ dorm.occupancy_type }}
+                                    <i class="bi bi-person-fill"></i> {{ dorm.occupancyType }}
                                 </p>
                                 <p class="text-muted small mb-0">
                                     <i class="bi bi-geo-alt-fill"></i> {{ dorm.address }}
                                 </p>
                             </div>
                             <div class="mt-4 d-flex justify-content-center">
-                                <button class="btn rounded-pill px-4 w-100" @click="viewDormsDetails(dorm.dorm_id)">View
+                                <button class="btn rounded-pill px-4 w-100" @click="viewDormsDetails(dorm.dormID)">View
                                     Details</button>
                             </div>
                         </div>
@@ -151,15 +151,16 @@
             </div>
             <div v-for="(dorm, index) in recommendations" :key="'ai-' + index" class="mb-3">
                 <div class="card shadow-sm">
+
                     <div class="card-body p-3">
                         <div class="image-wrapper">
-                            <img :src="dorm?.images?.main_image ||
-                                dorm?.main_image ||
+                            <img :src="dorm?.images?.mainImage ||
+                                dorm?.mainImage ||
                                 'https://placehold.co/300x200?text=No+Image'
-                                " class="card-img-top" :alt="dorm.dorm_name" />
+                                " class="card-img-top" :alt="dorm.dormName" />
                         </div>
                         <h6 class="mb-2">
-                            <i class="bi bi-building me-2 text-primary"></i>{{ dorm.dorm_name }}
+                            <i class="bi bi-building me-2 text-primary"></i>{{ dorm.dormName }}
                         </h6>
                         <p class="mb-1 small text-muted">
                             <i class="bi bi-geo-alt-fill me-1"></i>{{ dorm.address }}
@@ -167,12 +168,12 @@
                         <p v-if="!isGenderBased || visiblecard" class="mb-1 small">
                             <strong>₱{{ dorm.price }}</strong>
                             <span class="mx-2">|</span>
-                            <i class="bi bi-door-open me-1"></i>{{ dorm.room_type }}
+                            <i class="bi bi-door-open me-1"></i>{{ dorm.roomType }}
                         </p>
                         <p v-if="isGenderBased || visiblecard" class="mb-1 small">
-                            <i class="bi bi-people-fill me-1"></i>Occupancy Type: {{ dorm.occupancy_type }}
+                            <i class="bi bi-people-fill me-1"></i>Occupancy Type: {{ dorm.occupancyType }}
                         </p>
-                        <button class="btn mt-3 w-75 mx-auto d-block" @click="viewDormsDetails(dorm.dorm_id)" style="
+                        <button class="btn mt-3 w-75 mx-auto d-block" @click="viewDormsDetails(dorm.dormID)" style="
                             height: 50px;">View Details</button>
                     </div>
                     <div v-if="!recommendloading && recommendations.length === 0" class="text-center text-muted my-4">

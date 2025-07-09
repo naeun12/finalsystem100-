@@ -1,4 +1,6 @@
 import 'bootstrap'; // Importing Bootstrap
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 import { createApp } from 'vue'; // Vue 3
 import TenantRegister from './components/tenants/tenantRegister.vue';
 import LandlordRegister from './components/landlord/landlordregister.vue';
@@ -7,7 +9,7 @@ import LandlordDormManagement from './components/landlord/auth/DormManagement.vu
 import landlordroomManagement from './components/landlord/auth/roomManagement.vue';
 import tenantAuth from './components/landlord/auth/tenant.vue';
 import tenantScreening from './components/landlord/auth/tenantScreening.vue';
-import BookingManagement from './components/landlord/auth/bookingManagement.vue';
+import BookingManagement from './components/landlord/auth/bookingpage.vue';
 import Analytics from './components/landlord/auth/analytics.vue';
 import MessagingCenter from './components/landlord/auth/messagingCenter.vue';
 import ReviewandFeedback from './components/landlord/auth/ReviewandFeedback.vue';
@@ -124,6 +126,14 @@ const tenantMessageController = document.querySelector('#tenantmessage');
 if (tenantMessageController) {
     createApp(tenantmessage).mount('#tenantmessage');
 }
+window.Pusher = Pusher;
+
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    forceTLS: true
+});
 
 
 

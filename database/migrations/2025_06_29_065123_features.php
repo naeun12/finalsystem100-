@@ -9,17 +9,17 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('room_features_rooms', function (Blueprint $table) {
+        Schema::create('roomFeaturesRooms', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('fkroom_id');
-            $table->unsignedBigInteger('fkfeature_id');
+            $table->unsignedBigInteger('fkroomID');
+            $table->unsignedBigInteger('fkfeatureID');
             $table->timestamps();
             // Foreign key constraints
-            $table->foreign('fkroom_id')->references('room_id')->on('rooms')->onDelete('cascade');
-            $table->foreign('fkfeature_id')->references('id')->on('room_features')->onDelete('cascade');
+            $table->foreign('fkroomID')->references('roomID')->on('rooms')->onDelete('cascade');
+            $table->foreign('fkfeatureID')->references('id')->on('roomfeatures')->onDelete('cascade');
 
 
-            $table->unique(['fkroom_id', 'fkfeature_id']); // prevent duplicates
+            $table->unique(['fkroomID', 'fkfeatureID']); // prevent duplicates
         });
     }
 

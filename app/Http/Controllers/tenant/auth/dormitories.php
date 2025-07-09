@@ -1,10 +1,10 @@
 <?php
 
 namespace App\Http\Controllers\tenant\auth;
-use App\Models\landlord\landlordAccountModel;
-use App\Models\landlord\landlordRoomModel;
-use App\Models\landlord\landlordDormManagement; 
-use App\Models\tenant\tenantaccountModel; 
+use App\Models\landlord\landlordModel;
+use App\Models\landlord\roomModel;
+use App\Models\landlord\dormModel; 
+use App\Models\tenant\tenantModel; 
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -29,7 +29,7 @@ class dormitories extends Controller
             return redirect()->route('tenant-login')->with('error', 'Unauthorized access.');
         }
     
-        $tenant = tenantaccountModel::find($tenant_id);
+        $tenant = tenantModel::find($tenant_id);
         if (!$tenant) {
             return redirect()->route('tenant-login')->with('error', 'Landlord not found.');
         }
@@ -39,7 +39,7 @@ class dormitories extends Controller
     }
     public function Listdorms()
     {
-        $dorms = landlordDormManagement::with(['amenities','images'])->get();
+        $dorms = dormModel::with(['amenities','images'])->get();
         return response()->Json([
             'status' => 'success',
             'dorms' => $dorms,
@@ -74,15 +74,12 @@ class dormitories extends Controller
             $validated = $request->validate([
                 'location' => 'required|string',
             ]);
-
-            Log::info('Search location input:', $validated);
-
             $keyword = strtolower(trim($validated['location']));
             $keywordNormalized = $this->normalize($keyword);
 
             $dorms = DB::table('dorms as d')
-                ->leftJoin('dorm_images as i', 'i.dormitory_id', '=', 'd.dorm_id')
-                ->select('d.*', 'i.main_image')
+                ->leftJoin('dormImages as i', 'i.fkdormID', '=', 'd.dormID')
+                ->select('d.*', 'i.mainImage')
                 ->whereNotNull('d.latitude')
                 ->whereNotNull('d.longitude')
                 ->get();
@@ -100,8 +97,6 @@ class dormitories extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error from searchLocations(): ' . $e->getMessage());
-
             return response()->json([
                 'status' => 'error',
                 'message' => 'Laravel controller error',
@@ -119,20 +114,19 @@ class dormitories extends Controller
             $adjustedMax = $maxPrice * 1.2;
     
             $results = DB::table('rooms as r')
-                ->join('dorms as d', 'r.dormitory_id', '=', 'd.dorm_id')
-                ->leftJoin('dorm_images as i', 'i.dormitory_id', '=', 'd.dorm_id')
+                ->join('dorms as d', 'r.fkdormID', '=', 'd.dormID')
+                ->leftJoin('dormImages as i', 'i.fkdormID', '=', 'd.dormID')
                 ->select(
-                    'd.dorm_id',
-                    'd.dorm_name',
+                    'd.dormID',
+                    'd.dormName',
                     'd.address',
                     'd.latitude',
                     'd.longitude',
                     'r.price',
-                    'r.room_type',
+                    'r.roomType',
                     'r.furnishing_status',
-                    'r.capacity',
                     'r.availability',
-                    'i.main_image'
+                    'i.mainImage'
                 )
                 ->whereBetween('r.price', [$adjustedMin, $adjustedMax])
                 ->whereRaw('LOWER(r.availability) = ?', ['available'])
@@ -152,11 +146,6 @@ class dormitories extends Controller
             ], 500);
         }
     }
-    
-
-
-  
-
     public function genderRecommendations(Request $request)
     {
         try {
@@ -167,12 +156,12 @@ class dormitories extends Controller
             $inputType = strtolower(trim($validated['occupancy_type']));
 
             $dorms = DB::table('dorms as d')
-                ->leftJoin('dorm_images as i', 'i.dormitory_id', '=', 'd.dorm_id')
-                ->select('d.*', 'i.main_image')
+                ->leftJoin('dormimages as i', 'i.fkdormID', '=', 'd.dormID')
+                ->select('d.*', 'i.mainImage')
                 ->get();
 
             $recommendations = $dorms->filter(function ($dorm) use ($inputType) {
-                $type = strtolower(trim($dorm->occupancy_type));
+                $type = strtolower(trim($dorm->occupancyType));
                 return (
                     ($inputType == 'male' && $type == 'male only') ||
                     ($inputType == 'female' && $type == 'female only') ||
@@ -187,7 +176,6 @@ class dormitories extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Laravel Gender API Error: " . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'message' => 'Laravel error',
@@ -197,42 +185,51 @@ class dormitories extends Controller
     }
 
     public function searchWithPrice(Request $request)
-    {
-        try {
-            $keyword = strtolower(trim($request->input('keyword', '')));
-            $keywordNormalized = $this->normalize($keyword);
-            $minPrice = floatval($request->input('min_price', 0));
-            $maxPrice = floatval($request->input('max_price', 999999));
+{
+    try {
+        $keyword = strtolower(trim($request->input('keyword', '')));
+        $keywordNormalized = $this->normalize($keyword);
+        $minPrice = floatval($request->input('min_price', 0));
+        $maxPrice = floatval($request->input('max_price', 999999));
 
-            $results = DB::table('rooms as r')
-                ->join('dorms as d', 'r.dormitory_id', '=', 'd.dorm_id')
-                ->leftJoin('dorm_images as i', 'i.dormitory_id', '=', 'd.dorm_id')
-                ->select('d.dorm_name', 'd.address', 'r.price', 'r.room_type','i.main_image')
-                ->whereNotNull('r.price')
-                ->whereRaw('LOWER(r.availability) = ?', ['available'])
-                ->get();
-
-            $filtered = $results->filter(function ($item) use ($keywordNormalized, $minPrice, $maxPrice) {
-                $price = floatval($item->price);
-                $addressNormalized = $this->normalize($item->address);
-
-                return $price >= $minPrice * 0.8 && $price <= $maxPrice * 1.2 &&
-                    (strpos($addressNormalized, $keywordNormalized) !== false ||
-                     $this->matchesSynonym($keywordNormalized, $addressNormalized));
+        // Query using Eloquent relationships
+        $results = roomModel::with(['dorm', 'dorm.images']) // eager load
+            ->whereNotNull('price')
+            ->whereRaw('LOWER(availability) = ?', ['available'])
+            ->get()
+            ->map(function ($room) {
+                return (object) [
+                    'dormName'   => $room->dorm->dormName ?? null,
+                    'address'    => $room->dorm->address ?? null,
+                    'price'      => $room->price,
+                    'roomType'   => $room->roomType,
+                    'mainImage'  => optional($room->dorm->images)->mainImage,
+                ];
             });
 
-            return response()->json([
-                'status' => 'success',
-                'recommendations' => $filtered->values()
-            ]);
+        // Filter by price range and keyword match
+        $filtered = $results->filter(function ($item) use ($keywordNormalized, $minPrice, $maxPrice) {
+            $price = floatval($item->price);
+            $addressNormalized = $this->normalize($item->address);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Laravel error: ' . $e->getMessage()
-            ], 500);
-        }
+            return $price >= $minPrice * 0.8 && $price <= $maxPrice * 1.2 &&
+                (strpos($addressNormalized, $keywordNormalized) !== false ||
+                 $this->matchesSynonym($keywordNormalized, $addressNormalized));
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'recommendations' => $filtered->values()
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Laravel error: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     public function genderLocationRecommendations(Request $request)
     {
@@ -247,14 +244,13 @@ class dormitories extends Controller
             $keywordNormalized = $this->normalize($keyword);
 
             $dorms = DB::table('dorms as d')
-                ->leftJoin('dorm_images as i', 'i.dormitory_id', '=', 'd.dorm_id')
-                ->select('d.*', 'i.main_image')
+                ->leftJoin('dormimages as i', 'i.fkdormID', '=', 'd.dormID')
+                ->select('d.*', 'i.mainImage')
                 ->get();
 
             $results = $dorms->filter(function ($dorm) use ($gender, $keywordNormalized) {
-                $dormGender = strtolower(trim($dorm->occupancy_type));
+                $dormGender = strtolower(trim($dorm->occupancyType));
                 $addressNormalized = $this->normalize($dorm->address);
-
                 $locationMatch = strpos($addressNormalized, $keywordNormalized) !== false ||
                                  $this->matchesSynonym($keywordNormalized, $addressNormalized);
 
@@ -290,24 +286,24 @@ class dormitories extends Controller
         Log::info('Occupancy Type: ' . $occupancyType);
 
         $query = DB::table('dorms as d')
-        ->join('rooms as r', 'd.dorm_id', '=', 'r.dormitory_id') // Gamiton nato ang INNER JOIN para ang dorms nga walay rooms dili maapil
-        ->leftJoin('dorm_images as i', 'i.dormitory_id', '=', 'd.dorm_id')
-            ->select('d.*', 'i.main_image', 'r.price', 'r.room_type')
+        ->join('rooms as r', 'd.dormID', '=', 'r.fkdormID') // Gamiton nato ang INNER JOIN para ang dorms nga walay rooms dili maapil
+        ->leftJoin('dormimages as i', 'i.fkdormID', '=', 'd.dormID')
+            ->select('d.*', 'i.mainImage', 'r.price', 'r.roomType')
             ->distinct();
 
         // Apply occupancy type filter
         if ($occupancyType && $occupancyType !== 'all') {
             $query->where(function($q) use ($occupancyType) {
                 if ($occupancyType === 'male') {
-                    $q->whereRaw("LOWER(d.occupancy_type) = ?", ['male only'])
-                      ->orWhereRaw("LOWER(d.occupancy_type) = ?", ['male']);
+                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['male only'])
+                      ->orWhereRaw("LOWER(d.occupancyType) = ?", ['male']);
                 } elseif ($occupancyType === 'female') {
-                    $q->whereRaw("LOWER(d.occupancy_type) = ?", ['female only'])
-                      ->orWhereRaw("LOWER(d.occupancy_type) = ?", ['female']);
+                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['female only'])
+                      ->orWhereRaw("LOWER(d.occupancyType) = ?", ['female']);
                 } elseif ($occupancyType === 'mixed (male & female – separate floors)') {
-                    $q->whereRaw("LOWER(d.occupancy_type) = ?", ['mixed (male & female – separate floors)']);
+                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['mixed (male & female – separate floors)']);
                 } else {
-                    $q->whereRaw("LOWER(d.occupancy_type) = ?", [$occupancyType]);
+                    $q->whereRaw("LOWER(d.occupancyType) = ?", [$occupancyType]);
                 }
             });
         }
@@ -352,24 +348,24 @@ public function filterpriceGenderDormitories(Request $request)
         Log::info('Price Range: ' . $priceRange);
 
         $query = DB::table('dorms as d')
-            ->join('rooms as r', 'd.dorm_id', '=', 'r.dormitory_id') // Only dorms with rooms
-            ->leftJoin('dorm_images as i', 'i.dormitory_id', '=', 'd.dorm_id')
-            ->select('d.*', 'i.main_image', 'r.price', 'r.room_type')
+            ->join('rooms as r', 'd.dormID', '=', 'r.fkdormID') // Only dorms with rooms
+            ->leftJoin('dormimages as i', 'i.fkdormID', '=', 'd.dormID')
+            ->select('d.*', 'i.mainImage', 'r.price', 'r.roomType')
             ->distinct();
 
         // Filter by occupancy type
         if ($occupancyType && $occupancyType !== 'all') {
             $query->where(function($q) use ($occupancyType) {
                 if ($occupancyType === 'male') {
-                    $q->whereRaw("LOWER(d.occupancy_type) = ?", ['male only'])
-                      ->orWhereRaw("LOWER(d.occupancy_type) = ?", ['male']);
+                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['male only'])
+                      ->orWhereRaw("LOWER(d.occupancyType) = ?", ['male']);
                 } elseif ($occupancyType === 'female') {
-                    $q->whereRaw("LOWER(d.occupancy_type) = ?", ['female only'])
-                      ->orWhereRaw("LOWER(d.occupancy_type) = ?", ['female']);
+                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['female only'])
+                      ->orWhereRaw("LOWER(d.occupancyType) = ?", ['female']);
                 } elseif ($occupancyType === 'mixed') {
-                    $q->whereRaw("LOWER(d.occupancy_type) LIKE ?", ['mixed%']);
+                    $q->whereRaw("LOWER(d.occupancyType) LIKE ?", ['mixed%']);
                 } else {
-                    $q->whereRaw("LOWER(d.occupancy_type) = ?", [$occupancyType]);
+                    $q->whereRaw("LOWER(d.occupancyType) = ?", [$occupancyType]);
                 }
             });
         }

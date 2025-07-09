@@ -94,16 +94,16 @@
                             <div class="col-12" v-for="dorm in nearbyDorms" :key="dorm.id">
                                 <div class="d-flex align-items-center p-3 rounded-4 shadow-sm bg-white border gap-3 hover-shadow"
                                     style="transition: all 0.3s ease; cursor: pointer;"
-                                    @click="viewDormsDetails(dorm.dorm_id)">
+                                    @click="viewDormsDetails(dorm.dormID)">
                                     <!-- Dorm Image -->
-                                    <img :src="dorm.images?.main_image || dorm.main_image || '/images/default-dorm.webp'"
+                                    <img :src="dorm.images?.mainImage || dorm.mainImage || '/images/default-dorm.webp'"
                                         alt="Dorm Image" class="rounded-3 border"
                                         style="width: 90px; height: 90px; object-fit: cover;" />
 
                                     <!-- Dorm Info -->
                                     <div class="flex-grow-1">
                                         <h6 class="fw-semibold text-primary mb-1">
-                                            {{ dorm.dorm_name }}
+                                            {{ dorm.dormName }}
                                         </h6>
                                         <p class="text-secondary small mb-1 d-flex align-items-center gap-1">
                                             <img :src="logoImage" alt="Pin Logo" width="18" height="18"
@@ -112,7 +112,7 @@
                                         </p>
                                         <p class="mb-2 text-secondary small d-flex align-items-center gap-2">
                                             <i class="fas fa-user-group text-muted"></i>
-                                            {{ dorm.occupancy_type }}
+                                            {{ dorm.occupancyType }}
                                         </p>
 
 
@@ -269,13 +269,13 @@ export default {
                                 url: '/images/tenant/allimagesResouces/dormmap.webp',
                                 scaledSize: new google.maps.Size(40, 40)
                             },
-                            title: `${dorm.dorm_name} (${dorm.distance_km} km)`
+                            title: `${dorm.dormName} (${dorm.distance_km} km)`
                         });
 
                         const infoWindow = new google.maps.InfoWindow({
                             content: `
                             <div style="max-width: 250px;">
-                                <h6>${dorm.dorm_name}</h6>
+                                <h6>${dorm.dormName}</h6>
                                 <p style="margin:0;">${dorm.address}</p>
                                 <small><b>Distance:</b> ${dorm.distance_km} km</small>
                             </div>`
@@ -291,9 +291,6 @@ export default {
                     });
                     this.addRadarOverlay(lat, lng);
                     this.$refs.loader.loading = false;
-                    console.log("Nearby Dorms Count:", this.nearbyDorms.length);
-                    console.log("Clearing markers:", this.markers.length);
-
                 }
             } catch (error) {
                 console.error('Error fetching dorms:', error);

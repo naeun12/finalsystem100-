@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use App\Models\landlord\landlordAccountModel;
-use App\Models\landlord\tenantscreeningModel;
-use App\Models\landlord\landlordRoomModel;
+use App\Models\landlord\landlordModel;
+use App\Models\landlord\bookingModel;
+use App\Models\landlord\roomModel;
 
 
 
@@ -49,7 +49,7 @@ class tenantScreeningController extends Controller
                 'message' => 'Unauthorized action. Please log in as a landlord.'
             ], 403);
         }
-        $screening = tenantscreeningModel::with('room','dorm')->where('landlord_id', $landlordId)->get();
+        $screening = bookingModel::with('room','dorm')->where('fklandlordID', $landlordId)->get();
 
         return response()->json([
             'status' => 'success',
@@ -111,7 +111,7 @@ class tenantScreeningController extends Controller
             $screening = tenantscreeningModel::findOrFail($request->tenant_screening_id);
     
             // Get the associated room
-            $room = landlordRoomModel::findOrFail($screening->fkroom_id);
+            $room = roomModel::findOrFail($screening->fkroom_id);
     
             // Check if room has capacity left
             if ($room->capacity <= 0) {
@@ -161,7 +161,7 @@ class tenantScreeningController extends Controller
     
             // If the tenant was previously approved, we should increase capacity
             if ($screening->status === 'Approved') {
-                $room = landlordRoomModel::findOrFail($screening->fkroom_id);
+                $room = roomModel::findOrFail($screening->fkroom_id);
     
                 // Increase capacity by 1
                 $room->capacity += 1;
@@ -218,7 +218,7 @@ class tenantScreeningController extends Controller
     try {
         // If the tenant was previously approved, increase room capacity
         if ($screening->status === 'Approved') {
-            $room = landlordRoomModel::find($screening->fkroom_id);
+            $room = roomModel::find($screening->fkroom_id);
 
             if ($room) {
                 $room->capacity += 1;

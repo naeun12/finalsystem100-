@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\landloard\auth;
+namespace App\Http\Controllers\landlord\auth;
 use Illuminate\Validation\Rule;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\landlord\landlordAccountModel;
-use App\Models\Landlord\landlordDormAnimitiesModel; 
-use App\Models\landlord\landlordAmintiesModel; 
-use App\Models\landlord\landlordDormManagement; 
-use App\Models\landlord\imagesDormImages;
-use App\Models\landlord\landlordDormRulesAndPolicyModel;
-use App\Models\landlord\landlordRulesAndPolicyModel;
+use App\Models\landlord\landlordModel;
+use App\Models\Landlord\dormaminitiesModel; 
+use App\Models\landlord\aminitiesModel; 
+use App\Models\landlord\dormModel; 
+use App\Models\landlord\dormimagesModel;
+use App\Models\landlord\dormrulesModel;
+use App\Models\landlord\rulesModel;
 
-class dormManagementController extends Controller
+class dormpageController extends Controller
 {
     public function DormManagement($landlordId)
     {
@@ -28,7 +28,7 @@ class dormManagementController extends Controller
             return redirect()->route('loginLandlord')->with('error', 'Unauthorized access.');
         }
     
-        $landlord = landlordAccountModel::find($landlordId);
+        $landlord = landlordModel::find($landlordId);
         if (!$landlord) {
             return redirect()->route('loginLandlord')->with('error', 'Landlord not found.');
         }
@@ -54,11 +54,11 @@ class dormManagementController extends Controller
         $searchTerm = strtolower($request->input('search', ''));
      
         
-        $dorms = LandlordDormManagement::with('images')
-            ->where('landlord_id', $landlordId)
+        $dorms = dormModel::with('images')
+            ->where('fklandlordID', $landlordId)
             ->where(function ($query) use ($searchTerm) {
                 if (!empty($searchTerm)) {
-                    $query->whereRaw('LOWER(dorm_name) LIKE ?', ["%$searchTerm%"]);
+                    $query->whereRaw('LOWER(dormName) LIKE ?', ["%$searchTerm%"]);
                 }
             })
             ->orderBy('created_at', 'desc')
@@ -90,8 +90,8 @@ class dormManagementController extends Controller
 
     $location = strtolower($request->input('location', ''));
 
-    $dorms = LandlordDormManagement::with('images')
-        ->where('landlord_id', $landlordId)
+    $dorms = dormModel::with('images')
+        ->where('fklandlordID', $landlordId)
         ->when($location !== 'all' && !empty($location), function ($query) use ($location) {
             // Use REGEXP to match only full words (not part of other words)
             $query->whereRaw("LOWER(address) REGEXP ?", ['[[:<:]]' . $location . '[[:>:]]']);
@@ -115,8 +115,8 @@ class dormManagementController extends Controller
    {
        $landlordId = session('landlord_id');
        $availability = strtolower($request->input('availability', ''));
-       $dorms = LandlordDormManagement::with('images')
-           ->where('landlord_id', $landlordId)
+       $dorms = dormModel::with('images')
+           ->where('fklandlordID', $landlordId)
            ->where(function ($query) use ($availability) {
                if (!empty($availability) && $availability !== 'all') {
                 $query->whereRaw('LOWER(availability) = ?', [$availability]);
@@ -143,7 +143,7 @@ class dormManagementController extends Controller
         try
         {
             $validated = $request->validate([
-                'dorm_name' => 'required|string|max:255|unique:dorms,dorm_name',
+                'dorm_name' => 'required|string|max:255|unique:dorms,dormName',
                 'address' => 'required|string|max:255',
                 'description' => 'required|string',
                 'total_rooms' => 'required|integer|min:1',
@@ -296,22 +296,22 @@ class dormManagementController extends Controller
             // Generate unique dorm ID
             do {
                 $randomDormId = rand(1000, 9999);
-            } while (landlordDormManagement::where('dorm_id', $randomDormId)->exists());
+            } while (dormModel::where('dormID', $randomDormId)->exists());
 
-            $dorm = new landlordDormManagement();
-            $dorm->dorm_id = $randomDormId;
-            $dorm->dorm_name = $validated['dorm_name'];
+            $dorm = new dormModel();
+            $dorm->dormID = $randomDormId;
+            $dorm->dormName = $validated['dorm_name'];
             $dorm->address = $validated['address'];
-            $dorm->landlord_id = $landlordId;
+            $dorm->fklandlordID  = $landlordId;
             $dorm->latitude = $validated['latitude'];
             $dorm->longitude = $validated['longitude'];
             $dorm->description = $validated['description'] ?? null;
-            $dorm->total_rooms = $validated['total_rooms'];
-            $dorm->contact_email = $validated['contact_email'];
-            $dorm->contact_phone = $validated['contact_phone'];
+            $dorm->totalRooms = $validated['total_rooms'];
+            $dorm->contactEmail = $validated['contact_email'];
+            $dorm->contactPhone = $validated['contact_phone'];
             $dorm->availability = $validated['availability'] ?? null;
-            $dorm->occupancy_type = $validated['occupancy_type'] ?? null;
-            $dorm->building_type = $validated['building_type'] ?? null;
+            $dorm->occupancyType = $validated['occupancy_type'] ?? null;
+            $dorm->buildingType = $validated['building_type'] ?? null;
             $dorm->save();
            
             
@@ -341,17 +341,17 @@ class dormManagementController extends Controller
                 } else {
                     $thirdImageUrl = null;
                 }       
-                    $dormImage = new imagesDormImages();
-                    $dormImage->dormitory_id = $dorm->dorm_id; 
-                    $dormImage->main_image = $mainImageUrl;
-                    $dormImage->secondary_image = $secondImageUrl;
-                    $dormImage->third_image = $thirdImageUrl;
+                    $dormImage = new dormimagesModel();
+                    $dormImage->fkdormID = $dorm->dormID; 
+                    $dormImage->mainImage = $mainImageUrl;
+                    $dormImage->secondaryImage = $secondImageUrl;
+                    $dormImage->thirdImage = $thirdImageUrl;
                     $dormImage->save();    
 
                     return response()->json([
                         'status' => 'success',
                         'message' => 'Dorm added successfully!',
-                        'dormId' => $dorm->dorm_id,
+                        'dormId' => $dorm->dormID,
                     ]);  
         
 
@@ -382,7 +382,7 @@ class dormManagementController extends Controller
                         'required',
                         'string',
                         'max:255',
-                        Rule::unique('dorms')->ignore($id, 'dorm_id'),
+                        Rule::unique('dorms', 'dormName')->ignore($id, 'dormID'),
                     ], 
                 'address' => 'required|string|max:255',
                 'description' => 'required|string|max:1000',
@@ -403,24 +403,24 @@ class dormManagementController extends Controller
                 'description.max' => 'The description must not exceed 1000 characters.',
             ]);
             $landlordId = session('landlord_id');
-            $dorm = landlordDormManagement::where('dorm_id', $id)->where('landlord_id', $landlordId)->first();
+            $dorm = dormModel::where('dormID', $id)->where('fklandlordID', $landlordId)->first();
             if (!$dorm) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Dorm not found.'
                 ], 404);
             }
-            $dorm->dorm_name = $validated['dorm_name'];
+            $dorm->dormName = $validated['dorm_name'];
             $dorm->address = $validated['address'];
             $dorm->latitude = $validated['latitude'];
             $dorm->longitude = $validated['longitude'];
             $dorm->description = $validated['description'] ?? null;
-            $dorm->total_rooms = $validated['total_rooms'];
-            $dorm->contact_email = $validated['contact_email'];
-            $dorm->contact_phone = $validated['contact_phone'];
+            $dorm->totalRooms = $validated['total_rooms'];
+            $dorm->contactEmail = $validated['contact_email'];
+            $dorm->contactPhone = $validated['contact_phone'];
             $dorm->availability = $validated['availability'] ?? null;
-            $dorm->occupancy_type = $validated['occupancy_type'] ?? null;
-            $dorm->building_type = $validated['building_type'] ?? null;
+            $dorm->occupancyType = $validated['occupancy_type'] ?? null;
+            $dorm->buildingType = $validated['building_type'] ?? null;
             $dorm->save();
             return response()->json([
                 'status' => 'success',
@@ -456,7 +456,7 @@ class dormManagementController extends Controller
         }
 
         // Fetch the dorm by ID
-        $dorm = landlordDormManagement::where('dorm_id', $id)->where('landlord_id', $landlordId)->first();
+        $dorm = dormModel::where('dormID', $id)->where('fklandlordID', $landlordId)->first();
         if (!$dorm) {
             return response()->json([
                 'status' => 'error',
@@ -483,10 +483,11 @@ class dormManagementController extends Controller
             ], 403);
         }
         // Fetch the dorm by ID
-        $dorm = landlordDormManagement::with('amenities','images','rulesAndPolicy')
-            ->where('dorm_id', $id)
-            ->where('landlord_id', $landlordId)
+        $dorm = dormModel::with('amenities','images','rulesAndPolicy')
+            ->where('dormID', $id)
+            ->where('fklandlordID', $landlordId)
             ->first();
+            
         if (!$dorm) {
             return response()->json([
                 'status' => 'error',
@@ -512,7 +513,7 @@ class dormManagementController extends Controller
         }
 
         // Get dorms by landlord
-        $dorms = landlordDormManagement::where('landlord_id', $landlordId)->paginate(2);
+        $dorms = dormModel::where('fklandlordID', $landlordId)->paginate(2);
 
         return response()->json([
             'status' => 'success',
@@ -541,11 +542,11 @@ class dormManagementController extends Controller
             $dormId = $validated['dorm_id'];
     
             // First check if this amenity name already exists for this dorm
-            $existingAmenity = landlordAmintiesModel::where('name', $amenityName)->first();
+            $existingAmenity = aminitiesModel::where('aminityName', $amenityName)->first();
     
             if ($existingAmenity) {
-                $exists = landlordDormAnimitiesModel::where('dorm_id', $dormId)
-                    ->where('amenity_id', $existingAmenity->id)
+                $exists = dormaminitiesModel::where('fkdormID', $dormId)
+                    ->where('id', $existingAmenity->id)
                     ->exists();
     
                 if ($exists) {
@@ -557,14 +558,14 @@ class dormManagementController extends Controller
             }
     
             // Create the amenity if it doesn't exist globally
-            $amenity = landlordAmintiesModel::firstOrCreate(
-                ['name' => $amenityName]
+            $amenity = aminitiesModel::firstOrCreate(
+                ['aminityName' => $amenityName]
             );
     
             // Link amenity to the dorm
-            landlordDormAnimitiesModel::create([
-                'dorm_id' => $dormId,
-                'amenity_id' => $amenity->id,
+            dormaminitiesModel::create([
+                'fkdormID' => $dormId,
+                'fkaminityID' => $amenity->id,
             ]);
     
             return response()->json([
@@ -591,7 +592,7 @@ class dormManagementController extends Controller
             ], 403);
         }
     
-        $pivot = landlordDormAnimitiesModel::find($pivotId); // this is the pivot record
+        $pivot = dormaminitiesModel::find($pivotId); // this is the pivot record
     
         if (!$pivot) {
             return response()->json([
@@ -601,8 +602,8 @@ class dormManagementController extends Controller
         }
     
         // Check if the dorm_id belongs to the landlord
-        $ownsDorm = landlordDormManagement::where('dorm_id', $pivot->dorm_id)
-            ->where('landlord_id', $landlordId)
+        $ownsDorm = dormModel::where('dormID', $pivot->fkdormID)
+        ->where('fklandlordID', $landlordId)
             ->exists();
     
         if (!$ownsDorm) {
@@ -639,18 +640,18 @@ class dormManagementController extends Controller
         $dormId = $validated['dorm_id'];
 
         // Check if the rule already exists for this dorm
-        $existingRule = landlordRulesAndPolicyModel::where('rules_name', $rules)->first();
+        $existingRule = rulesModel::where('rulesName', $rules)->first();
 
         // If it exists globally, use it, otherwise create it
         if (!$existingRule) {
-            $existingRule = landlordRulesAndPolicyModel::create([
-                'rules_name' => $rules
+            $existingRule = rulesModel::create([
+                'rulesName' => $rules
             ]);
         }
 
         // Check if the dorm already has this rule assigned
-        $alreadyLinked = landlordDormRulesAndPolicyModel::where('fkdorm_id', $dormId)
-            ->where('fkrules_id', $existingRule->id)
+        $alreadyLinked = dormrulesModel::where('fkdormID', $dormId)
+            ->where('fkruleID', $existingRule->id)
             ->exists();
 
         if ($alreadyLinked) {
@@ -661,9 +662,9 @@ class dormManagementController extends Controller
         }
 
         // Link the rule to the dorm
-        landlordDormRulesAndPolicyModel::create([
-            'fkdorm_id' => $dormId,
-            'fkrules_id' => $existingRule->id,
+        dormrulesModel::create([
+            'fkdormID' => $dormId,
+            'fkruleID' => $existingRule->id,
         ]);
 
         return response()->json([
@@ -689,7 +690,7 @@ public function deleteRulesAndPolicies($pivotId)
                 'message' => 'Unauthorized. Please log in.'
             ], 403);
         }
-        $pivot = landlordDormRulesAndPolicyModel::find($pivotId); 
+        $pivot = dormrulesModel::find($pivotId); 
         if (!$pivot) {
             return response()->json([
                 'status' => 'error',
@@ -698,8 +699,8 @@ public function deleteRulesAndPolicies($pivotId)
         }
     
         // Check if the dorm_id belongs to the landlord
-        $ownsDorm = landlordDormManagement::where('dorm_id', $pivot->fkdorm_id)
-            ->where('landlord_id', $landlordId)
+        $ownsDorm = dormModel::where('dormID', $pivot->fkdormID)
+        ->where('fklandlordID', $landlordId)
             ->exists();
     
         if (!$ownsDorm) {
@@ -752,11 +753,11 @@ public function deleteRulesAndPolicies($pivotId)
     } else {
         $thirdImageUrl = null;
     }
-        $roomImage = new imagesDormImages();
-        $roomImage->dormitory_id = $request->room_id; 
-        $roomImage->main_image = $mainImageUrl;
-        $roomImage->secondary_image = $secondImageUrl;
-        $roomImage->third_image = $thirdImageUrl;
+        $roomImage = new dormimagesModel();
+        $roomImage->fkdormID = $request->room_id; 
+        $roomImage->mainImage = $mainImageUrl;
+        $roomImage->secondaryImage = $secondImageUrl;
+        $roomImage->thirdImage = $thirdImageUrl;
         $roomImage->save();
         return response()->json([
             'status' => 'success',
@@ -840,7 +841,7 @@ public function deleteRulesAndPolicies($pivotId)
             'dorm_id' => 'required|integer'
         ]);
     
-        $roomImage = imagesDormImages::where('images_id', $id)->where('dormitory_id', $request->dorm_id)->first();
+        $roomImage = dormimagesModel::where('imagesID', $id)->where('fkdormID', $request->dorm_id)->first();
     
         if (!$roomImage) {
             return response()->json([
@@ -853,22 +854,22 @@ public function deleteRulesAndPolicies($pivotId)
         if ($request->hasFile('roomImage1File')) {
             $image1Name = time() . '_1.' . $request->file('roomImage1File')->getClientOriginalExtension();
             $request->file('roomImage1File')->storeAs('public/uploads/roomImages', $image1Name);
-            $roomImage->main_image = asset('storage/uploads/roomImages/' . $image1Name);
+            $roomImage->mainImage = asset('storage/uploads/roomImages/' . $image1Name);
         }
     
         if ($request->hasFile('roomImage2File')) {
             $image2Name = time() . '_2.' . $request->file('roomImage2File')->getClientOriginalExtension();
             $request->file('roomImage2File')->storeAs('public/uploads/roomImages', $image2Name);
-            $roomImage->secondary_image = asset('storage/uploads/roomImages/' . $image2Name);
+            $roomImage->secondaryImage = asset('storage/uploads/roomImages/' . $image2Name);
         }
     
         if ($request->hasFile('roomImage3File')) {
             $image3Name = time() . '_3.' . $request->file('roomImage3File')->getClientOriginalExtension();
             $request->file('roomImage3File')->storeAs('public/uploads/roomImages', $image3Name);
-            $roomImage->third_image = asset('storage/uploads/roomImages/' . $image3Name);
+            $roomImage->thirdImage = asset('storage/uploads/roomImages/' . $image3Name);
         }
     
-        $roomImage->dormitory_id = $request->dorm_id; 
+        $roomImage->fkdormID = $request->dorm_id; 
     
         $roomImage->save();
     

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\landloard;
+namespace App\Http\Controllers\landlord\auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\landlord\landlordAccountModel;
-use App\Models\tenant\OtpModels;
+use App\Models\landlord\landlordModel;
+use App\Models\otpModel;
 use App\Jobs\DeleteExpiredOtpsJob;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Storage;
 
-class accountprocesslandlordController extends Controller
+class landlordaccountprocessController extends Controller
 {
     public function landlordRegister()
     {
@@ -127,10 +127,10 @@ class accountprocesslandlordController extends Controller
             $expiresAt = now()->addMinutes(1);
 
              Mail::to($validated['email'])->send(new tenantEmailOtp($otpCode));
-            OtpModels::create([
+             otpModel::create([
                 'email' => $validated['email'],
                 'otpCode' => $otpCode,
-                'otpExpires_at' => $expiresAt,
+                'otpExpiresAt' => $expiresAt,
                 'role' => 'landlord',
             ]);
             
@@ -198,9 +198,9 @@ class accountprocesslandlordController extends Controller
                 $governmentIdPath = 'storage/uploads/governmentIdPic/' . $imageName;
             }
               $landlordID = Str::uuid();
-               $verifyOtp = OtpModels::where('email',$validated['email'])
+               $verifyOtp = otpModel::where('email',$validated['email'])
             ->where('otpCode',$validated['codeotp'])
-            ->where('otpExpires_at', '>', now())
+            ->where('otpExpiresAt', '>', now())
             ->first();
             // Store the tenant data
             if(!$verifyOtp)
@@ -212,17 +212,17 @@ class accountprocesslandlordController extends Controller
 
             ],400);
         }
-            $create = landlordAccountModel::create([
-                'landlord_id' => $landlordID,
+            $create = landlordModel::create([
+                'landlordID' => $landlordID,
                 'firstname' => $validated['firstname'],
                 'lastname' => $validated['lastname'],
                 'email' => $validated['email'],
                 'phonenumber' => $validated['phonenumber'],
                 'gender' => $validated['gender'],
-                'password_hash' => bcrypt($validated['password']),
-                'profile_pic_url' => $profilePicPath,
-                'goverment_id' => $governmentIdPath,
-                'business_permit' => $businessPermitPath,
+                'password' => bcrypt($validated['password']),
+                'profilePicUrl' => $profilePicPath,
+                'govermentID' => $governmentIdPath,
+                'businessPermit' => $businessPermitPath,
                 ]);
                  $verifyOtp->where('email',$validated['email'])->forceDelete();
 
@@ -258,7 +258,7 @@ class accountprocesslandlordController extends Controller
         'email.exists' => 'No OTP record found for this email.',
     ]);
     try{
-         $otpRecord = OtpModels::where('email',$validated['email']);
+         $otpRecord = otpModel::where('email',$validated['email']);
     if(!$otpRecord)
     {
         return response()->json([
@@ -269,7 +269,7 @@ class accountprocesslandlordController extends Controller
                 $newOtpExpiresAt = now()->addMinutes(1);
                    $otpRecord->update([
             'otpCode' => $newOtp,
-            'otpExpires_at' => $newOtpExpiresAt, 
+            'otpExpiresAt' => $newOtpExpiresAt, 
         ]);
                 Mail::to($validated['email'])->send(new tenantEmailOtp($newOtp));
                  return response()->json([
@@ -278,16 +278,9 @@ class accountprocesslandlordController extends Controller
             'timer' => $newOtpExpiresAt
         ], 200);
 
-
-
     }
     catch(Exception $ex)
 {   
-    \Log::error('Unexpected Error in ResendOtp:', [
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ]);
-
         return response()->json([
             'message' => 'An unexpected error occurred. Please try again.',
         ], 500);
@@ -303,25 +296,25 @@ public function loginLandlord(Request $request)
             'password' => 'required',
         ]);
     
-        $user = \App\Models\landlord\landlordAccountModel::where('email', $request->email)->first();
+        $user = landlordModel::where('email', $request->email)->first();
     
-        if (!$user || !\Hash::check($request->password, $user->password_hash)) {
+        if (!$user || !\Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
         }
     
     session([
         'landlord_logged_in' => true,
-        'landlord_id' => $user->landlord_id,
+        'landlord_id' => $user->landlordID,
         'landlord_firstname' => $user->firstname,
         'landlord_lastname' => $user->lastname,
-        'landlord_avatar' => $user->profile_pic_url
+        'landlord_avatar' => $user->profilePicUrl
     ]);
     
         return response()->json([
             'message' => 'Login successful',
             'status' => 'success',
             'landlord' => [
-                'id' => $user->landlord_id,
+                'id' => $user->landlordID,
                 'firstname' =>$user->firstname,
                 'lastname' =>$user->lastname,
             ],
@@ -343,7 +336,7 @@ public function loginLandlord(Request $request)
     }
     
 }
-public function logout(Request $request)
+public function logoutlandlord(Request $request)
 {
     Auth::logout();
     $request->session()->invalidate();

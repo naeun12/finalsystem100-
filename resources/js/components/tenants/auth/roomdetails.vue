@@ -42,8 +42,8 @@
                         <i class="bi bi-stars me-2 text-primary"></i>Amenities
                     </h5>
                     <ul class="ps-3 mb-0">
-                        <li v-for="(aminity, index) in displayedAmenities" :key="aminity.aminities_id">
-                            {{ aminity.name }}
+                        <li v-for="(aminity, index) in displayedAmenities" :key="aminity.id">
+                            {{ aminity.aminityName }}
                         </li>
                     </ul>
                     <div class="text-center mt-2" v-if="amenities.length > 3">
@@ -73,7 +73,7 @@
                     <div class="text-muted" style="white-space: pre-line;">
                         <ul class="ps-3 mb-0">
                             <li v-for="(rule, index) in displayedRulesAndPolicy" :key="rule.id">
-                                {{ rule.rules_name }}
+                                {{ rule.rulesName }}
                             </li>
                         </ul>
                     </div>
@@ -91,10 +91,10 @@
                     </h5>
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2">
-                            <i class="bi bi-telephone me-2 text-muted"></i>{{ dorm.dorm.contact_phone }}
+                            <i class="bi bi-telephone me-2 text-muted"></i>{{ dorm.dorm.contactPhone }}
                         </li>
                         <li>
-                            <i class="bi bi-envelope me-2 text-muted"></i>{{ dorm.dorm.contact_email }}
+                            <i class="bi bi-envelope me-2 text-muted"></i>{{ dorm.dorm.contactEmail }}
                         </li>
                     </ul>
                 </div>
@@ -109,7 +109,7 @@
                     <div class="row">
                         <div class="col-md-8">
                             <h4 class="fw-bold text-primary mb-1">
-                                <i class="bi bi-house-door-fill me-2 text-primary"></i>{{ dorm.dorm.dorm_name }}
+                                <i class="bi bi-house-door-fill me-2 text-primary"></i>{{ dorm.dorm.dormName }}
                             </h4>
 
                             <p class="text-muted mb-3">
@@ -139,19 +139,19 @@
                             <p>
                                 <i class="bi bi-people-fill me-2 text-primary"></i>
                                 <strong>Occupancy Type:</strong>
-                                {{ dorm.dorm.occupancy_type }}
+                                {{ dorm.dorm.occupancyType }}
                             </p>
 
                             <p>
                                 <i class="bi bi-building me-2 text-primary"></i>
                                 <strong>Building Type:</strong>
-                                {{ dorm.dorm.building_type }}
+                                {{ dorm.dorm.buildingType }}
                             </p>
 
                             <p>
                                 <i class="bi bi-door-open-fill me-2 text-primary"></i>
                                 <strong>Rooms Available:</strong>
-                                {{ dorm.dorm.total_rooms > 0 ? dorm.dorm.total_rooms + ' room(s)' : 'No rooms available'
+                                {{ dorm.dorm.totalRooms > 0 ? dorm.dorm.totalRooms + ' room(s)' : 'No rooms available'
                                 }}
                             </p>
                             <p class="mb-4">
@@ -177,17 +177,15 @@
                                 <tr>
                                     <th>Room Type</th>
                                     <th>Monthly Rate (PHP)</th>
-                                    <th>Inclusions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-if="rooms.length === 0">
                                     <td colspan="3">No rooms available</td>
                                 </tr>
-                                <tr v-for="room in rooms" :key="room.room_id">
-                                    <td>{{ room.room_type }}</td>
+                                <tr v-for="room in rooms" :key="room.roomID">
+                                    <td>{{ room.roomType }}</td>
                                     <td>₱{{ room.price.toLocaleString() }}</td>
-                                    <td><!-- Add room inclusions here --></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -444,9 +442,9 @@ export default {
             const imgs = [];
             let dormImages = data.dorm.images;
 
-            if (dormImages.main_image) imgs.push(dormImages.main_image);
-            if (dormImages.secondary_image) imgs.push(dormImages.secondary_image);
-            if (dormImages.third_image) imgs.push(dormImages.third_image);
+            if (dormImages.mainImage) imgs.push(dormImages.mainImage);
+            if (dormImages.secondaryImage) imgs.push(dormImages.secondaryImage);
+            if (dormImages.thirdImage) imgs.push(dormImages.thirdImage);
 
             this.images = imgs;
             this.mainImage = imgs.length > 0 ? imgs[0] : '';
@@ -463,7 +461,7 @@ export default {
                 this.amenities = res.data.dorm.amenities || [];
                 this.rulesAndPolicy = res.data.dorm.rules_and_policy || [];
                 this.landlordname = res.data.landlord?.firstname + ' ' + res.data.landlord?.lastname;
-                this.landlord_id = res.data.landlord?.landlord_id;
+                this.landlord_id = res.data.landlord?.landlordID;
                 this.totalCapacity = res.data.totalcapacity;
 
             } catch (error) {
@@ -630,9 +628,10 @@ export default {
             }
         },
         messagePage() {
-            window.location.href = `/landlord-tenant-message/${this.tenant_id}/${this.landlord_id}`;
-
+            const url = `/tenant-message/${this.tenant_id}?landlord_id=${this.landlord_id}`;
+            window.location.href = url;
         },
+
         initMap() {
             const mapDiv = document.getElementById("map");
             const dormMap = { lat: this.lat, lng: this.lng };

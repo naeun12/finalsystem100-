@@ -51,7 +51,7 @@
                 <i class="bi bi-hash text-primary me-2"></i>Room Number:
             </label>
             <div class="p-2 border rounded bg-light text-break">
-                {{ roomsDetail?.room_number || 'N/A' }}
+                {{ roomsDetail?.roomNumber || 'N/A' }}
             </div>
         </div>
         <div class="mb-4">
@@ -59,7 +59,7 @@
                 <i class="bi bi-door-open-fill text-primary me-2"></i>Room Type:
             </label>
             <div class="p-2 border rounded bg-light text-break">
-                {{ roomsDetail?.room_type || 'N/A' }}
+                {{ roomsDetail?.roomType || 'N/A' }}
             </div>
         </div>
 
@@ -230,7 +230,7 @@ export default {
             try {
                 const confirmed = await this.$refs.modal.show({
                     title: `Confirm Booking`,
-                    message: `Are you sure you want to book Room ${this.roomsDetail?.room_number || 'N/A'} (${this.roomsDetail?.room_type || 'Room'})?`,
+                    message: `Are you sure you want to book Room ${this.roomsDetail?.roomNumber || 'N/A'} (${this.roomsDetail?.roomType || 'Room'})?`,
                     functionName: 'Confirm Room Booking'
                 });
 

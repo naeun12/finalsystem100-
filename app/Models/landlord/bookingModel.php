@@ -4,11 +4,12 @@ namespace App\Models\landlord;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\tenant\tenantModel;
 
 class bookingModel extends Model
 {
     use HasFactory;
-    protected $table = 'booking';
+    protected $table = 'bookings';
     protected $primaryKey = 'bookingID';
     public $incrementing = true;
     protected $fillable = [
@@ -29,11 +30,11 @@ class bookingModel extends Model
 
     public function room()
     {
-        return $this->belongsTo(Room::class, 'fkroomID', 'room_id');
+        return $this->belongsTo(roomModel::class, 'fkroomID', 'roomID');
     }
 
     public function tenant()
     {
-        return $this->belongsTo(Tenant::class, 'fktenantID', 'tenant_id');
+        return $this->belongsTo(tenantModel::class, 'fktenantID', 'tenantID');
     }
 }

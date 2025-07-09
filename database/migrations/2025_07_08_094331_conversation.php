@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('conversations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('initiator_id'); // who started the convo
-            $table->enum('initiator_role', ['tenant', 'landlord', 'admin']);
-            $table->string('topic')->nullable(); // optional subject or title
+            $table->string('initiatorID'); // who started the convo
+            $table->enum('initiatorRole', ['tenant', 'landlord', 'admin']);
+            $table->text('topic')->unique(); // ✅ Declare column then make it unique
             $table->timestamps();
         });
     }

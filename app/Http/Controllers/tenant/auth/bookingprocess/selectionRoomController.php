@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\tenant\auth\bookingprocess;
 
 use App\Http\Controllers\Controller;
-use App\Models\landlord\landlordRoomModel;
+use App\Models\landlord\roomModel;
 use App\Models\landlord\reservationModel;
 
 use Illuminate\Http\Request;
@@ -16,21 +16,21 @@ class selectionRoomController extends Controller
     }
     public function availableRooms($dormitoryID)
     {
-        $rooms = landlordRoomModel::where('dormitory_id',$dormitoryID)
+        $rooms = roomModel::where('fkdormID',$dormitoryID)
         ->where('availability','Available')
         ->get();
         return response()->json(['rooms' => $rooms]);
     }
     public function occupiedRooms($dormitoryID)
     {
-        $rooms = landlordRoomModel::where('dormitory_id',$dormitoryID)
+        $rooms = roomModel::where('fkdormID',$dormitoryID)
         ->where('availability','Occupied')
         ->get();
         return response()->json(['rooms' => $rooms]);
     }
     public function maintenanceRooms($dormitoryID)
     {
-        $rooms = landlordRoomModel::where('dormitory_id',$dormitoryID)
+        $rooms = roomModel::where('dormitory_id',$dormitoryID)
         ->where('availability','Under Maintenance')
         ->get();
         return response()->json(['rooms' => $rooms]);
@@ -41,7 +41,7 @@ class selectionRoomController extends Controller
     $max = $request->query('max');
     $chooseStatus = $request->query('chooseStatus');
 
-    $rooms = landlordRoomModel::where('dormitory_id', $dormitoryID)
+    $rooms = roomModel::where('fkdormID', $dormitoryID)
         ->where('availability', $chooseStatus)
         ->whereBetween('price', [$min, $max])
         ->get();
@@ -53,18 +53,16 @@ public function filterGender(Request $request, $dormitoryID)
     $gender = $request->query('gender');
     $chooseStatus = $request->query('chooseStatus');
 
-    $rooms = landlordRoomModel::where('dormitory_id', $dormitoryID)
+    $rooms = roomModel::where('fkdormID', $dormitoryID)
         ->where('availability', $chooseStatus)
-        ->where('gender_preference', $gender)
+        ->where('genderPreference', $gender)
         ->get();
 
     return response()->json(['rooms' => $rooms]);
 }
-
-
     public function viewRoomDetails($id)
     {
-        $room = landlordRoomModel::where('room_id',$id)->first();
+        $room = roomModel::where('roomID',$id)->first();
         return response()->json([
             'status' => 'success',
             'room' => $room,
@@ -95,11 +93,11 @@ public function filterGender(Request $request, $dormitoryID)
                 'fktenantID'         => $request->tenant_id,
                 'firstname'          => $request->firstname,
                 'lastname'           => $request->lastname,
-                'contact_number'     => $request->contact_number,
-                'contact_email'      => $request->email,
+                'contactNumber'     => $request->contact_number,
+                'contactEmail'      => $request->email,
                 'age'                => $request->age,
                 'gender'             => $request->gender,
-                'studentpicture_id'  => $request->studentpicture_id,
+                'studentpictureId'  => $request->studentpicture_id,
                 'status'             => 'pending',
             ]);
     

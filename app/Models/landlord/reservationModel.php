@@ -16,27 +16,26 @@ class reservationModel extends Model
         'fktenantID',
         'firstname',
         'lastname',
-        'contact_number',
-        'contact_email',
+        'contactNumber',
+        'contactEmail',
         'age',
         'gender',
         'status',
-        'payment_type',
-        'payment_image',
-        'studentpicture_id'
+        'studentpictureId'
     ];
     public function dormitory()
     {
-        return $this->belongsTo(Dorm::class, 'fkdormitoryID', 'dorm_id');
+        return $this->belongsTo(dormModel::class, 'fkdormitoryID', 'dormID');
     }
 
     public function room()
     {
-        return $this->belongsTo(Room::class, 'fkroomID', 'room_id');
+        return $this->belongsTo(roomModel::class, 'fkroomID', 'roomID');
     }
+    
 
     public function tenant()
     {
-        return $this->belongsTo(Tenant::class, 'fktenantID', 'tenant_id');
+        return $this->belongsTo(tenantModel::class, 'fktenantID', 'tenantID');
     }
 }

@@ -29,37 +29,41 @@
         </li>
 
 
-        <li class="list-group-item">
-            <a class="d-flex justify-content-between align-items-center text-decoration-none text-dark fw-semibold py-2 px-3"
+        <li class="list-group-item border-0 px-0">
+            <a class="d-flex justify-content-between align-items-center text-decoration-none fw-semibold py-2 px-3 bg-light rounded shadow-sm"
                 data-bs-toggle="collapse" href="#tenantManagementMenu" role="button" aria-expanded="false"
                 aria-controls="tenantManagementMenu">
-                <div>
-                    <i class="bi bi-people-fill me-2 text-primary"></i>
-                    Tenant Management
+                <div class="text-dark">
+                    <i class="bi bi-people-fill me-2 text-primary fs-5"></i>
+                    Booking and Approval
                 </div>
-                <i class="bi bi-caret-down-fill"></i>
+                <i class="bi bi-caret-down-fill text-secondary"></i>
             </a>
+
             <ul class="collapse list-unstyled ms-4 mt-2" id="tenantManagementMenu">
                 <li class="mb-2">
-                    <a href="{{ route('tenantScreening', ['landlordId' => session('landlord_id')]) }}"
-                        class="text-decoration-none text-dark d-flex align-items-center gap-2">
-                        <i class="bi bi-person-check-fill text-success"></i> Tenant Screening
+                    <a href="{{ route('booking.index', ['landlord_id' => session('landlord_id')]) }}"
+                        class="text-decoration-none text-dark d-flex align-items-center gap-2 px-2 py-1 rounded hover-effect">
+                        <i class="bi bi-person-check-fill text-success fs-5"></i>
+                        <span class="fw-medium">Booking Approval</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('tenant') }}"
-                        class="text-decoration-none text-dark d-flex align-items-center gap-2">
-                        <i class="bi bi-person-lines-fill text-info"></i> Room Tenants
+                    <a href="#"
+                        class="text-decoration-none text-dark d-flex align-items-center gap-2 px-2 py-1 rounded hover-effect">
+                        <i class="bi bi-person-lines-fill text-info fs-5"></i>
+                        <span class="fw-medium">Reservation Approval</span>
                     </a>
                 </li>
             </ul>
         </li>
         <li class="list-group-item">
-            <a href="{{ route('BookingPage') }}" class="text-decoration-none text-dark d-flex align-items-center gap-2">
-                <i class="bi bi-calendar-check text-primary"></i>
-                Booking & Reservations
+            <a class="text-decoration-none text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-person-lines-fill text-info fs-5"></i> <!-- 👈 Bootstrap icon for group -->
+                All Tenants
             </a>
         </li>
+
 
         <li class="list-group-item">
             <a href="{{ route('AnalyticsPage') }}"

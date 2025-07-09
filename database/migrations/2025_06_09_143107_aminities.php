@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('amenities', function (Blueprint $table) {
             $table->id(); // amenity_id
-            $table->string('name');
+            $table->string('aminityName');
             $table->timestamps();
         });
     }

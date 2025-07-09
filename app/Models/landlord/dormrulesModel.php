@@ -4,14 +4,14 @@ namespace App\Models\landlord;
 
 use Illuminate\Database\Eloquent\Model;
 
-class landlordDormRulesAndPolicyModel extends Model
+class dormrulesModel extends Model
 {
-    protected $table = 'rules_and_policy_dorm';
+    protected $table = 'rulesandpolicydorm';
 
     protected $fillable = [
         'id',
-        'fkdorm_id',
-        'fkrules_id',
+        'fkdormID',
+        'fkruleID',
         
     ];
 }

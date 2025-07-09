@@ -13,16 +13,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dorm_images', function (Blueprint $table) {
-            $table->id('images_id'); // primary key
-            $table->unsignedBigInteger('dormitory_id');
-            $table->string('main_image')->nullable();
-            $table->string('secondary_image')->nullable();
-            $table->string('third_image')->nullable();
+        Schema::create('dormImages', function (Blueprint $table) {
+            $table->id('imagesID'); // primary key
+            $table->unsignedBigInteger('fkdormID');
+            $table->string('mainImage')->nullable();
+            $table->string('secondaryImage')->nullable();
+            $table->string('thirdImage')->nullable();
             $table->timestamps();
-
-
-            $table->foreign('dormitory_id')->references('dorm_id')->on('dorms')->onDelete('cascade');
+            $table->foreign('fkdormID')->references('dormID')->on('dorms')->onDelete('cascade');
 
 
         });
@@ -34,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dorm_images');
+        Schema::dropIfExists('dormImages');
     }
 };

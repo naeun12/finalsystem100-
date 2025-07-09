@@ -6,49 +6,47 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\landlord\imageRoomsModel; // Assuming you have a Dorm model for dorm management.
-use App\Models\landlord\landlordRoomModel; // Assuming you have a Dorm model for dorm management
-use App\Models\landlord\landlordAccountModel; // Assuming you have a Dorm model for dorm management
+use App\Models\landlord\roomModel; // Assuming you have a Dorm model for dorm management
+use App\Models\landlord\landlordModel; // Assuming you have a Dorm model for dorm management
 
 
 
-class landlordDormManagement extends Model
+class dormModel extends Model
 {
     use  HasFactory, Notifiable;  // Add HasApiTokens here
     protected $table = 'dorms';
-    protected $primaryKey = 'dorm_id';
+    protected $primaryKey = 'dormID';
     public $timestamps = true;
     public $incrementing = true;
 
     protected $fillable = [
-        'dorm_id',
-        'dorm_name',
-        'landlord_id',
+        'dormID',
+        'dormName',
+        'fklandlordID',
         'address',
+        'totalRooms',
         'latitude',
         'longitude',
         'description',
-        'amenities',
-        'contact_email',
-        'contact_phone',
+        'contactEmail',
+        'contactPhone',
         'availability',
-        'occupancy_type',
-        'room_features',
-        'building_type',
-        'rules',
+        'occupancyType',
+        'buildingType',
         'created_at',
         
     ];
     public function amenities()
 {
     return $this->belongsToMany(
-        \App\Models\landlord\landlordAmintiesModel::class,
-        'amenity_dorm',
-        'dorm_id',
-        'amenity_id',
-        
-    )->withPivot('id');
-    
+        aminitiesModel::class,      // related model
+        'amenitydorm',              // pivot table
+        'fkdormID',                 // this model’s foreign key on pivot
+        'fkaminityID'               // related model’s foreign key on pivot
+    )->withPivot('id'); // optional, so you can still use pivot.id
 }
+
+    
 protected static function booted()
 {
     static::deleting(function ($dorm) {
@@ -64,33 +62,26 @@ protected static function booted()
 public function rulesAndPolicy()
 {
     return $this->belongsToMany(
-        \App\Models\landlord\landlordRulesAndPolicyModel::class,
-        'rules_and_policy_dorm',
-        'fkdorm_id',
-        'fkrules_id',
+        rulesModel::class,
+        'rulesandpolicydorm',
+        'fkdormID',
+        'fkruleID',
 
     )->withPivot('id');
 }
 public function images()
 {
-    return $this->hasOne(imagesDormImages::class, 'dormitory_id', 'dorm_id');
+    return $this->hasOne(dormimagesModel::class, 'fkdormID', 'dormID');
 }
 public function rooms()
 {
-    return $this->hasMany(landlordRoomModel::class, 'dormitory_id', 'dorm_id');
+    return $this->hasMany(roomModel::class, 'fkdormID', 'dormID');
 }
 
 public function landlord()
 {
-    return $this->belongsTo(landlordAccountModel::class, 'landlord_id', 'landlord_id');
+    return $this->belongsTo(landlordModel::class, 'fklandlordID', 'landlordID');
 }
-public function totalCapacity()
-{
-    return $this->rooms()->sum('capacity');
-}
-
-
-
 }
 
 
