@@ -22,6 +22,7 @@ import roomBook from './components/tenants/auth/bookingProcess/bookRoom.vue';
 import dormitoriesMap from './components/tenants/auth/dormitoriesmap.vue';
 import dormitories from './components/tenants/auth/dormitories.vue';
 import tenantmessage from './components/tenants/auth/tenantmessage.vue';
+import reservationPage from './components/landlord/auth/reservationpage.vue';
 
 import AOS from 'aos';
 import 'aos/dist/aos.css'
@@ -126,8 +127,13 @@ const tenantMessageController = document.querySelector('#tenantmessage');
 if (tenantMessageController) {
     createApp(tenantmessage).mount('#tenantmessage');
 }
-window.Pusher = Pusher;
+const reservationController = document.querySelector('#reservationPage');
 
+if (reservationController) {
+    createApp(reservationPage).mount('#reservationPage');
+}
+
+window.Pusher = Pusher;
 window.Echo = new Echo({
     broadcaster: 'pusher',
     key: import.meta.env.VITE_PUSHER_APP_KEY,

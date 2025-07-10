@@ -22,6 +22,7 @@ use App\Http\Controllers\landlord\auth\NotificationController;
 
 use App\Http\Controllers\landloard\auth\ReviewandFeedbackController;
 use App\Http\Controllers\landloard\auth\BookingController;
+use App\Http\Controllers\landlord\auth\reservationController;
 use App\Http\Controllers\tenant\auth\dormitoriesmapcontroller;
 use App\Http\Controllers\tenant\auth\dormitories;
 use App\Http\Controllers\tenant\auth\bookingprocess\selectionRoomController;
@@ -75,8 +76,8 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::match(['get', 'post'], '/edit-secondary-image', [dormpageController::class, 'editsecondaryImage'])->name('edit-secondary-image');
     Route::match(['get', 'post'], '/edit-images/{id}', [dormpageController::class, 'imageUpdated'])->name('edit-images');
     Route::match(['get', 'post'], '/landlordRoomManagement/{landlordId}', [roompageController::class, 'RoomManagement'])->name('landlordRoomManagement');
-    // Route::match(['get', 'post'], '/tenant', [TenantController::class, 'tenant'])->name('tenant');
     Route::match(['get', 'post'], '/booking-index/{landlord_id}', [bookingpageController::class, 'bookingpageIndex'])->name('booking.index');
+    Route::match(['get', 'post'], '/reservation-index/{landlord_id}', [reservationController::class, 'reservationIndex'])->name('reservation.index');
     Route::match(['get', 'post'], '/AnalyticsPage', [AnalyticsController::class, 'AnalyticsPage'])->name('AnalyticsPage');
     Route::match(['get', 'post'], '/MessagingPage', [MessagingCenterController::class, 'MessagingPage'])->name('MessagingPage');
     Route::match(['get', 'post'], '/ReviewandFeedback', [ReviewandFeedbackController::class, 'ReviewandFeedback'])->name('ReviewandFeedback');
@@ -115,14 +116,22 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/get-rooms-by-room-type', [roompageController::class, 'getRoomsByRoomType'])->name('get.rooms.by.room.type');
     Route::get('/ViewRoom/{id}', [roompageController::class, 'ViewRoom'])->name('ViewRoom');
     Route::get('/SearchRooms', [roompageController::class, 'searchRooms'])->name('SearchRooms');
-    //functions for tenant screening
+    //functions for booking approval
     Route::get('/booking-list', [bookingpageController::class, 'bookingList']);
     Route::get('/booking-tenant-view/{id}', [bookingpageController::class, 'ViewTenant']);
-    
     Route::post('/approve-tenant',[bookingpageController::class,'approveTenant']);
     Route::post('/not-approve-tenant',[bookingpageController::class,'notapproveTenant']);
     Route::delete('/delete-booking/{id}',[bookingpageController::class,'deleteBooking']);
     Route::get('/search-booking', [bookingpageController::class, 'searchBooking']);
+    Route::get('/api/dorms', [bookingpageController::class, 'getDormName']);
+    Route::get('/api/dorms/{dormId}/tenants', [bookingpageController::class, 'getTenantsByDorm']);
+    Route::get('/api/roomnumber/', [bookingpageController::class, 'getrooms']);
+    Route::get('/api/applications/', [bookingpageController::class, 'getapplications']);
+    //functions for reservation 
+
+    
+
+
 
 });
 //tenant auth

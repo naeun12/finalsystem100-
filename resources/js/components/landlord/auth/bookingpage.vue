@@ -11,29 +11,50 @@
         </div>
         <div class="py-3 d-flex gap-3 align-items-center">
             <!-- Dorm No Dropdown -->
-            <div class="dropdown">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownDormNo"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                    Dorm No
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownDormNo">
-                    <li><a class="dropdown-item" href="#">Dorm 1</a></li>
-                    <li><a class="dropdown-item" href="#">Dorm 2</a></li>
-                    <li><a class="dropdown-item" href="#">Dorm 3</a></li>
-                </ul>
-            </div>
+            <div class="mb-2 d-flex align-items-center gap-2">
+                <div class="w-100">
 
+                    <select id="dormSelect" class="form-select form-select-lg shadow-sm" @change="filterDorms"
+                        v-model="selectedDormId">
+                        <option value="" disabled> Select Dorm</option>
+                        <option value="all"> All dorms</option>
+                        <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
+                            {{ dorm.dormName }} (ID: {{ dorm.dormID }})
+                        </option>
+                    </select>
+
+
+                </div>
+            </div>
             <!-- Room No Dropdown -->
-            <div class="dropdown">
-                <button class="btn btn-outline-success dropdown-toggle" type="button" id="dropdownRoomNo"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                    Room No
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownRoomNo">
-                    <li><a class="dropdown-item" href="#">Room 101</a></li>
-                    <li><a class="dropdown-item" href="#">Room 102</a></li>
-                    <li><a class="dropdown-item" href="#">Room 103</a></li>
-                </ul>
+            <div class="mb-2 d-flex align-items-center gap-2">
+                <div class="w-100">
+
+                    <select id="dormSelect" class="form-select form-select-lg shadow-sm" v-model="selectedroomNumber"
+                        @change="filterroomNumber">
+                        <option value="" disabled> Select Room Number</option>
+                        <option value="all">All rooms</option>
+                        <option v-for="room in uniqueRooms" :key="room.fkroomID" :value="room.room?.roomNumber">
+                            Room {{ room.room?.roomNumber }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-2 d-flex align-items-center gap-2">
+                <div class="w-100">
+
+                    <select id="dormSelect" class="form-select form-select-lg shadow-sm"
+                        @change="filterApplicationStatus" v-model="selectedapplicationStatus">
+                        <option value="" disabled> Select Application Status</option>
+                        <option value="all"> All Application Status</option>
+                        <option value="pending"> Pending</option>
+                        <option value="Not Approved"> Not Approve</option>
+                        <option value="Approved"> Approve</option>
+
+                    </select>
+
+
+                </div>
             </div>
         </div>
 
@@ -101,10 +122,11 @@
 
                     <li :class="['page-item', { disabled: currentPage === lastPage }]">
                         <button class="page-link" :disabled="currentPage === lastPage"
-                            @click="handlePagination(currentPage + 1)" aria-label="Next">
+                            @click="handlePagination(currentPage + 1)">
                             <span aria-hidden="true">Next &raquo;</span>
                         </button>
                     </li>
+
                 </ul>
             </nav>
         </div>
@@ -233,8 +255,12 @@ export default {
         return {
             VisibleModalApproval: false,
             tenants: [],
-            searchTerm: '',
             filterMode: '',
+            dorms: [],
+            searchTerm: '',
+            selectedDormId: '',
+            selectedapplicationStatus: '',
+            selectedroomNumber: '',
             selectedtenant: [],
             selectedBookingID: '',
             showFullImage: false,
@@ -246,18 +272,24 @@ export default {
     },
 
     methods: {
-        async searchBooking() {
+        async searchBooking(page = 1) {
             try {
+                this.$refs.loader.loading = true;
+
                 const response = await axios.get('/search-booking', {
                     params: {
-                        search: this.searchTerm
+                        search: this.searchTerm,
+                        page: page
                     }
                 });
 
                 if (response.data.status === 'success') {
+                    this.$refs.loader.loading = false;
+                    this.selectedDormId = '';
+                    this.selectedapplicationStatus = '';
+                    this.selectedroomNumber = '';
                     this.tenants = response.data.booking.data;
                     this.lastPage = response.data.booking.last_page;
-                    this.currentPage = 1; // reset to page 1
                 } else {
                     this.$refs.toast.showToast(response.data.message, 'danger');
                 }
@@ -266,8 +298,111 @@ export default {
                 this.$refs.toast.showToast('Search failed.', 'danger');
             }
         },
-        async bookingList() {
+        displaydorms() {
+            axios.get('/api/dorms')
+                .then(response => {
+                    this.dorms = response.data;
+                });
+        },
+        dormId(dorm) {
+            this.selectedDorm = dorm;
+        },
+        filterDorms(page = 1) {
+            this.$refs.loader.loading = true;
+
+            if (this.selectedDormId === 'all') {
+                this.bookingList();
+                this.$refs.loader.loading = false;
+                return;
+            }
+
+            axios.get(`/api/dorms/${this.selectedDormId}/tenants`, {
+                params: { page }
+            })
+                .then(response => {
+                    this.$refs.loader.loading = false;
+                    this.searchTerm = '';
+                    this.selectedapplicationStatus = '';
+                    this.selectedroomNumber = '';
+
+                    this.tenants = response.data.data ?? [];
+                    this.lastPage = response.data.last_page ?? 1;
+                })
+                .catch(error => {
+                    this.$refs.loader.loading = false;
+                    console.error('Error fetching dorm tenants:', error);
+                });
+        },
+
+        filterApplicationStatus(page = 1) {
+            this.$refs.loader.loading = true;
+
+            if (this.selectedapplicationStatus === 'all') {
+                this.bookingList();
+                this.$refs.loader.loading = false;
+                return;
+            }
+
+            axios.get('/api/applications', {
+                params: {
+                    selectedapplicationStatus: this.selectedapplicationStatus,
+                    page: page
+                }
+            })
+                .then(response => {
+                    this.$refs.loader.loading = false;
+                    this.searchTerm = '';
+                    this.selectedDormId = '';
+                    this.selectedroomNumber = '';
+                    this.tenants = response.data.data ?? response.data;
+                    this.lastPage = response.data.last_page ?? 1;
+
+                })
+                .catch(error => {
+                    this.$refs.loader.loading = false;
+                    console.error("Error filtering applications:", error);
+                });
+        },
+
+
+        filterroomNumber(page = 1) {
+            this.$refs.loader.loading = true;
+
+            if (this.selectedroomNumber === 'all') {
+                this.bookingList();
+                this.$refs.loader.loading = false;
+                return;
+            }
+
+            axios.get(`/api/roomnumber`, {
+                params: {
+                    roomsNumber: this.selectedroomNumber,
+                    page: page,
+                }
+            })
+                .then(response => {
+                    this.$refs.loader.loading = false;
+                    this.searchTerm = '';
+                    this.selectedDormId = '';
+                    this.selectedapplicationStatus = '';
+                    if (response.data.data) {
+                        this.tenants = response.data.data;
+                        this.lastPage = response.data.last_page;
+                    } else {
+                        this.tenants = response.data;
+                    }
+
+                })
+                .catch(error => {
+                    this.$refs.loader.loading = false;
+                    console.error("Error fetching room data:", error);
+                });
+        },
+
+        async bookingList(page = 1) {
             try {
+                this.$refs.loader.loading = true;
+
                 const response = await axios.get(`/booking-list?page=${this.currentPage}`);
 
                 if (response.data.status === 'success') {
@@ -279,6 +414,10 @@ export default {
             } catch (error) {
                 console.error('Error fetching bookings:', error);
                 this.$refs.toast.showToast("Failed to fetch bookings", 'danger');
+            }
+            finally {
+                this.$refs.loader.loading = false;
+
             }
         },
         async openTenant(booking_id) {
@@ -383,29 +522,87 @@ export default {
                 this.$refs.loader.loading = false;
             }
         },
+
         handlePagination(page) {
+            console.log('Pagination triggered with:', page);
+
             if (page < 1 || page > this.lastPage) return;
             this.currentPage = page;
-            this.bookingList();
-        },
+
+
+            // 👇 Priority check (only one filter is expected at a time)
+            if (this.selectedapplicationStatus && this.selectedapplicationStatus !== 'all') {
+                this.filterApplicationStatus(page);
+            } else if (this.selectedDormId && this.selectedDormId !== 'all') {
+                this.filterDorms(page);
+            } else if (this.selectedroomNumber && this.selectedroomNumber !== 'all') {
+                this.filterroomNumber(page);
+            } else if (this.searchTerm && this.searchTerm.trim() !== '') {
+                this.searchBooking(page);
+            } else {
+                this.bookingList(page); // Default
+            }
+        }
+
 
     },
     mounted() {
         this.bookingList();
+        this.displaydorms();
+
+    },
+    computed:
+    {
+        uniqueRooms() {
+            const seen = new Set();
+            return this.tenants.filter(tenant => {
+                if (seen.has(tenant.fkroomID)) return false;
+                seen.add(tenant.fkroomID);
+                return true;
+            });
+        }
     },
 
     watch: {
         searchTerm: {
             handler: debounce(function (newVal) {
                 if (newVal.trim() !== '') {
-                    this.searchBooking(); // 👈 use new method
+                    this.searchBooking();
                 } else {
-                    this.bookingList(); // empty search, show default list
+                    this.bookingList();
                 }
             }, 300),
             immediate: false
+        },
+        selectedDormId(newVal) {
+            if (newVal !== '') {
+                this.selectedapplicationStatus = '';
+                this.selectedroomNumber = '';
+                this.searchTerm = '';
+                this.filterMode = 'dorm';
+                this.handlePagination(1);
+            }
+        },
+        selectedapplicationStatus(newVal) {
+            if (newVal !== '') {
+                this.selectedDormId = '';
+                this.selectedroomNumber = '';
+                this.searchTerm = '';
+                this.filterMode = 'status';
+                this.handlePagination(1);
+            }
+        },
+        selectedroomNumber(newVal) {
+            if (newVal !== '') {
+                this.selectedDormId = '';
+                this.selectedapplicationStatus = '';
+                this.searchTerm = '';
+                this.filterMode = 'room';
+                this.handlePagination(1);
+            }
         }
     }
+
 
 
 };

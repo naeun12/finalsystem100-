@@ -168,24 +168,29 @@
                     <div class="modal-body px-3 px-md-4">
                         <!-- Dorm Selector -->
                         <div class="mb-4 d-flex align-items-center gap-2">
-                            <div class="btn-group">
-                                <button class="btn btn-outline-primary btn-lg" type="button">Dorm Name</button>
+                            <div class="btn-group shadow-sm rounded">
+                                <button class="btn btn-outline-primary btn-lg fw-semibold px-4" type="button">
+                                    <i class="bi bi-building me-2"></i> Dorm Name
+                                </button>
                                 <button type="button"
                                     class="btn btn-lg btn-outline-primary dropdown-toggle dropdown-toggle-split"
                                     data-bs-toggle="dropdown" aria-expanded="false">
                                     <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu dropdown-menu-end shadow rounded-3 p-2 border-0">
                                     <li v-for="dorm in dorms" :key="dorm.dormID">
-                                        <a class="dropdown-item d-flex justify-content-between align-items-center"
-                                            href="#" @click.prevent="dormId(dorm)">
-                                            <span>{{ dorm.dormName }}</span>
+                                        <a class="dropdown-item d-flex justify-content-between align-items-center rounded py-2 px-3"
+                                            href="#" @click.prevent="dormId(dorm)"
+                                            style="transition: background-color 0.2s ease;">
+                                            <span><i class="bi bi-house-door-fill me-2 text-primary"></i> {{
+                                                dorm.dormName }}</span>
                                             <span class="badge bg-secondary">ID: {{ dorm.dormID }}</span>
                                         </a>
                                     </li>
                                 </ul>
                             </div>
                         </div>
+
                         <div class="border border-secondary rounded-3 p-4 text-center" v-if="VisibleImage"
                             style="cursor: pointer;" @click="triggerroomImagePreview3">
                             <input ref="RoomsImages3Input" class="d-none" type="file" accept="image/*"
@@ -199,7 +204,7 @@
                         </div>
                         <div class="mb-3 d-flex justify-content-center align-items-center">
                             <span class="text-danger small mb-3" v-if="errors.roomImageFile">{{ errors.roomImageFile[0]
-                                }}</span>
+                            }}</span>
                         </div>
 
 
@@ -222,7 +227,7 @@
                                     <label>Dorm ID</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.dormsId">{{ errors.dormsId[0]
-                                    }}</span>
+                                }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <input type="text" class="form-control" id="roomNumber" placeholder="Room Number"
@@ -230,7 +235,7 @@
                                     <label for="roomNumber">Room Number</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.roomNumber">{{ errors.roomNumber[0]
-                                    }}</span>
+                                }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="roomType" v-model="roomType">
@@ -248,7 +253,7 @@
                                     <label for="roomType">Room Type</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.roomType">{{ errors.roomType[0]
-                                    }}</span>
+                                }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="availability" v-model="availability">
@@ -260,14 +265,14 @@
                                     <label for="availability">Availability Status</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.availability">{{ errors.availability[0]
-                                    }}</span>
+                                }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <input type="number" class="form-control" id="areaSqm" v-model="area_sqm" min="1"
                                         placeholder="Enter area in sqm" required>
                                     <label for="areaSqm">Area (sqm)</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.area_sqm">{{ errors.area_sqm[0]
-                                    }}</span>
+                                }}</span>
 
                             </div>
 
@@ -279,7 +284,7 @@
                                     <label for="price">Price (₱)</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.price">{{ errors.price[0]
-                                    }}</span>
+                                }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="bedType" v-model="listing_type" required>
                                         <option value="" disabled selected>Select Bed Type</option>
@@ -291,7 +296,7 @@
                                 </div>
 
                                 <span class="text-danger small" v-if="errors.listing_type">{{ errors.listing_type[0]
-                                    }}</span>
+                                }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="furnishingStatus" v-model="furnishing_status"
                                         required>
@@ -304,7 +309,7 @@
                                 </div>
                                 <span class="text-danger small" v-if="errors.furnishing_status">{{
                                     errors.furnishing_status[0]
-                                    }}</span>
+                                }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="genderPreference" v-model="gender_preference"
@@ -318,7 +323,7 @@
                                 </div>
                                 <span class="text-danger small" v-if="errors.gender_preference">{{
                                     errors.gender_preference[0]
-                                    }}</span>
+                                }}</span>
 
 
                                 <span class="text-danger small" v-if="errors.price">{{ errors.price[0] }}</span>
@@ -362,7 +367,7 @@
                             :id="'feature' + index" placeholder="Enter room feature" />
                         <label :for="'feature' + index">Room Feature {{ index + 1 }}</label>
                         <span class="text-danger mb-3 " v-if="errors.roomFeatures">{{ errors.roomFeatures[0]
-                            }}</span>
+                        }}</span>
 
                     </div>
 
@@ -456,7 +461,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.areaSqm">{{
                                 errors.editData.areaSqm[0]
-                                }}</span>
+                            }}</span>
 
 
                             <div class="form-floating mb-2 mt-2">
@@ -489,7 +494,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.availability">{{
                                 errors.editData.availability[0]
-                                }}</span>
+                            }}</span>
                         </div>
 
                         <!-- Column 2 -->
@@ -501,7 +506,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.price">{{
                                 errors.editData.price[0]
-                                }}</span>
+                            }}</span>
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="bedType" v-model="editData.listingType" required>
                                     <option value="" disabled>Select Bed Type</option>
@@ -513,7 +518,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.listingType">{{
                                 errors.editData.listingType[0]
-                                }}</span>
+                            }}</span>
 
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="furnishingStatus" v-model="editData.furnishing_status"
@@ -527,7 +532,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.furnishing_status">{{
                                 errors.editData.furnishing_status[0]
-                                }}</span>
+                            }}</span>
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="genderPreference" v-model="editData.genderPreference"
                                     required>
@@ -622,13 +627,13 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Room Number:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.roomNumber
-                                    }}
+                                }}
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Room Type:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.roomType
-                                    }}
+                                }}
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -670,7 +675,7 @@
                                 <label class="form-label fw-bold">Contact Email:</label>
                                 <div class="p-2 border rounded bg-light text-break"> {{
                                     selectedRoom?.dorm.contactEmail
-                                    }}
+                                }}
 
                                 </div>
                             </div>
@@ -678,7 +683,7 @@
                                 <label class="form-label fw-bold">Contact Phone:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{
                                     selectedRoom?.dorm.contactPhone
-                                    }}
+                                }}
                                 </div>
                             </div>
                             <div class="mb-3">

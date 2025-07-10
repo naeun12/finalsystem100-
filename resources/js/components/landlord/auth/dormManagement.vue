@@ -348,7 +348,7 @@
                                 placeholder="Enter rule or policy" />
                             <label :for="'rule' + index">Rule/Policy {{ index + 1 }}</label>
                             <span class="text-danger mb-3 " v-if="errors.rules">{{ errors.rules[0]
-                                }}</span>
+                            }}</span>
 
                         </div>
 
@@ -682,7 +682,7 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Email:</label>
                                     <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactEmail
-                                        }}</div>
+                                    }}</div>
                                 </div>
 
                                 <div class="mb-3">
@@ -718,7 +718,7 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Phone:</label>
                                     <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactPhone
-                                        }}</div>
+                                    }}</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Total Rooms:</label>

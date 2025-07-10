@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\landlord\landlordModel;
 use App\Models\landlord\bookingModel;
 use App\Models\landlord\roomModel;
+use App\Models\landlord\dormModel;
+
 use App\Models\tenant\approvetenantsModel;
 
 class bookingpageController extends Controller
@@ -71,7 +73,6 @@ class bookingpageController extends Controller
     public function bookingList()
     {
         $landlordId = session('landlord_id');
-
         if (!$landlordId) {
             return response()->json([
                 'status' => 'error',
@@ -83,15 +84,66 @@ class bookingpageController extends Controller
             $query->where('fklandlordID', $landlordId);
         })
         ->orderBy('created_at', 'asc')
-        ->paginate(1);
+        ->paginate(5);
     
         return response()->json([
             'status' => 'success',
             'booking' => $booking,
             'landlord_id' => $landlordId
         ]);
-
     }
+    public function getDormName()
+{
+    $dorms = dormModel::all();
+
+    return response()->json($dorms); 
+}
+public function getTenantsByDorm($dormId)
+{
+    $tenants = bookingModel::whereHas('room.dorm', function ($query) use ($dormId) {
+        $query->where('dormID', $dormId);
+    })->with(['room.dorm'])
+      ->paginate(5);
+
+    return response()->json($tenants);
+}
+public function getRooms(Request $request)
+{
+    $landlordId = session('landlord_id');
+    $searchTerm = $request->input('roomsNumber'); // match 'roomsNumber'
+
+    $query = bookingModel::with(['room.dorm', 'room.landlord', 'tenant'])
+        ->whereHas('room', function ($q) use ($landlordId) {
+            $q->where('fklandlordID', $landlordId);
+        });
+
+        if ($searchTerm) {
+            $query->whereHas('room', function ($q) use ($searchTerm) {
+                $q->where('roomNumber', '=', $searchTerm); // use exact match
+            });
+        }
+        
+
+    return response()->json($query->paginate(5));
+}
+
+
+public function getApplications(Request $request)
+{
+    $landlordId = session('landlord_id');
+    $searchStatus = $request->input('selectedapplicationStatus');
+
+    $query = bookingModel::with(['room.dorm', 'room.landlord', 'tenant'])
+        ->whereHas('room', function ($q) use ($landlordId) {
+            $q->where('fklandlordID', $landlordId);
+        });
+
+    if ($searchStatus) {
+        $query->where('status', '=', $searchStatus);
+    }
+
+    return response()->json($query->paginate(5));
+}
     public function ViewTenant($id)
 {
     $landlordId = session('landlord_id');
