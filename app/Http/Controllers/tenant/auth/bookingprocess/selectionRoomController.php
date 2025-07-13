@@ -4,7 +4,7 @@ namespace App\Http\Controllers\tenant\auth\bookingprocess;
 
 use App\Http\Controllers\Controller;
 use App\Models\landlord\roomModel;
-use App\Models\landlord\reservationModel;
+use App\Models\tenant\reservationModel;
 
 use Illuminate\Http\Request;
 
@@ -18,6 +18,7 @@ class selectionRoomController extends Controller
     {
         $rooms = roomModel::where('fkdormID',$dormitoryID)
         ->where('availability','Available')
+        ->orWhere('created_at','asc')
         ->get();
         return response()->json(['rooms' => $rooms]);
     }
@@ -84,8 +85,6 @@ public function filterGender(Request $request, $dormitoryID)
                 'gender'              => 'required|in:Male,Female',
                 'studentpicture_id'   => 'required|string',
             ]);
-    
-            
             // 3. SAVE TO DATABASE
             $reservation = reservationModel::create([
                 'fkdormitoryID'      => $request->dormitory_id,

@@ -6,11 +6,10 @@ import TenantRegister from './components/tenants/tenantRegister.vue';
 import LandlordRegister from './components/landlord/landlordregister.vue';
 import LandlordLogin from './components/landlord/landlordlogin.vue';
 import LandlordDormManagement from './components/landlord/auth/DormManagement.vue';
+import landlordDashboard from './components/landlord/auth/dashboard.vue';
 import landlordroomManagement from './components/landlord/auth/roomManagement.vue';
-import tenantAuth from './components/landlord/auth/tenant.vue';
-import tenantScreening from './components/landlord/auth/tenantScreening.vue';
+import tenantpage from './components/landlord/auth/tenantpage.vue';
 import BookingManagement from './components/landlord/auth/bookingpage.vue';
-import Analytics from './components/landlord/auth/analytics.vue';
 import MessagingCenter from './components/landlord/auth/messagingCenter.vue';
 import ReviewandFeedback from './components/landlord/auth/ReviewandFeedback.vue';
 import Notification from './components/landlord/auth/Notification.vue';
@@ -42,36 +41,31 @@ const landlordContainerLogin = document.querySelector('#landlordContainerLogin')
 if (landlordContainerLogin) {
     createApp(LandlordLogin).mount('#landlordContainerLogin');
 }
+const dashboardController = document.querySelector('#dashboard');
+if (dashboardController) {
+    createApp(landlordDashboard).mount('#dashboard');
+}
 const landlorddormManagementContainer = document.querySelector('#landlorddormManagement');
 if (landlorddormManagementContainer) {
     createApp(LandlordDormManagement).mount('#landlorddormManagement');
-
 }
 const landlordroomManagementContainer = document.querySelector('#landlordroomManagement');
 if (landlordroomManagementContainer) {
     createApp(landlordroomManagement).mount('#landlordroomManagement');
 
 }
-const tenantAuthContainer = document.querySelector('#tenant');
-if (tenantAuthContainer) {
-    createApp(tenantAuth).mount('#tenant');
+const tenantpageContainer = document.querySelector('#tenantpage');
+if (tenantpageContainer) {
+    createApp(tenantpage).mount('#tenantpage');
 
 }
-const tenantScreeningContainer = document.querySelector('#tenantScreening');
-if (tenantScreeningContainer) {
-    createApp(tenantScreening).mount('#tenantScreening');
 
-}
 const BookingManagementController = document.querySelector('#BookingManagement');
 if (BookingManagementController) {
     createApp(BookingManagement).mount('#BookingManagement');
 
 }
-const AnalyticsController = document.querySelector('#Analytics');
-if (AnalyticsController) {
-    createApp(Analytics).mount('#Analytics');
 
-}
 const MessagingCenterController = document.querySelector('#MessagingCenter');
 if (MessagingCenterController) {
     createApp(MessagingCenter).mount('#MessagingCenter');

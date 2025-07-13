@@ -1,38 +1,46 @@
-<?php
 
+<?php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up()
     {
-        Schema::create('approved_tenants', function (Blueprint $table) {
-            $table->id('approvedID');
+        Schema::create('bookings', function (Blueprint $table) {
+            $table->id('bookingID');
             $table->unsignedBigInteger('fkroomID');
+            $table->string('fktenantID');
             $table->string('firstname');
             $table->string('lastname');
             $table->string('contactNumber');
             $table->string('contactEmail');
-            $table->integer('age');
+            $table->string('age');
             $table->string('gender');
-            $table->string('move-in-date');
-            $table->string('move-out-date');
+            $table->date('moveInDate');
+            $table->date('moveOutDate');
+            $table->string('status')->default('pending')->nullable();
             $table->string('paymentType')->nullable();
             $table->string('paymentImage')->nullable();
-            $table->string('studentpictureId')->nullable();
+            $table->string('studentpictureID')->nullable();
             $table->timestamps();
-
+            // Foreign key constraints
             $table->foreign('fkroomID')->references('roomID')->on('rooms')->onDelete('cascade');
+            $table->foreign('fktenantID')->references('tenantID')->on('tenants')->onDelete('cascade');
         });
     }
 
+
     public function down()
     {
-        Schema::dropIfExists('approved_tenants');
+        Schema::dropIfExists('bookings');
     }
 };
+
+
+
+
+?>
+

@@ -56,6 +56,12 @@ public function features()
         'fkfeatureID' // Foreign key in the pivot table
     )->withPivot('fkroomID', 'fkfeatureID'); // Include pivot timestamps if needed
 }
+public function currentTenant()
+{
+    return $this->hasOne(\App\Models\tenant\approvetenantsModel::class, 'fkroomID', 'roomID');
+            
+}
+
 
 }
 

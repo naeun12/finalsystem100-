@@ -110,7 +110,7 @@ public function getTenantsByDorm($dormId)
 public function getRooms(Request $request)
 {
     $landlordId = session('landlord_id');
-    $searchTerm = $request->input('roomsNumber'); // match 'roomsNumber'
+    $searchTerm = $request->input('roomsNumber');
 
     $query = bookingModel::with(['room.dorm', 'room.landlord', 'tenant'])
         ->whereHas('room', function ($q) use ($landlordId) {
@@ -138,9 +138,10 @@ public function getApplications(Request $request)
             $q->where('fklandlordID', $landlordId);
         });
 
-    if ($searchStatus) {
-        $query->where('status', '=', $searchStatus);
-    }
+    if ($searchStatus && strtolower($searchStatus) !== 'all') {
+    $query->where('status', '=', strtolower($searchStatus));
+}
+
 
     return response()->json($query->paginate(5));
 }
@@ -206,8 +207,8 @@ public function approveTenant(Request $request)
             'firstname'         => $booking->firstname,
             'lastname'          => $booking->lastname,
             'contactNumber'     => $booking->contactNumber,
-            'move-in-date'      => now()->format('Y-m-d'),     // Example value
-            'move-out-date'     => now()->addMonths(6)->format('Y-m-d'), // Example 6-month stay
+            'moveInDate'      => $booking->moveInDate,     // Example value
+            'moveOutDate'     => $booking->moveOutDate,
             'contactEmail'      => $booking->contactEmail,
             'age'               => $booking->age,
             'gender'            => $booking->gender,

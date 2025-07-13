@@ -292,6 +292,7 @@ import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
 import { toHandlers } from 'vue';
+import { parse } from 'vue/compiler-sfc';
 export default {
     components: {
         Toastcomponents,
@@ -324,6 +325,7 @@ export default {
             sex: '',
             roomNu: '',
             roomType: '',
+
             price: '',
             idPicturePreview: '',
             imageUrl: null,
@@ -341,7 +343,7 @@ export default {
                 sex: this.sex,
                 idPicturePreview: this.idPicturePreview,
                 imageUrl: this.imageUrl,
-                selectedRoomId: this.selectedRoomId
+                selectedRoomId: this.selectedRoomId,
             };
             localStorage.setItem('tenantInfo', JSON.stringify(data));
 
@@ -545,7 +547,9 @@ export default {
             this.sex = parsed.sex;
             this.idPicturePreview = parsed.idPicturePreview;
             this.imageUrl = parsed.imageUrl;
+
         }
+        console.log(data);
         const element = document.getElementById('roomSelection');
         this.dormitory_id = element.dataset.dormId;
         this.tenant_id = element.dataset.tenantId;

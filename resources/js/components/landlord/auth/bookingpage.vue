@@ -48,8 +48,9 @@
                         <option value="" disabled> Select Application Status</option>
                         <option value="all"> All Application Status</option>
                         <option value="pending"> Pending</option>
-                        <option value="Not Approved"> Not Approve</option>
-                        <option value="Approved"> Approve</option>
+                        <option value="not approved"> Not Approved</option>
+                        <option value="approved"> Approved</option>
+
 
                     </select>
 
@@ -168,7 +169,7 @@
                                 <p><strong>📧 Email:</strong> {{ selectedtenant.contactEmail }}</p>
                                 <p><strong>📍 Address:</strong> {{ selectedtenant.room?.dorm?.address }}</p>
                                 <p><strong>🚪 Room #:</strong> {{ selectedtenant.room?.roomNumber }}</p>
-                                <p><strong>🚪 Move in date #:</strong> {{ selectedtenant.room?.roomNumber }}</p>
+                                <p><strong>🚪 Move in date #:</strong> {{ selectedtenant.moveInDate }}</p>
 
                             </div>
                             <div class="col-md-6">
@@ -180,7 +181,7 @@
                                     Number(selectedtenant.room?.price).toLocaleString(undefined, {
                                         minimumFractionDigits: 2
                                     }) }}</p>
-                                <p><strong>🚪 Move out date #:</strong> {{ selectedtenant.room?.roomNumber }}</p>
+                                <p><strong>🚪 Move out date #:</strong> {{ selectedtenant?.moveOutDate }}</p>
 
                             </div>
                         </div>
@@ -245,6 +246,7 @@ import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
 import { debounce } from 'lodash';
+import { toHandlers } from 'vue';
 export default {
     components: {
         Toastcomponents,
@@ -262,6 +264,7 @@ export default {
             selectedapplicationStatus: '',
             selectedroomNumber: '',
             selectedtenant: [],
+
             selectedBookingID: '',
             showFullImage: false,
             tenant: {},
@@ -343,7 +346,7 @@ export default {
                 return;
             }
 
-            axios.get('/api/applications', {
+            axios.get('/api/applications/booking', {
                 params: {
                     selectedapplicationStatus: this.selectedapplicationStatus,
                     page: page
@@ -354,8 +357,8 @@ export default {
                     this.searchTerm = '';
                     this.selectedDormId = '';
                     this.selectedroomNumber = '';
-                    this.tenants = response.data.data ?? response.data;
-                    this.lastPage = response.data.last_page ?? 1;
+                    this.tenants = response.data.data;
+                    this.lastPage = response.data.last_page;
 
                 })
                 .catch(error => {
@@ -374,7 +377,7 @@ export default {
                 return;
             }
 
-            axios.get(`/api/roomnumber`, {
+            axios.get(`/api/roomnumber/booking`, {
                 params: {
                     roomsNumber: this.selectedroomNumber,
                     page: page,
@@ -445,10 +448,10 @@ export default {
                 const response = await axios.post('/approve-tenant', {
                     bookingID: booking_id
                 });
-
                 // Success: show modal or success message
                 this.$refs.toast.showToast(response.data.message, 'success');
                 this.selectedtenant = response.data.tenant;
+                this.errors = {};
                 this.VisibleModalApproval = false;
                 this.$refs.loader.loading = false;
                 this.bookingList();
@@ -524,7 +527,6 @@ export default {
         },
 
         handlePagination(page) {
-            console.log('Pagination triggered with:', page);
 
             if (page < 1 || page > this.lastPage) return;
             this.currentPage = page;

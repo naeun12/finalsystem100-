@@ -6,8 +6,8 @@
 
         <div class="col-md-10 main-content">
             @include('landlord.auth.partials.navigation')
-            <div id="tenant">
-                <landlord-auth-tenant></landlord-auth-tenant>
+            <div id="tenantpage">
+                <landlord-auth-tenantpage></landlord-auth-tenantpage>
 
             </div>
 

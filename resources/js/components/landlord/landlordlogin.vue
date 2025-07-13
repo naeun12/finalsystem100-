@@ -100,7 +100,7 @@ export default {
                     const userName = response.data.landlord.firstname;
                     localStorage.setItem('landlord_id', userId);
                     localStorage.setItem('landlord_name', userName);
-                    window.location.href = "/landlordDashboard";
+                    window.location.href = `/landlordDashboard/${userId}`;
                     this.$refs.loader.loading = false;;
                     this.errors = {};
                     this.fill();

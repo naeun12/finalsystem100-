@@ -11,18 +11,15 @@ use App\Http\Controllers\tenant\auth\homepageController;
 use App\Http\Controllers\tenant\auth\dormdetailscontroller;
 
 use App\Http\Controllers\landlord\auth\landlordaccountprocessController;
-use App\Http\Controllers\landloard\auth\dashboard;
+use App\Http\Controllers\landlord\auth\dashboardController;
 use App\Http\Controllers\landlord\auth\dormpageController;
 use App\Http\Controllers\landlord\auth\roompageController;
 // use App\Http\Controllers\landlard\auth\TenantController;
 use App\Http\Controllers\landlord\auth\bookingpageController;
-use App\Http\Controllers\landlord\auth\AnalyticsController;
 use App\Http\Controllers\landlord\auth\MessagingCenterController;
 use App\Http\Controllers\landlord\auth\NotificationController;
-
-use App\Http\Controllers\landloard\auth\ReviewandFeedbackController;
-use App\Http\Controllers\landloard\auth\BookingController;
 use App\Http\Controllers\landlord\auth\reservationController;
+use App\Http\Controllers\landlord\auth\alltenantsController;
 use App\Http\Controllers\tenant\auth\dormitoriesmapcontroller;
 use App\Http\Controllers\tenant\auth\dormitories;
 use App\Http\Controllers\tenant\auth\bookingprocess\selectionRoomController;
@@ -66,7 +63,7 @@ Route::post('/RegisterLandlord', [landlordaccountprocessController::class, 'Regi
 //landlord auth
 
 Route::middleware([LandlordAuth::class])->group(function () {
-    Route::match(['get', 'post'], '/landlordDashboard', [dashboard::class, 'landlordDashboard'])->name('landlordDashboard');
+    Route::match(['get', 'post'], '/landlordDashboard/{landlordId}', [dashboardController::class, 'landlordDashboard'])->name('landlordDashboard');
     Route::match(['get', 'post'], '/landlordDormManagement/{landlordId}', [dormpageController::class, 'DormManagement'])->name('landlordDormManagement');
     Route::match(['get', 'post'], '/input-text', [dormpageController::class, 'inputFieldDorm'])->name('input-text');
     Route::match(['get', 'post'], '/upload-main-image', [dormpageController::class, 'uploadmainImage'])->name('upload-main-image');
@@ -78,10 +75,22 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::match(['get', 'post'], '/landlordRoomManagement/{landlordId}', [roompageController::class, 'RoomManagement'])->name('landlordRoomManagement');
     Route::match(['get', 'post'], '/booking-index/{landlord_id}', [bookingpageController::class, 'bookingpageIndex'])->name('booking.index');
     Route::match(['get', 'post'], '/reservation-index/{landlord_id}', [reservationController::class, 'reservationIndex'])->name('reservation.index');
-    Route::match(['get', 'post'], '/AnalyticsPage', [AnalyticsController::class, 'AnalyticsPage'])->name('AnalyticsPage');
+    Route::match(['get', 'post'], '/all-tenants-index/{landlord_id}', [alltenantsController::class, 'alltenantIndex'])->name('all.tenants.index');
     Route::match(['get', 'post'], '/MessagingPage', [MessagingCenterController::class, 'MessagingPage'])->name('MessagingPage');
     Route::match(['get', 'post'], '/ReviewandFeedback', [ReviewandFeedbackController::class, 'ReviewandFeedback'])->name('ReviewandFeedback');
     Route::match(['get', 'post'], '/NotificationPage', [NotificationController::class, 'NotificationPage'])->name('NotificationPage');
+
+    //functions for getting data dashboard 
+    Route::get('/landlordDashboard/get/landlord/{landlord_id}', [dashboardController::class, 'getLandlord']);
+    Route::get('/get/total-tenants/{landlord_id}', [dashboardController::class, 'getTotalTenants']);
+    Route::get('/get/available-beds/{landlord_id}', [dashboardController::class, 'availableBeds']);
+    Route::get('/get/reservation-list/{landlord_id}', [dashboardController::class, 'getReservationList']);
+    Route::get('/get/booking-list/{landlord_id}', [dashboardController::class, 'getBookingList']);
+    Route::get('/get/dorm-profits/{landlord_id}', [dashboardController::class, 'getDormProfits']);
+    Route::get('/get/booking-profits/{landlord_id}', [dashboardController::class, 'getBookingProfits']);
+    Route::get('/generate-full-report/{landlordID}', [dashboardController::class, 'generateFullReport']);
+
+
 
     //functions for landlord dorm management
     Route::post('/AddDorm', [dormpageController::class, 'AddDorm'])->name('AddDorm');
@@ -125,14 +134,22 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/search-booking', [bookingpageController::class, 'searchBooking']);
     Route::get('/api/dorms', [bookingpageController::class, 'getDormName']);
     Route::get('/api/dorms/{dormId}/tenants', [bookingpageController::class, 'getTenantsByDorm']);
-    Route::get('/api/roomnumber/', [bookingpageController::class, 'getrooms']);
-    Route::get('/api/applications/', [bookingpageController::class, 'getapplications']);
+    Route::get('/api/roomnumber/booking', [bookingpageController::class, 'getrooms']);
+    Route::get('/api/applications/booking/', [bookingpageController::class, 'getapplications']);
     //functions for reservation 
-
-    
-
-
-
+    Route::get('/reservation-list', [reservationController::class, 'reservationList']);
+    Route::get('/view-reservation/reservation/{id}', [reservationController::class, 'viewReservation']);
+    Route::get('/search-reservation', [reservationController::class, 'searchReservation']);
+    Route::delete('/delete-reservation/reservation/{id}', [reservationController::class, 'reservationDelete']);
+    Route::get('/api/dorms/{dormId}/reservation', [reservationController::class, 'getTenantsByDorm']);
+    Route::get('/api/roomnumber/reservation', [reservationController::class, 'getRoomsNumber']);
+    Route::get('/get/allroomNumbers', [reservationController::class, 'getAllReservations']);
+    Route::post('/accept-reservation', [reservationController::class, 'acceptReservation']);
+    Route::post('/eject-reservation', [reservationController::class, 'EjectReservation']);
+    Route::get('/api/applications/reservation', [reservationController::class, 'getapplications']);
+    //functions for all tenants
+    Route::get('/tenants-list', [alltenantsController::class, 'tenantsList']);
+    Route::get('/tenants-view/{id}', [alltenantsController::class, 'ViewTenant']);
 });
 //tenant auth
 //tenant account process

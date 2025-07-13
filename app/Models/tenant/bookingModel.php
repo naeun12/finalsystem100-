@@ -21,6 +21,8 @@ class bookingModel extends Model
         'age',
         'gender',
         'status',
+        'moveInDate',
+        'moveOutDate',
         'paymentType',
         'paymentImage',
         'studentpictureId'

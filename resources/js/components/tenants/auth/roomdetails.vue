@@ -156,7 +156,7 @@
                             </p>
                             <p class="mb-4">
                                 <i class="bi bi-person-fill-check me-2 text-primary"></i>
-                                <strong>Total Capacity:</strong> {{ totalCapacity }} tenant(s)
+                                <strong>Total tenants currently residing:</strong> {{ totalCapacity }} tenant(s)
                             </p>
                         </div>
 
@@ -168,8 +168,6 @@
                         </div>
 
                     </div>
-
-
                     <h5 class="fw-bold mt-4 mb-3"><i class="bi bi-cash-coin me-2"></i>Room Pricing</h5>
                     <div class="table-responsive">
                         <table class="table table-bordered align-middle text-center">
@@ -234,6 +232,7 @@
                         <span v-if="errors.contactInfo" class="error text-danger small mt-1 d-block">
                             <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.contactInfo[0] }}
                         </span>
+
                     </div>
 
 
@@ -278,25 +277,7 @@
                     </div>
 
                     <!-- Move-in/out Dates -->
-                    <div class="d-flex gap-3 px-4">
-                        <!-- Move In -->
-                        <div class="mb-3 flex-fill">
-                            <label for="move_in_date" class="form-label fw-semibold">
-                                <i class="bi bi-calendar-event me-2 text-primary"></i>Move-in Date
-                            </label>
-                            <input type="date" class="form-control shadow-sm" v-model="moveInDate"
-                                @change="setMoveOutDate" id="move_in_date" />
-                        </div>
 
-                        <!-- Move Out -->
-                        <div class="mb-3 flex-fill">
-                            <label for="move_out_date" class="form-label fw-semibold">
-                                <i class="bi bi-calendar-check me-2 text-primary"></i>Move-out Date
-                            </label>
-                            <input type="date" class="form-control shadow-sm" v-model="moveOutDate" id="move_out_date"
-                                disabled />
-                        </div>
-                    </div>
                     <div class="px-4">
                         <button type="button" @click="submitTenantInformation" class="btn w-100 fw-bold">Submit</button>
                     </div>
@@ -404,8 +385,6 @@ export default {
             VisibleImagePostModal: false,
             age: null,
             sex: '',
-            moveInDate: '',
-            moveOutDate: '',
             email: '',
             student_picture: "",
             dormitory_id: '',
@@ -485,6 +464,7 @@ export default {
             this.idPicturePreview = '';
             this.idPictureFile = '';
             this.selectedRoomId = '';
+
         },
         getInformationData() {
             const data = {
@@ -495,7 +475,7 @@ export default {
                 age: this.age,
                 sex: this.sex,
                 idPicturePreview: this.idPicturePreview,
-                idPictureFile: this.idPictureFile
+                idPictureFile: this.idPictureFile,
             };
             localStorage.setItem('tenantInfo', JSON.stringify(data)); // ✅ Store it
 
@@ -509,9 +489,6 @@ export default {
             formData.append('age', this.age);
             formData.append('sex', this.sex);
             formData.append('email', this.email);
-            formData.append('payment_type', this.payment_type);
-            formData.append('payment_image', this.payment_image);
-
             try {
                 const response = await axios.post('/tenant-information', formData, {
                     withCredentials: true,
@@ -558,7 +535,8 @@ export default {
                         age: this.age,
                         sex: this.sex,
                         idPicturePreview: this.idPicturePreview,
-                        imageUrl: imageUrl
+                        imageUrl: imageUrl,
+
                     };
                     localStorage.setItem('tenantInfo', JSON.stringify(data));
                     this.$refs.loader.loading = false;
@@ -612,21 +590,7 @@ export default {
                 this.$refs.idPicturePreview.value = ''; // Reset file input
             }
         },
-        setMoveOutDate() {
-            if (this.moveInDate) {
-                const date = new Date(this.moveInDate);
-                date.setMonth(date.getMonth() + 1);
 
-                // Adjust if date goes beyond valid month days (e.g., Feb 30)
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-
-                this.moveOutDate = `${year}-${month}-${day}`;
-            } else {
-                this.moveOutDate = '';
-            }
-        },
         messagePage() {
             const url = `/tenant-message/${this.tenant_id}?landlord_id=${this.landlord_id}`;
             window.location.href = url;

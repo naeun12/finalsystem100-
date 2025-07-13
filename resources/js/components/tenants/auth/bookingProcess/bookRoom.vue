@@ -62,14 +62,34 @@
                 {{ roomsDetail?.roomType || 'N/A' }}
             </div>
         </div>
-
-        <!-- Price -->
         <div class="mb-3">
             <label class="form-label fw-bold">
                 <i class="bi bi-cash-coin text-primary me-2"></i>Price:
             </label>
             <div class="p-2 border rounded bg-light text-break">
                 ₱{{ Number(roomsDetail?.price).toLocaleString() || '0.00' }}
+            </div>
+        </div>
+        <div class="d-flex gap-3">
+            <!-- Move In -->
+            <div class="mb-3 flex-fill">
+                <label for="move_in_date" class="form-label fw-semibold">
+                    <i class="bi bi-calendar-event me-2 text-primary"></i>Move-in Date
+                </label>
+                <input type="date" class="form-control shadow-sm" v-model="moveInDate" @change="setMoveOutDate"
+                    id="move_in_date" />
+                <span v-if="errors.moveInDate" class="error text-danger small mt-1 d-block">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.moveInDate[0] }}
+                </span>
+            </div>
+            <div class="mb-3 flex-fill">
+                <label for="move_out_date" class="form-label fw-semibold">
+                    <i class="bi bi-calendar-check me-2 text-primary"></i>Move-out Date
+                </label>
+                <input type="date" class="form-control shadow-sm" v-model="moveOutDate" id="move_out_date" disabled />
+                <span v-if="errors.moveOutDate" class="error text-danger small mt-1 d-block">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.moveOutDate[0] }}
+                </span>
             </div>
         </div>
         <div class="container py-4 mb-4">
@@ -84,8 +104,8 @@
                 <div id="paymentTypeHelp" class="form-text text-muted">
                     Specify your preferred method of payment.
                 </div>
-            </div>
 
+            </div>
             <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
                 <div v-for="(src, name) in payment" :key="name"
                     class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
@@ -98,10 +118,15 @@
                         {{ name.replace('_', ' ') }}
                     </small>
                 </div>
+
+            </div>
+            <div class="justify-content-center d-flex mt-2">
+                <span v-if="errors.payment_type" class="error text-danger small mt-1 d-block">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.payment_type[0] }}
+                </span>
             </div>
 
         </div>
-
         <!-- Payment Image Upload -->
         <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
             v-if="isPaymentImage" @click="triggerPaymentImage">
@@ -116,12 +141,7 @@
                 <small class="text-muted">Click to browse and select an image
                     file</small>
             </div>
-
-
-
         </div>
-
-
         <!-- Image Preview -->
         <div v-if="PaymentPicturePreview" class="text-center mb-3">
             <img :src="PaymentPicturePreview" alt="Uploaded Payment Image" class="img-fluid rounded mb-2"
@@ -131,6 +151,11 @@
                     Remove Uploaded Image
                 </button>
             </div>
+        </div>
+        <div class="justify-content-center d-flex mb-2">
+            <span v-if="errors.payment_image" class="error text-danger small mt-1 d-block">
+                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.payment_image[0] }}
+            </span>
         </div>
 
         <!-- Submit Button -->
@@ -168,6 +193,9 @@ export default {
             idPicturePreview: '',
             selectedRoomId: '',
             roomsDetail: {},
+            errors: {},
+            moveInDate: '',
+            moveOutDate: '',
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
             id_picture: '/images/tenant/allimagesResouces/vector-id-card-icon.jpg',
             payment: {
@@ -250,28 +278,38 @@ export default {
                 formdata.append('gender', this.sex);
                 formdata.append('payment_image', this.PaymentPictureFile)
                 formdata.append('studentpicture_id', this.imageUrl);
-
+                formdata.append('moveInDate', this.moveInDate);
+                formdata.append('moveOutDate', this.moveOutDate);
+                formdata.append('studentpicture_id', this.imageUrl);
                 const response = await axios.post('/book-room', formdata);
                 if (response.data.status === 'success') {
                     this.$refs.toast.showToast(response.data.message, 'success');
-                    this.reservationDetailsModal = false;
                 }
-
-
             } catch (error) {
                 if (error.response && error.response.status === 422) {
                     const validationErrors = error.response.data.errors;
-                    let message = "";
-                    for (const key in validationErrors) {
-                        message += `${validationErrors[key][0]}\n`;  // ✅ Will show your custom message
-                    }
-                    this.$refs.toast.showToast(message.trim(), 'danger');
+                    this.errors = validationErrors;
                 } else {
                     this.$refs.toast.showToast('Something went wrong. Please try again.', 'danger');
                 }
             }
 
 
+        },
+        setMoveOutDate() {
+            if (this.moveInDate) {
+                const date = new Date(this.moveInDate);
+                date.setMonth(date.getMonth() + 1);
+
+                // Adjust if date goes beyond valid month days (e.g., Feb 30)
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+
+                this.moveOutDate = `${year}-${month}-${day}`;
+            } else {
+                this.moveOutDate = '';
+            }
         },
     },
     mounted() {

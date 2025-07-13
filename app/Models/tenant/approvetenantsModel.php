@@ -4,6 +4,8 @@ namespace App\Models\tenant;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\tenant\tenantModel;
+use App\Models\landlord\roomModel;
 
 class approvetenantsModel extends Model
 {
@@ -12,6 +14,7 @@ class approvetenantsModel extends Model
     protected $primaryKey = 'approvedID';
     public $incrementing = true;
     protected $fillable = [
+        'approvedID',
         'fkroomID',
         'firstname',
         'lastname',
@@ -19,12 +22,18 @@ class approvetenantsModel extends Model
         'contactEmail',
         'age',
         'gender',
-        'move-in-date',
-        'move-out-date',
+        'moveInDate',
+        'moveOutDate',
         'paymentType',
         'paymentImage',
         'studentpictureId'
     ];
+     public function room()
+    {
+        return $this->belongsTo(roomModel::class, 'fkroomID', 'roomID');
+    }
+
+  
 
 
 }

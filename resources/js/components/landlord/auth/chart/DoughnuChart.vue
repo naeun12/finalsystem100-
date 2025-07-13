@@ -1,5 +1,7 @@
 <template>
-    <Doughnut :data="chartData" :options="chartOptions" />
+    <div style="height: 300px;">
+        <Doughnut :data="chartData" :options="chartOptions" />
+    </div>
 </template>
 
 <script setup>
@@ -14,6 +16,7 @@ import {
 
 import { Doughnut } from 'vue-chartjs';
 
+// Register necessary Chart.js components
 ChartJS.register(
     Title,
     Tooltip,
@@ -22,26 +25,11 @@ ChartJS.register(
     CategoryScale
 );
 
-const chartData = {
-    labels: ['Category A', 'Category B'],
-    datasets: [
-        {
-            data: [40, 60],
-            backgroundColor: ['#2196f3', '#9c27b0'],
-            hoverOffset: 4
-        }
-    ]
-};
-
-const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-        legend: {
-            display: false
-        }
-    }
-};
+// Accept props from parent
+defineProps({
+    chartData: Object,
+    chartOptions: Object
+});
 </script>
 
 <style scoped>
