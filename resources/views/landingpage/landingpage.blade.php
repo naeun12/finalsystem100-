@@ -35,11 +35,10 @@
                     <p class="mb-2">Sign up as:</p>
                     <div class="d-flex gap-3 flex-column flex-sm-row">
                         <a href="{{ route('landlord-Login') }}"
-                            class="btn btn-info text-white rounded-pill px-4 fw-semibold shadow">
+                            class="btn  text-white rounded-pill px-4 fw-semibold shadow">
                             Landlord
                         </a>
-                        <a href="{{ route('login-tenant') }}"
-                            class="btn btn-outline-light rounded-pill px-4 fw-semibold">
+                        <a href="{{ route('login-tenant') }}" class="btn  rounded-pill px-4 fw-semibold">
                             Tenant
                         </a>
                     </div>
@@ -73,7 +72,7 @@
                                 <p class="card-text mb-1">📍 Mandaue City</p>
                                 <p class="card-text">⭐ 4.8</p>
                                 <div class="text-end">
-                                    <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal"
+                                    <button type="button" class="btn mt-2" data-bs-toggle="modal"
                                         data-bs-target="#exampleModal">
                                         View Details
                                     </button>
@@ -102,7 +101,7 @@
                                 <p class="card-text mb-1">📍 Lapu-Lapu City</p>
                                 <p class="card-text">⭐ 4.6</p>
                                 <div class="text-end">
-                                    <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal"
+                                    <button type="button" class="btn  mt-2" data-bs-toggle="modal"
                                         data-bs-target="#exampleModal">
                                         View Details
                                     </button>
@@ -126,7 +125,7 @@
                                         <p class="card-text mb-1">📍 Lapu-Lapu</p>
                                         <p class="card-text">⭐ 4.7</p>
                                         <div class="text-end">
-                                            <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal"
+                                            <button type="button" class="btn mt-2" data-bs-toggle="modal"
                                                 data-bs-target="#exampleModal">
                                                 View Details
                                             </button>
@@ -148,7 +147,7 @@
                                         <p class="card-text mb-1">📍 Mandaue</p>
                                         <p class="card-text">⭐ 4.5</p>
                                         <div class="text-end">
-                                            <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal"
+                                            <button type="button" class="btn  mt-2" data-bs-toggle="modal"
                                                 data-bs-target="#exampleModal">
                                                 View Details
                                             </button>
@@ -182,8 +181,7 @@
                                 you're new here. It only takes a moment.</p>
                         </div>
                         <div class="modal-footer border-0 d-flex justify-content-center">
-                            <a href="{{ route('login-tenant') }}"
-                                class="btn btn-primary px-4 py-2 rounded-pill fw-semibold">
+                            <a href="{{ route('login-tenant') }}" class="btn  px-4 py-2 rounded-pill fw-semibold">
                                 Sign Up / Log In
                             </a>
                         </div>
@@ -214,7 +212,7 @@
                         listings, location maps, and school-distance info to make your decision easy and informed.
                     </p>
                     <div class="mt-4">
-                        <button class="btn btn-outline-primary rounded-pill px-4" onclick="showOurTeam()">
+                        <button class="btn  rounded-pill px-4" onclick="showOurTeam()">
                             <i class="bi bi-people-fill me-2"></i> Meet Our Team
                         </button>
                     </div>
@@ -342,7 +340,7 @@
                                 required></textarea>
                         </div>
                         <div class="col-12 text-center">
-                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill shadow">
+                            <button type="submit" class="btn  px-5 py-2 rounded-pill shadow">
                                 <i class="bi bi-send-fill me-2"></i>Send Message
                             </button>
                         </div>

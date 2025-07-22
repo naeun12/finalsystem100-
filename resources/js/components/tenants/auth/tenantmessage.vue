@@ -1,21 +1,22 @@
 <template>
-    <div class="container-fluid vh-100 d-flex flex-column">
-        <div class="row flex-grow-1 h-100">
+    <div class="container-fluid vh-150 d-flex flex-column bg-light">
+        <div class="row flex-grow-1 h-100 overflow-hidden">
             <!-- Sidebar -->
             <div class="col-md-3 bg-white border-end shadow-sm d-flex flex-column">
                 <div class="p-3">
+                    <h5 class="fw-bold text-primary mb-3">Conversations</h5>
                     <input type="text" class="form-control form-control-sm mb-3" placeholder="Search Conversation" />
-                    <div class="list-group bg-transparent">
+                    <div class="list-group bg-transparent overflow-auto" style="max-height: 80vh;">
                         <a v-for="convo in conversations" :key="convo.conversation_id" href="#"
-                            class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2 px-3 shadow-sm rounded mb-2"
+                            class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2 px-3 shadow-sm rounded mb-2 transition"
                             :class="isActiveConversation(convo.conversation_id) ? 'bg-primary text-white' : 'bg-light text-dark'"
-                            @click.prevent="selectConversation(convo)" style="border: none;">
+                            @click.prevent="selectConversation(convo)" style="border: none; cursor: pointer;">
 
-                            <img :src="convo.receiver_profile || 'default-profile.png'" alt="Profile"
-                                class="rounded-circle" style="width: 48px; height: 48px; object-fit: cover;" />
+                            <img :src="`/${convo.receiver_profile}` || '/default-profile.png'"
+                                class="rounded-circle border" style="width: 48px; height: 48px; object-fit: cover;" />
 
                             <div class="flex-grow-1">
-                                <h6 class="mb-0 fw-semibold">
+                                <h6 class="mb-0 fw-semibold text-truncate">
                                     {{ convo.receiver_name }}
                                 </h6>
                                 <small
@@ -25,49 +26,58 @@
                             </div>
                         </a>
                     </div>
-
                 </div>
             </div>
 
             <!-- Chat Area -->
             <div class="col-md-9 d-flex flex-column p-3 bg-light">
                 <!-- Header -->
-                <div class="d-flex align-items-center bg-white shadow-sm rounded p-2 mb-3">
-                    <img :src="activeLandlord.profile_pic_url || 'default-profile.png'" alt="Landlord"
-                        class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" />
-                    <h6 class="mb-0 fw-bold text-black">
-                        {{ activeLandlord.firstname ? activeLandlord.firstname + ' ' + activeLandlord.lastname :
-                            'Loading...' }}
-                    </h6>
-                </div>
-
-                <!-- Chat Messages -->
-                <div class="p-3 card flex-grow-1 overflow-auto mb-3">
-                    <div v-for="msg in messages" :key="msg.id" class="d-flex mb-3"
-                        :class="msg.senderID === tenantID ? 'justify-content-end text-end' : 'justify-content-start text-start'">
-                        <div class="d-flex align-items-end w-100"
-                            :class="msg.senderID === tenantID ? 'flex-row-reverse' : ''">
-                            <div :class="msg.senderID === tenantID ? 'bg-primary text-white' : 'bg-white text-dark'"
-                                class="rounded p-2 shadow-sm" style="max-width: 60%;">
-                                <p class="mb-1">{{ msg.message }}</p>
-                                <small class="text-white-50">
-                                    {{ formatRole(msg.senderRole) }} • {{ formatTime(msg.sentAt) }}
-                                </small>
-
-                            </div>
-                        </div>
+                <div class="d-flex align-items-center bg-white shadow-sm rounded p-3 mb-3 border">
+                    <img :src="activeLandlord.profilePicUrl ? '/' + activeLandlord.profilePicUrl : '/default-profile.png'"
+                        class="rounded-circle me-3 border" style="width: 50px; height: 50px; object-fit: cover;" />
+                    <div>
+                        <h6 class="mb-0 fw-bold text-dark">
+                            {{ activeLandlord.firstname ? activeLandlord.firstname + ' ' + activeLandlord.lastname :
+                                'Loading...' }}
+                        </h6>
+                        <small class="text-muted">Landlord</small>
                     </div>
                 </div>
 
+                <!-- Chat Messages -->
+                <!-- Chat Messages -->
+                <div ref="chatContainer" class="p-3 bg-white shadow-sm rounded border flex-grow-1 mb-3 overflow-auto"
+                    style="height: 600px;">
+                    <div v-for="msg in messages" :key="msg.id" class="d-flex mb-3"
+                        :class="msg.senderID === currentUserID ? 'justify-content-end text-end' : 'justify-content-start text-start'">
+                        <div class="d-flex align-items-end w-100"
+                            :class="msg.senderID === currentUserID ? 'flex-row-reverse' : ''">
+                            <div :class="msg.senderID === currentUserID ? 'bg-primary text-white' : 'bg-light text-dark'"
+                                class="rounded p-3 shadow-sm" style="max-width: 60%;">
+                                <p class="mb-1">{{ msg.message }}</p>
+                                <small class="text-secondary-50">
+                                    {{ formatRole(msg.senderRole) }} • {{ formatTime(msg.sentAt) }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
                 <!-- Message Input -->
-                <div class="input-group">
-                    <input type="text" v-model="message" class="form-control" placeholder="Type a message..." />
-                    <button type="button" class="btn btn-primary" @click="pushMessage">Send</button>
+                <div class="input-group shadow-sm">
+                    <input type="text" v-model="message" class="form-control rounded-start"
+                        placeholder="Type a message..." />
+                    <button type="button" class="btn btn-primary rounded-end px-4" @click="pushMessage">
+                        <i class="bi bi-send-fill"></i> Send
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -75,106 +85,126 @@ import axios from 'axios';
 export default {
     data() {
         return {
-            tenantID: '',
-            receiver_id: '',
-            conversation_id: '',
+            landlordID: '',
             conversations: [],
+            pollInterval: null,
+            activeConversationID: null,
             messages: [],
             message: '',
+            tenantID: '',
+            currentUserID: '',
+            currentUserRole: '',
+            activeConversationID: null,
             activeLandlord: {
                 firstname: '',
                 lastname: '',
-                profile_pic_url: ''
+                profilePicUrl: ''
             },
         };
     },
-    methods: {
-        async fetchMessages() {
-            try {
-                const res = await axios.get(`/get-messages/${this.tenantID}/${this.receiver_id}`);
-                this.messages = res.data;
-            } catch (err) {
-                console.error("Fetch Messages Error:", err);
-            }
-        },
-        async getTenantConversation() {
-            try {
-                const res = await axios.get(`/tenant-conversation/${this.tenantID}`);
-                this.conversations = res.data.history || [];
 
-                if (this.conversations.length > 0) {
-                    this.selectConversation(this.conversations[0]);
-                }
-            } catch (err) {
-                console.error("Conversation Fetch Error:", err);
-            }
+    methods: {
+        fetchConversations() {
+            axios.get(`/api/tenant/conversations/${this.tenantID}`)
+                .then(res => {
+                    this.conversations = res.data;
+                }).catch(err => {
+                    console.error("Failed to fetch conversations:", err);
+                });
         },
         selectConversation(convo) {
-            this.conversation_id = convo.conversation_id;
-            this.receiver_id = convo.receiver_id;
-
-            const [first, last] = convo.receiver_name?.split(' ') || [];
+            this.activeConversationID = convo.conversation_id;
             this.activeLandlord = {
-                firstname: first || '',
-                lastname: last || '',
-                profile_pic_url: convo.receiver_profile
+                firstname: convo.receiver_name.split(' ')[0] || '',
+                lastname: convo.receiver_name.split(' ')[1] || '',
+                profilePicUrl: convo.receiver_profile || 'default-profile.png'
             };
 
-            this.fetchMessages();
-            this.listenToConversation();
-        },
-        listenToConversation() {
-            if (!window.Echo || !this.conversation_id) {
-                console.warn("Echo not ready or missing conversation ID");
-                return;
-            }
+            this.fetchMessages(convo.conversation_id);
+            // if (this.messagePollInterval) {
+            //     clearInterval(this.messagePollInterval);
+            // }
 
-            window.Echo.channel(`conversation.${this.conversation_id}`)
-                .listen('.message.sent', (e) => {
-                    this.messages.push(e.message);
+            // START polling for messages every 2s
+            // this.messagePollInterval = setInterval(() => {
+            //     this.fetchMessages(this.activeConversationID);
+            // }, 2000);
+        },
+        fetchMessages(conversationID) {
+            axios.get(`/api/get/tenant/messages/${conversationID}`)
+                .then(res => {
+                    this.messages = res.data;
+                    this.scrollToBottom(); // 👈 auto scroll here
+
+                }).catch(err => {
+                    console.error("Failed to fetch messages:", err);
                 });
         },
-        async pushMessage() {
-            if (!this.message.trim()) return;
-            try {
-                const res = await axios.post('/tenant/send-message', {
-                    tenant_id: this.tenantID,
-                    receiver_id: this.receiver_id,
-                    message: this.message
-                });
-                this.message = '';
-                this.fetchMessages();
 
-            } catch (err) {
-                console.error("Send Message Error:", err);
-                alert("Failed to send message.");
-            }
+        pushMessage() {
+            const trimmedMessage = this.message.trim();
+
+            if (!trimmedMessage) return;
+
+            axios.post('/api/tenant/messages', {
+                conversationID: this.activeConversationID,
+                message: trimmedMessage,
+                senderID: this.tenantID,
+                senderRole: 'tenant',
+            })
+                .then(() => {
+                    this.fetchMessages(this.activeConversationID);
+                    this.message = '';
+                })
+                .catch(err => {
+                    console.error("❌ Failed to send message:", err);
+                    alert("Failed to send message. Please try again.");
+                });
         },
+
+
         isActiveConversation(id) {
-            return this.conversation_id === id;
+            return this.activeConversationID === id;
         },
+
+        formatTime(datetime) {
+            return new Date(datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        },
+
         formatRole(role) {
-            if (!role) return 'Unknown';
             return role.charAt(0).toUpperCase() + role.slice(1);
         },
-        formatTime(datetime) {
-            const date = new Date(datetime);
-            return date.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
+        scrollToBottom() {
+            this.$nextTick(() => {
+                const container = this.$refs.chatContainer;
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
             });
-        },
+        }
     },
 
     mounted() {
+
         const el = document.getElementById('tenantmessage');
         this.tenantID = el.getAttribute('data-tenant-id')?.trim();
-        this.receiver_id = el.getAttribute('data-landlord-id')?.trim();
+        this.landlordID = el.getAttribute('data-landlord-id')?.trim();
+        this.fetchConversations();
+        // this.pollInterval = setInterval(() => {
+        //     this.fetchConversations();
+        // }, 2000);
+        this.currentUserID = this.tenantID;
+        this.currentUserRole = 'tenant';
+    },
+    // beforeUnmount() {
+    //     clearInterval(this.pollInterval);
+    //     if (this.messagePollInterval) {
+    //         clearInterval(this.messagePollInterval);
+    //     }
+    // }
 
-        this.getTenantConversation();
-    }
 };
+
 </script>
 
 <style scoped>
@@ -182,5 +212,22 @@ export default {
     background-color: #e7f1ff;
     border-left: 4px solid #0d6efd;
     font-weight: 500;
+}
+
+.transition {
+    transition: background-color 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #adb5bd;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #868e96;
 }
 </style>

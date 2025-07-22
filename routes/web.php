@@ -4,19 +4,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\landingPageController;
 use App\Http\Middleware\AfterRegistrationMiddleware;
 use App\Http\Middleware\TenantAuth;
-
-
 use App\Http\Controllers\tenant\tenantController;
 use App\Http\Controllers\tenant\auth\homepageController;
 use App\Http\Controllers\tenant\auth\dormdetailscontroller;
-
 use App\Http\Controllers\landlord\auth\landlordaccountprocessController;
 use App\Http\Controllers\landlord\auth\dashboardController;
 use App\Http\Controllers\landlord\auth\dormpageController;
 use App\Http\Controllers\landlord\auth\roompageController;
 // use App\Http\Controllers\landlard\auth\TenantController;
 use App\Http\Controllers\landlord\auth\bookingpageController;
-use App\Http\Controllers\landlord\auth\MessagingCenterController;
+use App\Http\Controllers\landlord\auth\messagelandlordController;
 use App\Http\Controllers\landlord\auth\NotificationController;
 use App\Http\Controllers\landlord\auth\reservationController;
 use App\Http\Controllers\landlord\auth\alltenantsController;
@@ -25,18 +22,26 @@ use App\Http\Controllers\tenant\auth\dormitories;
 use App\Http\Controllers\tenant\auth\bookingprocess\selectionRoomController;
 use App\Http\Controllers\tenant\auth\bookingprocess\bookroomController;
 use App\Http\Controllers\tenant\auth\tenantmessageController;
+use App\Http\Controllers\tenant\auth\nav\booking\mybookingController;
+use App\Http\Controllers\tenant\auth\nav\booking\mybookingdetailsController;
+use App\Http\Controllers\tenant\auth\nav\nextpayment\nextpaymentController;
+use App\Http\Controllers\tenant\auth\nav\myroom\myroomsController;
+use App\Http\Controllers\tenant\auth\nav\reservations\myreservationController;
+
+
 use App\Models\tenant\messageModel;
 use App\Models\Landlord;
 use App\Http\Middleware\LandlordAuth;
-
-
+use Illuminate\Support\Facades\Broadcast;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+use Illuminate\Support\Facades\Auth;
 //view landingpage, login and register for landlord and tenant
 Route::get('/', [landingPageController::class, 'landingPage'])->name('landingpage');
 Route::get('/tenantLogin', [tenantController::class, 'login'])->name('login-tenant');
 Route::get('/tenantRegister', [tenantController::class, 'register'])->name('register-tenant');
 Route::get('/landlordLogin', [landlordaccountprocessController::class, 'landlordLogin'])->name('landlord-Login');
 Route::post('/tenant-logout', [tenantController::class, 'logout'])->name('tenant.logout');
-Route::post('/logout', [landlordaccountprocessController::class, 'logout'])->name('logout');
+Route::post('/logout', [landlordaccountprocessController::class, 'logoutlandlord'])->name('logout');
 
 
 Route::get('/landlordregister', [landlordaccountprocessController::class, 'landlordRegister'])->name('register-landlord');
@@ -76,7 +81,7 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::match(['get', 'post'], '/booking-index/{landlord_id}', [bookingpageController::class, 'bookingpageIndex'])->name('booking.index');
     Route::match(['get', 'post'], '/reservation-index/{landlord_id}', [reservationController::class, 'reservationIndex'])->name('reservation.index');
     Route::match(['get', 'post'], '/all-tenants-index/{landlord_id}', [alltenantsController::class, 'alltenantIndex'])->name('all.tenants.index');
-    Route::match(['get', 'post'], '/MessagingPage', [MessagingCenterController::class, 'MessagingPage'])->name('MessagingPage');
+    Route::match(['get', 'post'], '/message/landlord/{landlord_id}', [messagelandlordController::class, 'landlordmessageIndex'])->name('message.landlord');
     Route::match(['get', 'post'], '/ReviewandFeedback', [ReviewandFeedbackController::class, 'ReviewandFeedback'])->name('ReviewandFeedback');
     Route::match(['get', 'post'], '/NotificationPage', [NotificationController::class, 'NotificationPage'])->name('NotificationPage');
 
@@ -100,13 +105,10 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/view-dorm/{id}', [dormpageController::class, 'ViewDorm']);
     Route::get('/SearchDorms', [dormpageController::class, 'searchDorms'])->name('SearchDorms');
     Route::get('/filter-locations', [dormpageController::class, 'filterLocations'])->name('filter.locations');
-    
     Route::get('/filter-availability', [dormpageController::class, 'filteredAvailability'])->name('filter.availability');
-
     //functions for landlord dorm rules and policy
     Route::post('/add-rules', [dormpageController::class, 'addRulesAndPolicy'])->name('add.rules');
     Route::delete('/delete-rules/{pivotId}', [dormpageController::class, 'deleteRulesAndPolicies'])->name('delete.rules');
-
      //functions for amenities
      Route::post('/add-amenities', [dormpageController::class, 'AddAmenities'])->name('add.amenities');
      Route::delete('/delete-amenities/{id}', [dormpageController::class, 'DeleteAmenities'])->name('delete.amenities');
@@ -114,7 +116,6 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::post('/addRoom', [roompageController::class, 'addRoom'])->name('addRoom');
     Route::post('/add-roomfeatures', [roompageController::class, 'addRoomFeatures'])->name('add.roomfeatures');
     Route::delete('/delete-roomfeatures/{pivotId}', [roompageController::class, 'deleteRoomFeatures'])->name('delete.roomfeatures');
-
     Route::post('/update-room/{id}', [roompageController::class, 'UpdateRoom'])->name('update.room');
     // Route::post('/upload-images',[imagesDormImages::class,'roomImages'])->name('upload-images');
     Route::delete('/DeleteRoom/{id}', [roompageController::class, 'DeleteRoom'])->name('DeleteRoom');
@@ -129,6 +130,7 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/booking-list', [bookingpageController::class, 'bookingList']);
     Route::get('/booking-tenant-view/{id}', [bookingpageController::class, 'ViewTenant']);
     Route::post('/approve-tenant',[bookingpageController::class,'approveTenant']);
+    Route::post('/accept-tenant',[bookingpageController::class,'acceptBooking']);
     Route::post('/not-approve-tenant',[bookingpageController::class,'notapproveTenant']);
     Route::delete('/delete-booking/{id}',[bookingpageController::class,'deleteBooking']);
     Route::get('/search-booking', [bookingpageController::class, 'searchBooking']);
@@ -136,6 +138,7 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/api/dorms/{dormId}/tenants', [bookingpageController::class, 'getTenantsByDorm']);
     Route::get('/api/roomnumber/booking', [bookingpageController::class, 'getrooms']);
     Route::get('/api/applications/booking/', [bookingpageController::class, 'getapplications']);
+
     //functions for reservation 
     Route::get('/reservation-list', [reservationController::class, 'reservationList']);
     Route::get('/view-reservation/reservation/{id}', [reservationController::class, 'viewReservation']);
@@ -150,6 +153,12 @@ Route::middleware([LandlordAuth::class])->group(function () {
     //functions for all tenants
     Route::get('/tenants-list', [alltenantsController::class, 'tenantsList']);
     Route::get('/tenants-view/{id}', [alltenantsController::class, 'ViewTenant']);
+    //functions for messaging landlord 
+    Route::get('/api/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'getConversations']);
+    Route::get('/api/select/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'selecttenantToMessage']);
+    Route::get('/api/get/landlord/messages/{conversation_id}', [messagelandlordController::class, 'getMessages']);
+    Route::post('/api/landlord/messages', [messagelandlordController::class, 'sendMessage']);
+
 });
 //tenant auth
 //tenant account process
@@ -196,14 +205,46 @@ Route::middleware([TenantAuth::class])->group(function () {
    // In your routes
     Route::get('/tenant-message-nav/{tenant_id}', [tenantmessageController::class, 'tenantmessageIndex'])->name('tenant.message');
     Route::get('/tenant-message/{tenant_id}', [tenantmessageController::class, 'landlordtenantmessageIndex'])->name('tenant.landlord.message');
-    Route::post('/tenant/send-message', [tenantmessageController::class, 'sendMessage'])->name('tenant.send.message');
+    Route::get('/api/tenant/conversations/{tenant_id}', [tenantmessageController::class, 'getLandlordConversation']);
+    Route::get('/api/get/tenant/messages/{conversation_id}', [tenantmessageController::class, 'getLandlordMessages']);
+    Route::post('/api/tenant/messages', [tenantmessageController::class, 'sendLandlordMessage']);
+    // view booking
     
-    Route::get('/tenant-conversation/{tenant_id}', [tenantmessageController::class, 'displayConversation']);
+    Route::get('/view/booking/{tenant_id}', [mybookingController::class, 'viewBooking'])->name('view.booking');
+    Route::get('/tenant/my-bookings/{tenant_id}', [mybookingController::class, 'mybookingList']);
+    Route::get('/view/booking/details/{tenant_id}/{booking_id}', [mybookingdetailsController::class, 'viewBookingDetails'])->name('view.booking.details');
+    Route::get('/my-bookings/details/{booking_id}', [mybookingdetailsController::class, 'bookingDetails']);
+    Route::post('/tenant/pay-room/', [mybookingdetailsController::class, 'payRoom']);
+    // view next payment
+    Route::get('/view/payment/{tenant_id}', [nextpaymentController::class, 'nextpaymentIndex'])->name('next.payment');
+    Route::get('/tenant/payment/history/list/{tenant_id}', [nextpaymentController::class, 'paymentHistory']);
+    Route::get('/api/total-amount/{tenantID}', [nextpaymentController::class, 'getTotalAmount']);
+    
 
-    Route::get('/get-messages/{tenant_id}/{receiver_id}', [tenantmessageController::class, 'getMessages']);
-    Route::get('/convo-history', [tenantmessageController::class, 'getLandlordInformation']);
+ // view My Rooms
+    Route::get('/view/myrooms/{tenant_id}', [myroomsController::class, 'myroomsIndex'])->name('next.myrooms');
+    Route::get('/tenant/room-list/{tenant_id}', [myroomsController::class, 'myroomsList']);
+
+    //reservations view
+    Route::get('/view/reservation/{tenant_id}', [myreservationController::class, 'viewReservation'])->name('view.reservation');
+    Route::get('/tenant/my-reservation/{tenant_id}', [myreservationController::class, 'myReservationList']);
+
+    
+
+
+    
+
+
 
 });
+
+
+
+
+
+
+
+
 
 
 

@@ -8,6 +8,8 @@ use App\Models\landlord\landlordModel;
 use App\Models\landlord\bookingModel;
 use App\Models\landlord\roomModel;
 use App\Models\landlord\dormModel;
+use App\Models\tenant\bookingpaymentModel;
+
 
 use App\Models\tenant\approvetenantsModel;
 
@@ -34,6 +36,7 @@ class bookingpageController extends Controller
         "title" => "Landlord - Tenants", 
         'headerName' => 'Tenants Booking',           
         'landlord' => $landlord,
+        'landlord_id' => $landlord_id,
     ]);   
     }
     public function searchBooking(Request $request)
@@ -79,11 +82,11 @@ class bookingpageController extends Controller
                 'message' => 'Unauthorized action. Please log in as a landlord.'
             ], 403);
         }
-        $booking = bookingModel::with(['room.dorm', 'room.landlord', 'tenant'])
+        $booking = bookingModel::with(['room.dorm', 'room.landlord', 'tenant','payment'])
         ->whereHas('room', function ($query) use ($landlordId) {
             $query->where('fklandlordID', $landlordId);
         })
-        ->orderBy('created_at', 'asc')
+        ->orderBy('created_at', 'desc')
         ->paginate(5);
     
         return response()->json([
@@ -112,7 +115,7 @@ public function getRooms(Request $request)
     $landlordId = session('landlord_id');
     $searchTerm = $request->input('roomsNumber');
 
-    $query = bookingModel::with(['room.dorm', 'room.landlord', 'tenant'])
+    $query = bookingModel::with(['room.dorm', 'room.landlord', 'tenant','payment'])
         ->whereHas('room', function ($q) use ($landlordId) {
             $q->where('fklandlordID', $landlordId);
         });
@@ -133,7 +136,8 @@ public function getApplications(Request $request)
     $landlordId = session('landlord_id');
     $searchStatus = $request->input('selectedapplicationStatus');
 
-    $query = bookingModel::with(['room.dorm', 'room.landlord', 'tenant'])
+    $query = bookingModel::with(['room.dorm', 'room.landlord', 'tenant',
+    'payment'])
         ->whereHas('room', function ($q) use ($landlordId) {
             $q->where('fklandlordID', $landlordId);
         });
@@ -156,7 +160,7 @@ public function getApplications(Request $request)
     }
 
     $tenant = bookingModel::with([
-        'room.dorm'
+        'room.dorm','payment'
     ])
     ->where('bookingID', $id)
     ->whereHas('room', function ($query) use ($landlordId) {
@@ -185,8 +189,64 @@ public function approveTenant(Request $request)
     try {
         $booking = bookingModel::findOrFail($request->bookingID);
         $room = roomModel::findOrFail($booking->fkroomID);
+        if ($room->availability === 'Occupied') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'This room is already occupied. You cannot approve another tenant.',
+            ], 403);
+        }
+        $booking->status = 'Accepted by Landlord';
+        $booking->updated_at = now();
+        $booking->save();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Tenant has been approved successfully.',
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to approve tenant.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+public function notapproveTenant(Request $request)
+{
+    $request->validate([
+        'bookingID' => 'required|integer|exists:bookings,bookingID',
+    ]);
 
-        // ✅ Check if the room is already occupied
+    try {
+        // Get the screening record
+        $booking = bookingModel::findOrFail($request->bookingID);
+        $booking->status = 'Not Approved';
+        $booking->updated_at = now();
+        $booking->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Tenant application has been declined.',
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error declining tenant: ' . $e->getMessage());
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to decline tenant.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+public function acceptBooking(Request $request)
+{
+    $request->validate([
+        'bookingID' => 'required|integer|exists:bookings,bookingID',
+    ]);
+
+    try {
+        $booking = bookingModel::findOrFail($request->bookingID);
+        $room = roomModel::findOrFail($booking->fkroomID);
+
         if ($room->availability === 'Occupied') {
             return response()->json([
                 'status' => 'error',
@@ -194,11 +254,9 @@ public function approveTenant(Request $request)
             ], 403);
         }
 
-        // ✅ Proceed with approval
-        $booking->status = 'Approved';
+        $booking->status = 'Fully Approved';
         $booking->updated_at = now();
         $booking->save();
-
         $room->availability = 'Occupied';
         $room->save();
 
@@ -226,38 +284,6 @@ public function approveTenant(Request $request)
         return response()->json([
             'status' => 'error',
             'message' => 'Failed to approve tenant.',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-}
-public function notapproveTenant(Request $request)
-{
-    $request->validate([
-        'bookingID' => 'required|integer|exists:bookings,bookingID',
-    ]);
-
-    try {
-        // Get the screening record
-        $booking = bookingModel::findOrFail($request->bookingID);
-        if ($booking->status === 'Approved') {
-            $room = roomModel::findOrFail($booking->fkroomID);
-            $room->availability = 'Available';
-            $room->save();
-        }
-        $booking->status = 'Not Approved';
-        $booking->updated_at = now();
-        $booking->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tenant application has been declined.',
-        ]);
-
-    } catch (\Exception $e) {
-        \Log::error('Error declining tenant: ' . $e->getMessage());
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to decline tenant.',
             'error' => $e->getMessage(),
         ], 500);
     }

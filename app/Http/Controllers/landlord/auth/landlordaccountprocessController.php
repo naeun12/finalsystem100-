@@ -301,7 +301,8 @@ public function loginLandlord(Request $request)
         if (!$user || !\Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
         }
-    
+    Auth::guard('landlord')->login($user);
+
     session([
         'landlord_logged_in' => true,
         'landlord_id' => $user->landlordID,

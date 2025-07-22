@@ -15,6 +15,7 @@ class approvetenantsModel extends Model
     public $incrementing = true;
     protected $fillable = [
         'approvedID',
+        'fktenantID',
         'fkroomID',
         'firstname',
         'lastname',

@@ -5,28 +5,30 @@
         <Toastcomponents ref="toast" />
         <!-- Header -->
         <div class="d-flex justify-content-end align-items-center mb-4">
-            <div class="col-md-6 col-lg-4 mb-2 d-flex justify-content-between gap-2">
-                <button class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2 flex-fill"
-                    @click="viewDormitories">
-                    <i class="bi bi-building"></i>
-                    View Dormitories
+            <div class="col-md-6 col-lg-5 d-flex gap-3">
+                <!-- View Dormitories Button -->
+                <button
+                    class="btn btn-outline-primary btn-lg shadow-sm flex-fill d-flex align-items-center justify-content-center gap-2 rounded-pill"
+                    @click="viewDormitories" style="transition: 0.3s;">
+                    <i class="bi bi-building fs-5"></i>
+                    <span class="fw-semibold">View Dormitories</span>
                 </button>
-                <button class="btn btn-outline-success d-flex align-items-center justify-content-center gap-2 flex-fill"
-                    @click="AddModal()">
-                    <i class="bi bi-plus-circle"></i>
-                    Add New Room
+
+                <!-- Add New Room Button -->
+                <button
+                    class="btn btn-outline-success btn-lg shadow-sm flex-fill d-flex align-items-center justify-content-center gap-2 rounded-pill"
+                    @click="AddModal()" style="transition: 0.3s;">
+                    <i class="bi bi-plus-circle fs-5"></i>
+                    <span class="fw-semibold">Add New Room</span>
                 </button>
             </div>
-
         </div>
-
-        <!-- Search Bar -->
-
-        <div class="mb-1 d-flex gap-2 flex-wrap justify-content-start w-100">
-            <div class="col-md-6 col-lg-2 mb-2">
-                <select class="form-select shadow-sm" v-model="selectedRoomType" @change="filterRoomsByRoomType">
-
-                    <option disabled value="">Select room type</option>
+        <div class="mb-3 d-flex gap-3 flex-wrap justify-content-start align-items-stretch w-100">
+            <!-- Room Type Filter -->
+            <div class="col-md-6 col-lg-3">
+                <select class="form-select shadow-sm rounded-3 py-2" v-model="selectedRoomType"
+                    @change="filterRoomsByRoomType">
+                    <option disabled value="">Select Room Type</option>
                     <option value="all">All Room Types</option>
                     <option value="Single Room">Single Room</option>
                     <option value="Double Room">Double Room</option>
@@ -36,122 +38,123 @@
                     <option value="Loft Room / Mezzanine Type">Loft Room / Mezzanine Type</option>
                 </select>
             </div>
-            <div class="col-md-6 col-lg-2 mb-2">
-                <select class="form-select shadow-sm" v-model="selectedAvailability"
-                    @change="filterRoomsByAvailability">
 
+            <!-- Availability Filter -->
+            <div class="col-md-6 col-lg-2">
+                <select class="form-select shadow-sm rounded-3 py-2" v-model="selectedAvailability"
+                    @change="filterRoomsByAvailability">
                     <option disabled value="">Select Availability</option>
                     <option value="all">All Availability</option>
                     <option value="Available">Available</option>
                     <option value="Not Available">Not Available</option>
                     <option value="Under Maintenance">Under Maintenance</option>
-
                 </select>
             </div>
-            <div class="col-md-6 col-lg-2 mb-2">
-                <select class="form-select shadow-sm" v-model="selectedGender" @change="filterRoomsByGender"
-                    :value="selectedGender">
 
-                    <option disabled value="">Select gender preferences</option>
+            <!-- Gender Filter -->
+            <div class="col-md-6 col-lg-3">
+                <select class="form-select shadow-sm rounded-3 py-2" v-model="selectedGender"
+                    @change="filterRoomsByGender">
+                    <option disabled value="">Select Gender Preference</option>
                     <option value="all">All Preferences</option>
-                    <option value="Male Only">Male </option>
-                    <option value="Female Only">Female </option>
+                    <option value="Male Only">Male</option>
+                    <option value="Female Only">Female</option>
                     <option value="Any Gender">Any Gender</option>
-
-
                 </select>
             </div>
-            <div class="col-md-6 col-lg-2 mb-2">
-                <select class="form-select shadow-sm" v-model="selectedDormitory" @change="filterRoomsByDormitory">
 
-                    <option disabled value="">Select Dormitories</option>
+            <!-- Dormitory Filter -->
+            <div class="col-md-6 col-lg-3">
+                <select class="form-select shadow-sm rounded-3 py-2" v-model="selectedDormitory"
+                    @change="filterRoomsByDormitory">
+                    <option disabled value="">Select Dormitory</option>
                     <option value="all">All Dormitories</option>
                     <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
-                        <span>{{ dorm.dormName }}</span>
+                        {{ dorm.dormName }}
                     </option>
                 </select>
             </div>
-
-
         </div>
+
         <!-- Table -->
-        <div class="table-responsive shadow-sm rounded mt-4">
-            <table class="table table-bordered table-hover align-middle mb-0">
-                <thead class="table-primary text-center">
-                    <tr>
-                        <th>Room ID</th>
-                        <th>Room No</th>
-                        <th>Room Type</th>
-                        <th>Price (₱)</th>
-                        <th>Availability Status</th>
-                        <th>Gender Preferences</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody v-if="rooms && rooms.length">
-                    <tr class="text-center align-middle" v-for="room in rooms" :key="room.roomID">
-                        <td>{{ room.roomID }}</td>
-                        <td>{{ room.roomNumber }}</td>
-                        <td>{{ room.roomType }}</td>
-                        <td>{{ room.price }}</td>
-                        <td>
-                            <span class="badge"
-                                :class="room.availability === 'Available' ? 'bg-success' : room.availability === 'Occupied' ? 'bg-danger' : 'bg-warning'">
-                                {{ room.availability }}
-                            </span>
-                        </td>
-                        <td>{{ room.genderPreference }}</td>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-4">
+            <div class="col" v-for="room in rooms" :key="room.roomID">
+                <!-- Card Click = View Room -->
+                <div class="card h-100 border-0 shadow-lg rounded-4 position-relative" @click="ViewRoom(room.roomID)"
+                    style="cursor: pointer; transition: 0.3s ease;">
 
-                        <td>
-                            <div class="d-flex justify-content-center gap-2">
-                                <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1"
-                                    @click="ViewRoom(room.roomID)">
-                                    <i class="bi bi-eye"></i>
+                    <!-- Floating Delete "X" Button -->
+                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle z-3"
+                        @click.stop="deleteRoom(room.roomID)" title="Delete Room">
+                        <i class="bi bi-x-lg small"></i>
+                    </button>
 
-                                </button>
-                                <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
-                                    @click="editRoom(room.roomID)">
-                                    <i class="bi bi-pencil-square"></i>
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold text-primary mb-3">Room #{{ room.roomNumber }}</h5>
 
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
-                                    @click="deleteRoom(room.roomID)">
-                                    <i class="bi bi-trash"></i>
+                        <ul class="list-unstyled text-secondary">
+                            <li class="mb-2"><i class="bi bi-hash text-dark me-2"></i><strong>Room ID:</strong> {{
+                                room.roomID }}</li>
+                            <li class="mb-2"><i class="bi bi-door-open text-dark me-2"></i><strong>Type:</strong> {{
+                                room.roomType }}</li>
+                            <li class="mb-2"><i class="bi bi-cash text-dark me-2"></i><strong>Price:</strong> ₱{{
+                                room.price }}</li>
+                            <li class="mb-2">
+                                <i class="bi bi-circle-fill text-dark me-2"></i><strong>Status:</strong>
+                                <span class="badge rounded-pill px-3 py-1"
+                                    :class="room.availability === 'Available' ? 'bg-success' : room.availability === 'Occupied' ? 'bg-danger' : 'bg-warning text-dark'">
+                                    {{ room.availability }}
+                                </span>
+                            </li>
+                            <li class="mb-2"><i
+                                    class="bi bi-gender-ambiguous text-dark me-2"></i><strong>Gender:</strong> {{
+                                        room.genderPreference }}</li>
+                        </ul>
 
-                                </button>
-                            </div>
+                        <hr class="my-3">
 
-                        </td>
-                    </tr>
-
-                </tbody>
-            </table>
+                        <!-- Optional Edit Button -->
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+                                @click.stop="editRoom(room.roomID)" title="Edit Room">
+                                Update Room
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div v-if="lastPage > 1" class="d-flex justify-content-center align-items-center my-3">
+        <div v-if="lastPage > 1" class="d-flex justify-content-center align-items-center my-4">
             <nav aria-label="Page navigation">
-                <ul class="pagination mb-0">
+                <ul class="pagination pagination-lg mb-0 shadow-sm rounded-pill bg-white px-3 py-2">
+                    <!-- Previous Button -->
                     <li :class="['page-item', { disabled: currentPage === 1 }]">
-                        <button class="page-link" :disabled="currentPage === 1"
-                            @click="handlePagination(currentPage - 1)" aria-label="Previous">
-                            <span aria-hidden="true">&laquo; Prev</span>
+                        <button class="page-link border-0 bg-transparent text-primary fw-semibold"
+                            :disabled="currentPage === 1" @click="handlePagination(currentPage - 1)"
+                            aria-label="Previous">
+                            <i class="bi bi-arrow-left-circle me-1"></i> Prev
                         </button>
                     </li>
 
+                    <!-- Page Info -->
                     <li class="page-item disabled">
-                        <span class="page-link">
+                        <span class="page-link border-0 bg-transparent text-dark fw-bold">
                             Page {{ currentPage }} of {{ lastPage }}
                         </span>
                     </li>
 
+                    <!-- Next Button -->
                     <li :class="['page-item', { disabled: currentPage === lastPage }]">
-                        <button class="page-link" :disabled="currentPage === lastPage"
-                            @click="handlePagination(currentPage + 1)" aria-label="Next">
-                            <span aria-hidden="true">Next &raquo;</span>
+                        <button class="page-link border-0 bg-transparent text-primary fw-semibold"
+                            :disabled="currentPage === lastPage" @click="handlePagination(currentPage + 1)"
+                            aria-label="Next">
+                            Next <i class="bi bi-arrow-right-circle ms-1"></i>
                         </button>
                     </li>
                 </ul>
             </nav>
         </div>
+
 
         <!--modal add room-->
         <div v-if="VisibleAddModal" class="modal fade show d-block w-100" tabindex="-1"
@@ -204,7 +207,7 @@
                         </div>
                         <div class="mb-3 d-flex justify-content-center align-items-center">
                             <span class="text-danger small mb-3" v-if="errors.roomImageFile">{{ errors.roomImageFile[0]
-                            }}</span>
+                                }}</span>
                         </div>
 
 
@@ -227,7 +230,7 @@
                                     <label>Dorm ID</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.dormsId">{{ errors.dormsId[0]
-                                }}</span>
+                                    }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <input type="text" class="form-control" id="roomNumber" placeholder="Room Number"
@@ -235,7 +238,7 @@
                                     <label for="roomNumber">Room Number</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.roomNumber">{{ errors.roomNumber[0]
-                                }}</span>
+                                    }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="roomType" v-model="roomType">
@@ -253,7 +256,7 @@
                                     <label for="roomType">Room Type</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.roomType">{{ errors.roomType[0]
-                                }}</span>
+                                    }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="availability" v-model="availability">
@@ -265,14 +268,14 @@
                                     <label for="availability">Availability Status</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.availability">{{ errors.availability[0]
-                                }}</span>
+                                    }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <input type="number" class="form-control" id="areaSqm" v-model="area_sqm" min="1"
                                         placeholder="Enter area in sqm" required>
                                     <label for="areaSqm">Area (sqm)</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.area_sqm">{{ errors.area_sqm[0]
-                                }}</span>
+                                    }}</span>
 
                             </div>
 
@@ -284,7 +287,7 @@
                                     <label for="price">Price (₱)</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.price">{{ errors.price[0]
-                                }}</span>
+                                    }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="bedType" v-model="listing_type" required>
                                         <option value="" disabled selected>Select Bed Type</option>
@@ -296,7 +299,7 @@
                                 </div>
 
                                 <span class="text-danger small" v-if="errors.listing_type">{{ errors.listing_type[0]
-                                }}</span>
+                                    }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="furnishingStatus" v-model="furnishing_status"
                                         required>
@@ -309,7 +312,7 @@
                                 </div>
                                 <span class="text-danger small" v-if="errors.furnishing_status">{{
                                     errors.furnishing_status[0]
-                                }}</span>
+                                    }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="genderPreference" v-model="gender_preference"
@@ -323,7 +326,7 @@
                                 </div>
                                 <span class="text-danger small" v-if="errors.gender_preference">{{
                                     errors.gender_preference[0]
-                                }}</span>
+                                    }}</span>
 
 
                                 <span class="text-danger small" v-if="errors.price">{{ errors.price[0] }}</span>
@@ -367,7 +370,7 @@
                             :id="'feature' + index" placeholder="Enter room feature" />
                         <label :for="'feature' + index">Room Feature {{ index + 1 }}</label>
                         <span class="text-danger mb-3 " v-if="errors.roomFeatures">{{ errors.roomFeatures[0]
-                        }}</span>
+                            }}</span>
 
                     </div>
 
@@ -453,7 +456,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.roomNumber">{{
                                 errors.editData.roomNumber[0]
-                            }}</span>
+                                }}</span>
                             <div class="form-floating mb-2 mt-2">
                                 <input type="number" class="form-control" id="areaSqm" v-model="editData.areaSqm"
                                     min="1" placeholder="Enter area in sqm" required>
@@ -461,7 +464,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.areaSqm">{{
                                 errors.editData.areaSqm[0]
-                            }}</span>
+                                }}</span>
 
 
                             <div class="form-floating mb-2 mt-2">
@@ -482,7 +485,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.roomType">{{
                                 errors.editData.roomType[0]
-                            }}</span>
+                                }}</span>
                             <div class="form-floating mb-2">
                                 <select class="form-select" id="availability" v-model="editData.availability">
                                     <option value="" selected>Select Availability</option>
@@ -494,7 +497,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.availability">{{
                                 errors.editData.availability[0]
-                            }}</span>
+                                }}</span>
                         </div>
 
                         <!-- Column 2 -->
@@ -506,7 +509,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.price">{{
                                 errors.editData.price[0]
-                            }}</span>
+                                }}</span>
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="bedType" v-model="editData.listingType" required>
                                     <option value="" disabled>Select Bed Type</option>
@@ -518,7 +521,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.listingType">{{
                                 errors.editData.listingType[0]
-                            }}</span>
+                                }}</span>
 
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="furnishingStatus" v-model="editData.furnishing_status"
@@ -532,7 +535,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.furnishing_status">{{
                                 errors.editData.furnishing_status[0]
-                            }}</span>
+                                }}</span>
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="genderPreference" v-model="editData.genderPreference"
                                     required>
@@ -545,7 +548,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.genderPreference">{{
                                 errors.editData.genderPreference[0]
-                            }}</span>
+                                }}</span>
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" @click="updateRoom" class="btn btn-outline-primary btn-lg">
                                     Update Room
@@ -627,13 +630,13 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Room Number:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.roomNumber
-                                }}
+                                    }}
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Room Type:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.roomType
-                                }}
+                                    }}
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -675,7 +678,7 @@
                                 <label class="form-label fw-bold">Contact Email:</label>
                                 <div class="p-2 border rounded bg-light text-break"> {{
                                     selectedRoom?.dorm.contactEmail
-                                }}
+                                    }}
 
                                 </div>
                             </div>
@@ -683,7 +686,7 @@
                                 <label class="form-label fw-bold">Contact Phone:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{
                                     selectedRoom?.dorm.contactPhone
-                                }}
+                                    }}
                                 </div>
                             </div>
                             <div class="mb-3">

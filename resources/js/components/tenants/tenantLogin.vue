@@ -4,24 +4,30 @@
 
         <div class="row  m-2">
             <div class="mt-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" name="email" id="email" class="form-control" v-model="email"
-                    placeholder="Email Address" style="border: 2px solid #4edce2;">
-                <span v-if="errors.email" class="text-danger">
+                <label for="email" class="form-label fw-semibold text-primary">
+                    📧 Email Address
+                </label>
+                <input type="email" name="email" id="email" class="form-control border-2 shadow-sm rounded"
+                    v-model="email" placeholder="Enter your email" style="border-color: #4edce2;" />
+                <span v-if="errors.email" class="text-danger small mt-1 d-block">
                     {{ errors.email[0] }}
                 </span>
             </div>
-            <div class="mt-2">
 
-                <label for="password" class="form-label">Password</label>
-                <div class="input-group">
-                    <input type="password" id="password" name="password" v-model="password" class="form-control"
-                        placeholder="Password" style="border: 2px solid #4edce2;">
+            <div class="mt-3">
+                <label for="password" class="form-label fw-semibold text-primary">
+                    🔒 Password
+                </label>
+                <div class="input-group shadow-sm rounded border-2" style="border: 2px solid #4edce2;">
+                    <input :type="showPassword ? 'text' : 'password'" id="password" name="password" v-model="password"
+                        class="form-control border-0" placeholder="Enter your password" />
 
                 </div>
-                <span v-if="errors.password" class="text-danger">{{ errors.password[0] }}</span>
-
+                <span v-if="errors.password" class="text-danger small mt-1 d-block">
+                    {{ errors.password[0] }}
+                </span>
             </div>
+
             <div class="mt-2 ">
 
                 <label for="show-password" class="form-label  me-1">Show Password</label>

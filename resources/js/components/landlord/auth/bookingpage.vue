@@ -9,128 +9,123 @@
             <input type="text" class="form-control border-0 shadow-none" placeholder="Search Tenants name"
                 aria-label="Search Tenant " v-model="searchTerm" />
         </div>
-        <div class="py-3 d-flex gap-3 align-items-center">
-            <!-- Dorm No Dropdown -->
-            <div class="mb-2 d-flex align-items-center gap-2">
-                <div class="w-100">
-
-                    <select id="dormSelect" class="form-select form-select-lg shadow-sm" @change="filterDorms"
-                        v-model="selectedDormId">
-                        <option value="" disabled> Select Dorm</option>
-                        <option value="all"> All dorms</option>
-                        <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
-                            {{ dorm.dormName }} (ID: {{ dorm.dormID }})
-                        </option>
-                    </select>
-
-
-                </div>
+        <div class="row g-3 py-3">
+            <!-- Dorm Dropdown -->
+            <div class="col-12 col-md-4">
+                <select class="form-select form-select-lg shadow-sm rounded-3" v-model="selectedDormId"
+                    @change="filterDorms">
+                    <option disabled value="">Select Dorm</option>
+                    <option value="all">All Dorms</option>
+                    <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
+                        {{ dorm.dormName }} (ID: {{ dorm.dormID }})
+                    </option>
+                </select>
             </div>
-            <!-- Room No Dropdown -->
-            <div class="mb-2 d-flex align-items-center gap-2">
-                <div class="w-100">
 
-                    <select id="dormSelect" class="form-select form-select-lg shadow-sm" v-model="selectedroomNumber"
-                        @change="filterroomNumber">
-                        <option value="" disabled> Select Room Number</option>
-                        <option value="all">All rooms</option>
-                        <option v-for="room in uniqueRooms" :key="room.fkroomID" :value="room.room?.roomNumber">
-                            Room {{ room.room?.roomNumber }}
-                        </option>
-                    </select>
-                </div>
+            <!-- Room Dropdown -->
+            <div class="col-12 col-md-4">
+                <select class="form-select form-select-lg shadow-sm rounded-3" v-model="selectedroomNumber"
+                    @change="filterroomNumber">
+                    <option disabled value="">Select Room Number</option>
+                    <option value="all">All Rooms</option>
+                    <option v-for="room in uniqueRooms" :key="room.fkroomID" :value="room.room?.roomNumber">
+                        Room {{ room.room?.roomNumber }}
+                    </option>
+                </select>
             </div>
-            <div class="mb-2 d-flex align-items-center gap-2">
-                <div class="w-100">
 
-                    <select id="dormSelect" class="form-select form-select-lg shadow-sm"
-                        @change="filterApplicationStatus" v-model="selectedapplicationStatus">
-                        <option value="" disabled> Select Application Status</option>
-                        <option value="all"> All Application Status</option>
-                        <option value="pending"> Pending</option>
-                        <option value="not approved"> Not Approved</option>
-                        <option value="approved"> Approved</option>
-
-
-                    </select>
-
-
-                </div>
+            <!-- Application Status Dropdown -->
+            <div class="col-12 col-md-4">
+                <select class="form-select form-select-lg shadow-sm rounded-3" v-model="selectedapplicationStatus"
+                    @change="filterApplicationStatus">
+                    <option disabled value="">Select Application Status</option>
+                    <option value="all">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="not approved">Not Approved</option>
+                    <option value="approved">Approved</option>
+                </select>
             </div>
         </div>
 
-        <div class="table-responsive shadow-sm rounded p-3 bg-white">
-            <!-- Table -->
-            <table class="table table-bordered table-hover align-middle mb-0">
-                <thead class="table-primary bg-primary text-center">
-                    <tr>
-                        <th>Booking ID</th>
-                        <th>Tenant Name</th>
 
-                        <th>Email</th>
-                        <th>Dorm Name</th>
-                        <th>Room No</th>
-                        <th>Move-In Date</th>
-                        <th>Payment Type</th>
-                        <th>Application Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="text-center">
-                    <tr v-for="booking in tenants" :key="booking.bookingID">
-                        <td>{{ booking.bookingID }}</td>
-                        <td>{{ booking.firstname }} {{ booking.lastname }}</td>
-                        <td>{{ booking.contactEmail }}</td>
-                        <td>{{ booking.room?.dorm?.dormName ?? 'N/A' }}</td>
-                        <td>{{ booking.room?.roomNumber ?? 'N/A' }}</td>
-                        <td>{{ booking.moveInDate }}</td>
-                        <td>{{ booking.paymentType }}</td>
-                        <td>
-                            <span class="badge px-2 py-1" :class="{
-                                'bg-success text-white': booking.status === 'Approved',
-                                'bg-warning text-white': booking.status === 'pending',
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+            <div class="col" v-for="booking in tenants" :key="booking.bookingID">
+                <div class="card shadow-sm rounded-4 h-100 w-100 border-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="fw-bold text-primary mb-0">Booking #{{ booking.bookingID }}</h5>
+                            <span class="badge text-wrap text-center fw-semibold fs-6" :class="{
+                                'bg-success text-white': booking.status === 'Fully Approved',
+                                'bg-warning text-dark': booking.status === 'pending',
                                 'bg-danger text-white': booking.status === 'Not Approved',
-                                'bg-secondawary text-white': !['Approved', 'Pending', 'Not Approved'].includes(booking.status)
-                            }">
+                                'bg-info text-dark': booking.status === 'Accepted by Landlord',
+                                'bg-secondary text-white': booking.status === 'Pending Payment Confirmation'
+                            }" style="min-width: 150px; max-width: 100%; white-space: normal;">
                                 {{ booking.status }}
                             </span>
-                        </td>
 
-                        <td>
-                            <button class="btn btn-sm btn-primary" @click="openTenant(booking.bookingID)">View</button>
-                            <button class="btn btn-sm btn-danger ms-2"
-                                @click="deleteBooking(booking.bookingID)">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </div>
+
+                        <ul class="list-unstyled text-secondary">
+                            <li class="mb-2"><i class="bi bi-person-fill me-2 text-dark"></i><strong>Name:</strong> {{
+                                booking.firstname }} {{ booking.lastname }}</li>
+                            <li class="mb-2"><i class="bi bi-envelope-fill me-2 text-dark"></i><strong>Email:</strong>
+                                {{ booking.contactEmail }}</li>
+                            <li class="mb-2"><i class="bi bi-building me-2 text-dark"></i><strong>Dorm:</strong> {{
+                                booking.room?.dorm?.dormName ?? 'N/A' }}</li>
+                            <li class="mb-2"><i class="bi bi-door-open-fill me-2 text-dark"></i><strong>Room:</strong>
+                                {{ booking.room?.roomNumber ?? 'N/A' }}</li>
+                            <li class="mb-2"><i class="bi bi-calendar-check-fill me-2 text-dark"></i><strong>Move-In
+                                    Date:</strong> {{ booking.moveInDate }}</li>
+                            <li class="mb-2">
+                                <i class="bi bi-credit-card-fill me-2 text-dark"></i>
+                                <strong>Payments:</strong>
+                                <span v-if="booking.payment.length">
+                                    <span v-for="(pay, index) in booking.payment" :key="index">
+                                        {{ pay.paymentType }}<span v-if="index !== booking.payment.length - 1">, </span>
+                                    </span>
+                                </span>
+                                <span v-else>No payment yet</span>
+                            </li>
+
+                        </ul>
+
+                        <div class="d-flex justify-content-center gap-2 mt-3">
+                            <button class="btn btn-outline-primary btn-sm px-3" @click="openTenant(booking.bookingID)">
+                                <i class="bi bi-eye-fill me-1"></i> View
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm px-3"
+                                @click="deleteBooking(booking.bookingID)">
+                                <i class="bi bi-trash-fill me-1"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div v-if="lastPage > 1" class="d-flex justify-content-center align-items-center my-3">
-            <nav aria-label="Page navigation">
-                <ul class="pagination mb-0">
+
+        <div v-if="lastPage > 1" class="d-flex justify-content-center my-4">
+            <nav>
+                <ul class="pagination pagination-sm shadow-sm">
                     <li :class="['page-item', { disabled: currentPage === 1 }]">
-                        <button class="page-link" :disabled="currentPage === 1"
-                            @click="handlePagination(currentPage - 1)" aria-label="Previous">
-                            <span aria-hidden="true">&laquo; Prev</span>
+                        <button class="page-link" @click="handlePagination(currentPage - 1)"
+                            :disabled="currentPage === 1">
+                            &laquo; Prev
                         </button>
                     </li>
-
                     <li class="page-item disabled">
-                        <span class="page-link">
-                            Page {{ currentPage }} of {{ lastPage }}
-                        </span>
+                        <span class="page-link">Page {{ currentPage }} of {{ lastPage }}</span>
                     </li>
-
                     <li :class="['page-item', { disabled: currentPage === lastPage }]">
-                        <button class="page-link" :disabled="currentPage === lastPage"
-                            @click="handlePagination(currentPage + 1)">
-                            <span aria-hidden="true">Next &raquo;</span>
+                        <button class="page-link" @click="handlePagination(currentPage + 1)"
+                            :disabled="currentPage === lastPage">
+                            Next &raquo;
                         </button>
                     </li>
-
                 </ul>
             </nav>
         </div>
+
         <!--Modal Tenant Appoval-->
         <!-- Use v-if to render the modal only if needed -->
         <div v-if="VisibleModalApproval" class="modal fade show d-block" style="background: rgba(0, 0, 0, 0.5);"
@@ -187,29 +182,41 @@
                         </div>
 
                         <!-- Payment Image -->
-                        <div class="text-center mt-4">
-                            <p><strong>💳 Payment Type:</strong> {{ selectedtenant.paymentType }}</p>
-                            <img :src="selectedtenant.paymentImage" class="img-thumbnail rounded shadow-sm mt-2"
+                        <div class="text-center mt-4" v-if="selectedtenant.payment.length">
+                            <p><strong>💳 Payment Type:</strong> {{ selectedtenant.payment[0].paymentType }}</p>
+                            <img :src="selectedtenant.payment[0].paymentImage"
+                                class="img-thumbnail rounded shadow-sm mt-2"
                                 style="width: 220px; height: 220px; object-fit: cover; cursor: pointer;"
                                 @click="showFullImage = true" />
                         </div>
+                        <div v-else class="text-center mt-4">
+                            <p><strong>💳 Payment Type:</strong> No payment yet</p>
+                        </div>
+
                     </div>
 
                     <!-- Footer -->
                     <div class="modal-footer justify-content-between bg-light border-top-0 px-4 py-3">
-                        <button class="btn btn-outline-primary px-4">
+                        <button class="btn btn-outline-primary px-4" @click="messagePage(selectedtenant.fktenantID)">
                             💬 Message Tenant
                         </button>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-success px-4" @click="approveTenant(selectedtenant.bookingID)"
+                        <div v-if="selectedtenant.status === 'Pending Payment Confirmation'">
+                            <button class="btn btn-success px-4" @click="confirmApplication(selectedtenant.bookingID)"
                                 :disabled="selectedtenant.status === 'Approved'">
+                                ✅ Confirm Application
+                            </button>
+                        </div>
+
+                        <div class="d-flex gap-2"
+                            v-if="selectedtenant.status === 'Approved' || selectedtenant.status === 'Not Approved' || selectedtenant.status === 'pending'">
+                            <button class="btn btn-success px-4" @click="approveTenant(selectedtenant.bookingID)">
                                 ✅ Approve
                             </button>
-                            <button class="btn btn-danger px-4" @click="notapproveTenant(selectedtenant.bookingID)"
-                                :disabled="selectedtenant.status === 'Not Approved'">
+                            <button class="btn btn-danger px-4" @click="notapproveTenant(selectedtenant.bookingID)">
                                 ❌ Not Approve
                             </button>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -255,6 +262,7 @@ export default {
     },
     data() {
         return {
+            landlord_id: null,
             VisibleModalApproval: false,
             tenants: [],
             filterMode: '',
@@ -411,6 +419,8 @@ export default {
                 if (response.data.status === 'success') {
                     this.tenants = response.data.booking.data;
                     this.lastPage = response.data.booking.last_page;
+                    console.log("Bookings with payments:", this.tenants); // Check this in browser console
+
                 } else {
                     this.$refs.toast.showToast(response.data.message, 'danger');
                 }
@@ -430,6 +440,7 @@ export default {
             try {
                 const response = await axios.get(`/booking-tenant-view/${this.selectedBookingID}`);
                 this.selectedtenant = response.data.tenant;
+                console.log(this.selectedtenant);
                 this.VisibleModalApproval = true;
                 this.$refs.loader.loading = false;
             }
@@ -472,6 +483,37 @@ export default {
 
             }
         },
+        async confirmApplication(booking_id) {
+            try {
+                this.$refs.loader.loading = true;
+
+                const response = await axios.post('/accept-tenant', {
+                    bookingID: booking_id
+                });
+                this.$refs.toast.showToast(response.data.message, 'success');
+                this.selectedtenant = response.data.tenant;
+                this.errors = {};
+                this.VisibleModalApproval = false;
+                this.$refs.loader.loading = false;
+                this.bookingList();
+
+            } catch (error) {
+                this.$refs.loader.loading = false;
+
+                if (error.response && error.response.status === 403) {
+
+                    this.$refs.toast.showToast(error.response.data.message, 'danger'); // ✅ Show danger toast
+                } else {
+                    console.error('Error approving tenant:', error);
+                    this.$refs.toast.showToast('Something went wrong while approving the tenant.', 'danger');
+                }
+            } finally {
+                this.$refs.loader.loading = false;
+                this.VisibleModalApproval = false;
+
+            }
+        },
+
         async notapproveTenant(booking_id) {
             try {
                 this.$refs.loader.loading = true;
@@ -544,11 +586,21 @@ export default {
             } else {
                 this.bookingList(page); // Default
             }
-        }
+        },
+        messagePage(fktenantID) {
+            const url = `/api/select/landlord/conversations/${this.landlord_id}?tenant_id=${fktenantID}`;
+            window.location.href = url;
+        },
+
+
 
 
     },
     mounted() {
+        const el = document.getElementById('BookingManagement');
+        if (el) {
+            this.landlord_id = el.getAttribute('landlord-id');
+        }
         this.bookingList();
         this.displaydorms();
 

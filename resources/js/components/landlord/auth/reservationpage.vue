@@ -59,89 +59,102 @@
             </div>
         </div>
 
-        <div class="table-responsive shadow-sm rounded p-3 bg-white">
-            <!-- Table -->
-            <table class="table table-bordered table-hover align-middle mb-0">
-                <thead class="table-primary bg-primary text-center">
-                    <tr>
-                        <th>Reservation ID</th>
-                        <th>Tenant Name</th>
-                        <th>Email</th>
-                        <th>Dorm Name</th>
-                        <th>Room No</th>
-                        <th>Reservation Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="text-center">
-                    <tr v-for="reservation in reservations" :key="reservation.reservationID">
-                        <td>{{ reservation.reservationID }}</td>
-                        <td>{{ reservation.firstname }} {{ reservation.lastname }}</td>
-                        <td>{{ reservation.contactEmail }}</td>
-                        <td>{{ reservation.room?.dorm?.dormName ?? 'N/A' }}</td>
-                        <td>{{ reservation.room?.roomNumber ?? 'N/A' }}</td>
-                        <td>
-                            <span class="badge px-2 py-1" :class="{
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+            <div class="col" v-for="reservation in reservations" :key="reservation.reservationID">
+                <div class="card shadow-sm rounded-4 border-0 h-100">
+                    <div class="card-body p-4">
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="fw-bold text-primary mb-0">Reservation #{{ reservation.reservationID }}</h5>
+                            <span class="badge px-3 py-2 rounded-pill text-capitalize" :class="{
                                 'bg-success text-white': reservation.status === 'for-confirmation',
-                                'bg-warning text-white': reservation.status === 'pending',
+                                'bg-warning text-dark': reservation.status === 'pending',
                                 'bg-danger text-white': reservation.status === 'rejected',
-                                'bg-secondawary text-white': !['Approved', 'Pending', 'rejected'].includes(reservation.status)
+                                'bg-secondary text-white': !['for-confirmation', 'pending', 'rejected'].includes(reservation.status)
                             }">
-                                {{ reservation.status }}
+                                {{ reservation.status.replace('-', ' ') }}
                             </span>
-                        </td>
+                        </div>
 
-                        <td>
-                            <button class="btn btn-sm btn-primary"
-                                @click="displayReservationInformation(reservation.reservationID)">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger ms-2"
-                                @click="deleteReservation(reservation.reservationID)">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
+                        <!-- Body Content -->
+                        <ul class="list-unstyled text-secondary small">
+                            <li class="mb-2">
+                                <i class="bi bi-person-fill me-2 text-dark"></i>
+                                <strong>Name:</strong> {{ reservation.firstname }} {{ reservation.lastname }}
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-envelope-fill me-2 text-dark"></i>
+                                <strong>Email:</strong> {{ reservation.contactEmail }}
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-building-fill me-2 text-dark"></i>
+                                <strong>Dorm:</strong> {{ reservation.room?.dorm?.dormName ?? 'N/A' }}
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-door-open-fill me-2 text-dark"></i>
+                                <strong>Room:</strong> {{ reservation.room?.roomNumber ?? 'N/A' }}
+                            </li>
+                        </ul>
 
-                    </tr>
-                </tbody>
-            </table>
+                        <!-- Actions -->
+                        <div class="d-flex justify-content-center gap-2 mt-3">
+                            <button class="btn btn-outline-primary btn-sm px-3"
+                                @click="displayReservationInformation(reservation.reservationID)"
+                                title="View Reservation">
+                                <i class="bi bi-eye-fill me-1"></i> View
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm px-3"
+                                @click="deleteReservation(reservation.reservationID)" title="Delete Reservation">
+                                <i class="bi bi-trash-fill me-1"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div v-if="lastPage > 1" class="d-flex justify-content-center align-items-center my-3">
-            <nav aria-label="Page navigation">
-                <ul class="pagination mb-0">
+
+        <div v-if="lastPage > 1" class="d-flex justify-content-center align-items-center my-4">
+            <nav aria-label="Pagination">
+                <ul class="pagination shadow-sm rounded-pill overflow-hidden mb-0">
+                    <!-- Previous Button -->
                     <li :class="['page-item', { disabled: currentPage === 1 }]">
-                        <button class="page-link" :disabled="currentPage === 1"
-                            @click="handlePagination(currentPage - 1)" aria-label="Previous">
-                            <span aria-hidden="true">&laquo; Prev</span>
+                        <button class="page-link border-0 px-4 py-2 text-primary fw-semibold bg-white"
+                            :disabled="currentPage === 1" @click="handlePagination(currentPage - 1)"
+                            aria-label="Previous" style="transition: 0.2s;">
+                            &laquo; Prev
                         </button>
                     </li>
 
-                    <li class="page-item disabled">
-                        <span class="page-link">
-                            Page {{ currentPage }} of {{ lastPage }}
+                    <!-- Page Status Display -->
+                    <li class="page-item disabled d-flex align-items-center px-3 bg-light">
+                        <span class="text-dark small">
+                            Page <strong>{{ currentPage }}</strong> of <strong>{{ lastPage }}</strong>
                         </span>
                     </li>
 
+                    <!-- Next Button -->
                     <li :class="['page-item', { disabled: currentPage === lastPage }]">
-                        <button class="page-link" :disabled="currentPage === lastPage"
-                            @click="handlePagination(currentPage + 1)">
-                            <span aria-hidden="true">Next &raquo;</span>
+                        <button class="page-link border-0 px-4 py-2 text-primary fw-semibold bg-white"
+                            :disabled="currentPage === lastPage" @click="handlePagination(currentPage + 1)"
+                            aria-label="Next" style="transition: 0.2s;">
+                            Next &raquo;
                         </button>
                     </li>
-
                 </ul>
             </nav>
         </div>
+
         <div v-if="VisibleModalApproval" class="modal fade show d-block" style="background: rgba(0, 0, 0, 0.5);"
             tabindex="-1">
             <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content shadow-lg rounded-4 border-0">
+                <div class="modal-content shadow-lg rounded-4 border-0 overflow-hidden">
                     <!-- Header -->
-                    <div class="modal-header bg-white border-bottom-0">
-                        <h5 class="modal-title text-primary fw-bold">
+                    <div class="modal-header  text-black border-bottom-0 py-3">
+                        <h5 class="modal-title fw-bold">
                             🧾 Reservation Information
                         </h5>
-                        <button type="button" class="btn-close" @click="VisibleModalApproval = false"></button>
+                        <button type="button" class="btn-close btn-close-black"
+                            @click="VisibleModalApproval = false"></button>
                     </div>
 
                     <!-- Body -->
@@ -152,15 +165,17 @@
                                 class="rounded-circle border border-3 border-light shadow-sm"
                                 style="width: 130px; height: 130px; object-fit: cover;" />
                             <p class="mt-3">
-                                <span class="badge rounded-pill px-3 py-2 fs-6" :class="{
+                                <span class="badge rounded-pill px-3 py-2 fs-6 text-capitalize" :class="{
                                     'bg-success text-white': selectedReservation.status === 'for-confirmation',
                                     'bg-danger text-white': selectedReservation.status === 'rejected',
-                                    'bg-warning text-dark': selectedReservation.status !== 'for-confirmation' && selectedReservation.status !== 'Not Approved'
-                                }">{{ selectedReservation.status }}</span>
+                                    'bg-warning text-dark': selectedReservation.status !== 'for-confirmation' && selectedReservation.status !== 'rejected'
+                                }">
+                                    {{ selectedReservation.status.replace('-', ' ') }}
+                                </span>
                             </p>
                         </div>
 
-                        <!-- Information Grid -->
+                        <!-- Reservation Information -->
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <p><strong>👤 First Name:</strong> {{ selectedReservation.firstname }}</p>
@@ -168,7 +183,6 @@
                                 <p><strong>📧 Email:</strong> {{ selectedReservation.contactEmail }}</p>
                                 <p><strong>📍 Address:</strong> {{ selectedReservation.room?.dorm?.address }}</p>
                                 <p><strong>🚪 Room #:</strong> {{ selectedReservation.room?.roomNumber }}</p>
-
                             </div>
                             <div class="col-md-6">
                                 <p><strong>👤 Last Name:</strong> {{ selectedReservation.lastname }}</p>
@@ -176,49 +190,41 @@
                                 <p><strong>📱 Contact:</strong> {{ selectedReservation.contactNumber }}</p>
                                 <p><strong>🏠 Dorm:</strong> {{ selectedReservation.room?.dorm?.dormName || 'N/A' }}</p>
                                 <p><strong>🔑 Room ID:</strong> {{ selectedReservation.room?.roomID }}</p>
-
                                 <p><strong>💰 Price:</strong> ₱{{
                                     Number(selectedReservation.room?.price).toLocaleString(undefined, {
                                         minimumFractionDigits: 2
-                                    }) }}</p>
-
+                                    })
+                                }}</p>
                             </div>
                         </div>
+
+                        <!-- Additional Notes -->
                         <div class="mt-4 text-center" v-if="selectedReservation.status === 'for-confirmation'">
-                            <p>
-                                <strong>💳⏳🗓️ The tenant is currently finalizing their payment and selecting a move-in
-                                    date to begin their stay.</strong>
+                            <p class="fw-semibold text-muted">
+                                💳⏳🗓️ The tenant is currently finalizing their payment and selecting a move-in date to
+                                begin their stay.
                             </p>
                         </div>
-                        <!-- Current Occupant Information -->
-                        <div class="mt-4 text-center">
-                            <p><strong>👥 Current Occupant Details:</strong></p>
-                        </div>
-                        <div class="row mt-4 g-3">
-                            <div class="col-md-6">
-                                <p><strong>👥 Current Occupant:</strong>
-                                    {{ selectedReservation.room?.current_tenant?.firstname }} {{
-                                        selectedReservation.room?.current_tenant?.lastname }}
-                                </p>
-                                <p><strong>📅 Start of Occupancy:</strong>
-                                    {{ selectedReservation.room?.current_tenant?.moveInDate || 'N/A' }}
-                                </p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>🔄 Will Extend Stay?:</strong>
-                                    <!-- This assumes you will handle this value in your backend later -->
-                                    Yes
-                                </p>
-                                <p><strong>📅 End of Occupancy:</strong>
-                                    {{ selectedReservation.room?.current_tenant?.moveOutDate || 'N/A' }}
-                                </p>
+
+                        <!-- Current Occupant Info -->
+                        <div class="mt-5">
+                            <h6 class="text-center fw-bold mb-3">👥 Current Occupant Details</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <p><strong>👤 Name:</strong>
+                                        {{ selectedReservation.room?.current_tenant?.firstname }}
+                                        {{ selectedReservation.room?.current_tenant?.lastname }}
+                                    </p>
+                                    <p><strong>📅 Start:</strong> {{
+                                        selectedReservation.room?.current_tenant?.moveInDate || 'N/A' }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>🔄 Will Extend Stay?:</strong> Yes</p>
+                                    <p><strong>📅 End:</strong> {{ selectedReservation.room?.current_tenant?.moveOutDate
+                                        || 'N/A' }}</p>
+                                </div>
                             </div>
                         </div>
-
-
-
-
-
                     </div>
 
                     <!-- Footer -->
@@ -239,6 +245,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
     <Modalconfirmation ref="modal" />

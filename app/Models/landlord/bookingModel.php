@@ -4,7 +4,9 @@ namespace App\Models\landlord;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\tenant\bookingpaymentModel;
 use App\Models\tenant\tenantModel;
+
 
 class bookingModel extends Model
 {
@@ -37,4 +39,12 @@ class bookingModel extends Model
     {
         return $this->belongsTo(tenantModel::class, 'fktenantID', 'tenantID');
     }
+public function payment()
+{
+    return $this->hasMany(\App\Models\tenant\bookingpaymentModel::class, 'fkbookingID', 'bookingID');
+}
+
+
+
+
 }

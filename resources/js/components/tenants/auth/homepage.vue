@@ -1,21 +1,42 @@
 <template>
     <!-- Top Navigation -->
     <div class="bg-white m-3 py-3 px-2 text-center shadow-sm border-custom rounded-4">
-        <ul class="nav justify-content-center gap-2 flex-wrap">
+        <ul class="nav justify-content-center gap-3 flex-wrap">
             <li class="nav-item">
-                <a href="#" class="nav-link nav-feature-link">📅 Book Dormitory</a>
+                <a href="#" @click="viewBooking" class="nav-link nav-feature-link d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar-check fs-5"></i>
+                    <span>View Bookings</span>
+                </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link nav-feature-link">💸 Next Payment Due</a>
+                <a href="#" @click="viewPayment" class="nav-link nav-feature-link d-flex align-items-center gap-2">
+                    <i class="bi bi-cash-coin fs-5"></i>
+                    <span>Next Payment</span>
+                </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link nav-feature-link">👫 My Boardmate</a>
+                <a href="#" @click="viewMyrooms" class="nav-link nav-feature-link d-flex align-items-center gap-2">
+                    <i class="bi bi-house-door fs-5"></i>
+                    <span>My Rooms</span>
+                </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link nav-feature-link">📝 Reservation</a>
+                <a href="#" @click="viewReservation" class="nav-link nav-feature-link d-flex align-items-center gap-2">
+                    <i class="bi bi-journal-text fs-5"></i>
+                    <span>My Reservations</span>
+                </a>
             </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link nav-feature-link d-flex align-items-center gap-2">
+                    <i class="bi bi-bell fs-5"></i>
+                    <span>Notifications</span>
+                </a>
+            </li>
+
         </ul>
+
     </div>
+
 
 
     <!-- Content Section -->
@@ -142,6 +163,26 @@ export default {
             }
 
             window.location.href = `/room-details/${dormitoryId}/${this.tenant_id}`;
+        },
+        viewBooking() {
+            this.tenant_id = window.tenant_id;
+            window.location.href = `/view/booking/${this.tenant_id}`;
+
+        },
+        viewPayment() {
+            this.tenant_id = window.tenant_id;
+            window.location.href = `/view/payment/${this.tenant_id}`;
+
+        },
+        viewMyrooms() {
+            this.tenant_id = window.tenant_id;
+            window.location.href = `/view/myrooms/${this.tenant_id}`;
+
+        },
+        viewReservation() {
+            this.tenant_id = window.tenant_id;
+            window.location.href = `/view/reservation/${this.tenant_id}`;
+
         },
 
         initMap() {

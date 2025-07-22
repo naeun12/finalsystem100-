@@ -75,9 +75,9 @@
             </a>
         </li>
         <li class="list-group-item">
-            <a href="{{ route('MessagingPage') }}"
+            <a href="{{ route('message.landlord', ['landlord_id' => session('landlord_id')]) }}"
                 class="text-decoration-none d-flex align-items-center gap-2 px-2 py-1 rounded hover-effect
-                    {{ request()->routeIs('MessagingPage') ? 'active-item' : 'text-dark' }}">
+                    {{ request()->routeIs('message.landlord') ? 'active-item' : 'text-dark' }}">
                 <i class="bi bi-chat-dots-fill text-success fs-5"></i>
                 Messaging Center
             </a>

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('approved_tenants', function (Blueprint $table) {
             $table->id('approvedID');
+            
             $table->unsignedBigInteger('fkroomID');
             $table->string('firstname');
             $table->string('lastname');
@@ -22,8 +23,6 @@ return new class extends Migration
             $table->string('gender');
             $table->string('moveInDate');
             $table->string('moveOutDate');
-            $table->string('paymentType')->nullable();
-            $table->string('paymentImage')->nullable();
             $table->string('studentpictureId')->nullable();
             $table->timestamps();
 

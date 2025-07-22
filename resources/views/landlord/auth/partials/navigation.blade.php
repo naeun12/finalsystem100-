@@ -124,53 +124,84 @@
         <!--Modal Update User-->
         <!-- Contact Us Modal -->
         <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered"> <!-- Centered vertically -->
+            <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content shadow-lg border-0 rounded-4">
-                    <div class="modal-header bg-primary text-white rounded-top">
-                        <h5 class="modal-title" id="contactModalLabel">Update Account</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    <!-- Modal Header -->
+                    <div class="modal-header  text-black rounded-top-4">
+                        <h5 class="modal-title fw-bold" id="contactModalLabel">
+                            🛠️ Update Landlord Account
+                        </h5>
+                        <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
+
+                    <!-- Modal Body -->
+                    <div class="modal-body px-4 py-3">
                         <form id="contactForm" novalidate>
-                            <div class="mb-3">
-                                <label for="firstname" class="form-label fw-semibold required">Firstname</label>
-                                <input type="text" class="form-control" id="firstname" name="firstname"
-                                    placeholder="Enter your first name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="lastname" class="form-label fw-semibold required">Lastname</label>
-                                <input type="text" class="form-control" id="lastname" name="lastname"
-                                    placeholder="Enter your last name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label fw-semibold required">Email</label>
-                                <input type="email" class="form-control" id="email" name="email"
-                                    placeholder="Enter your email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="phone" class="form-label fw-semibold required">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" name="phone"
-                                    placeholder="+63 912 345 6789" pattern="^\+?\d{7,15}$" required>
-                                <div class="form-text">Include country code, e.g., +63</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="gender" class="form-label fw-semibold required">Gender</label>
-                                <select class="form-select" id="gender" name="gender" required>
-                                    <option value="" disabled selected>Select your gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                </select>
+                            <div class="row g-4">
+                                <!-- Left Column -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold required">Firstname</label>
+                                    <input type="text" class="form-control shadow-sm" id="firstname"
+                                        name="firstname" placeholder="Enter your first name" required>
+
+                                    <label class="form-label fw-semibold mt-3 required">Lastname</label>
+                                    <input type="text" class="form-control shadow-sm" id="lastname"
+                                        name="lastname" placeholder="Enter your last name" required>
+
+                                    <label class="form-label fw-semibold mt-3 required">Email</label>
+                                    <input type="email" class="form-control shadow-sm" id="email"
+                                        name="email" placeholder="Enter your email" required>
+
+                                    <label class="form-label fw-semibold mt-3 required">Phone Number</label>
+                                    <input type="tel" class="form-control shadow-sm" id="phone"
+                                        name="phonenumber" placeholder="+63 912 345 6789" pattern="^\+?\d{7,15}$"
+                                        required>
+                                    <div class="form-text">Include country code, e.g., +63</div>
+                                </div>
+
+                                <!-- Right Column -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold required">Gender</label>
+                                    <select class="form-select shadow-sm" id="gender" name="gender" required>
+                                        <option disabled selected value="">Select gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                    </select>
+
+                                    <label class="form-label fw-semibold mt-3">Role</label>
+                                    <input type="text" class="form-control shadow-sm" id="role"
+                                        name="role" readonly value="Landlord">
+
+                                    <label class="form-label fw-semibold mt-3">Profile Picture</label>
+                                    <input class="form-control shadow-sm" type="file" id="profilePic"
+                                        name="profilePicUrl" accept="image/*" @change="previewImage">
+
+                                    <!-- Image Preview -->
+                                    <div class="mt-3 text-center" v-if="previewImageUrl">
+                                        <img :src="previewImageUrl" alt="Preview"
+                                            class="img-thumbnail rounded-circle"
+                                            style="width: 120px; height: 120px; object-fit: cover;">
+                                        <p class="small text-muted mt-2">Preview</p>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
-                    <div class="modal-footer">
-                        <button type="submit" form="contactForm" class="btn btn-primary fw-semibold">Update</button>
-                        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+
+                    <!-- Modal Footer -->
+                    <div class="modal-footer border-top-0 px-4 py-3">
+                        <button type="submit" form="contactForm" class="btn btn-primary fw-semibold px-4">
+                            <i class="bi bi-check-circle me-1"></i> Update
+                        </button>
+                        <button type="button" class="btn btn-outline-danger px-4" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+
 
         <!--End Modal-->
     </header>

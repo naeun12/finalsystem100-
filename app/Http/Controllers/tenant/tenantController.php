@@ -249,7 +249,8 @@ public function loginTenant(Request $request)
         if (!$user || !\Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
         }
-    
+    Auth::guard('tenant')->login($user);
+
     session([
         'tenant_logged_in' => true,
         'tenant_id' => $user->tenantID,

@@ -5,11 +5,10 @@ use App\Models\tenant\tenantModel;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\landlord\landlordDormManagement; // Assuming you have a Dorm model for dorm management
-
+use App\Models\tenant\approvetenantsModel;
 class roomModel extends Model
 {
     use  HasFactory, Notifiable;  // Add HasApiTokens here
@@ -61,6 +60,11 @@ public function currentTenant()
     return $this->hasOne(\App\Models\tenant\approvetenantsModel::class, 'fkroomID', 'roomID');
             
 }
+public function approvedTenant()
+{
+    return $this->hasOne(approvetenantsModel::class, 'fkroomID', 'roomID');
+}
+
 
 
 }

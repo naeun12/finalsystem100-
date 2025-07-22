@@ -2,14 +2,24 @@
     <Loader ref="loader" />
 
     <div class="container mt-5">
-        <div class="d-flex justify-content-end align-items-end mb-4">
-            <div>
-                <button class="btn btn-outline-secondary me-2" @click="ViewRoomsPage">View Rooms</button>
-                <button class="btn btn-outline-primary" @click="VisibleAddModal = true">
+        <div class="d-flex justify-content-end align-items-center mb-4">
+            <div class="d-flex gap-2 flex-wrap">
+                <!-- View Rooms Button -->
+                <button class="btn btn-outline-secondary shadow-sm px-4 rounded-pill d-flex align-items-center gap-2"
+                    @click="ViewRoomsPage">
+                    <i class="bi bi-door-open-fill"></i>
+                    View Rooms
+                </button>
+
+                <!-- Add Dorm Button -->
+                <button class="btn btn-outline-primary shadow-sm px-4 rounded-pill d-flex align-items-center gap-2"
+                    @click="VisibleAddModal = true">
+                    <i class="bi bi-plus-circle"></i>
                     Add Dorm
                 </button>
             </div>
         </div>
+
         <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden">
             <span class="input-group-text bg-white border-0">
                 <i class="bi bi-search text-primary"></i>
@@ -43,29 +53,29 @@
             No dormitories found matching your search criteria.
         </div>
         <!-- Table -->
-        <div class="table-responsive shadow-sm rounded p-3 bg-white">
+        <div class="table-responsive shadow-sm rounded-4 p-4 bg-white">
             <table class="table table-bordered table-hover align-middle mb-0">
-                <thead class="table-primary text-center">
+                <thead class="bg-primary text-white text-center rounded-top">
                     <tr>
-                        <th scope="col">Dorm ID</th>
-                        <th scope="col">Dorm Name</th>
-                        <th scope="col">Address</th>
-                        <th scope="col">Contact Email</th>
-                        <th scope="col">Contact Phone</th>
-                        <th scope="col">Availability Status</th>
-                        <th scope="col">Total Rooms</th>
-                        <th scope="col">Actions</th>
+                        <th>Dorm ID</th>
+                        <th>Dorm Name</th>
+                        <th>Address</th>
+                        <th>Contact Email</th>
+                        <th>Contact Phone</th>
+                        <th>Availability</th>
+                        <th>Total Rooms</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr v-for="dorm in dorms" :key="dorm.dormID" class="text-center">
+                <tbody class="text-center">
+                    <tr v-for="dorm in dorms" :key="dorm.dormID" class="align-middle">
                         <td>{{ dorm.dormID }}</td>
-                        <td class="text-truncate" style="max-width: 150px;">{{ dorm.dormName }}</td>
-                        <td class="text-truncate" style="max-width: 200px;">{{ dorm.address }}</td>
+                        <td class="text-truncate fw-semibold" style="max-width: 180px;">{{ dorm.dormName }}</td>
+                        <td class="text-truncate" style="max-width: 220px;">{{ dorm.address }}</td>
                         <td class="text-truncate" style="max-width: 200px;">{{ dorm.contactEmail }}</td>
                         <td>{{ dorm.contactPhone }}</td>
                         <td>
-                            <span class="badge text-uppercase" :class="{
+                            <span class="badge rounded-pill px-3 py-2 text-uppercase fw-semibold" :class="{
                                 'bg-success': dorm.availability === 'Available',
                                 'bg-danger': dorm.availability === 'Not Available',
                                 'bg-warning text-dark': dorm.availability === 'under maintenance'
@@ -73,26 +83,28 @@
                                 {{ dorm.availability }}
                             </span>
                         </td>
-
-                        <td>{{ dorm.totalRooms }}</td>
+                        <td><span class="fw-bold">{{ dorm.totalRooms }}</span></td>
                         <td>
                             <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                <button class="btn btn-sm btn-outline-success" @click="viewDorm(dorm.dormID)">
-                                    <i class="fas fa-eye me-1"></i>
+                                <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1"
+                                    @click="viewDorm(dorm.dormID)" title="View Dorm">
+                                    <i class="bi bi-eye-fill"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-primary" @click="editDorm(dorm.dormID)">
-                                    <i class="fas fa-edit me-1"></i>
+                                <button class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+                                    @click="editDorm(dorm.dormID)" title="Edit Dorm">
+                                    <i class="bi bi-pencil-square"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" @click="deleteDorm(dorm.dormID)">
-                                    <i class="fas fa-trash me-1"></i>
+                                <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1"
+                                    @click="deleteDorm(dorm.dormID)" title="Delete Dorm">
+                                    <i class="bi bi-trash-fill"></i>
                                 </button>
                             </div>
-
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
         <!-- Pagination with Bootstrap 5 -->
         <div v-if="lastPage > 1" class="d-flex justify-content-center align-items-center my-3">
             <nav aria-label="Page navigation">
@@ -348,7 +360,7 @@
                                 placeholder="Enter rule or policy" />
                             <label :for="'rule' + index">Rule/Policy {{ index + 1 }}</label>
                             <span class="text-danger mb-3 " v-if="errors.rules">{{ errors.rules[0]
-                            }}</span>
+                                }}</span>
 
                         </div>
 
@@ -682,7 +694,7 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Email:</label>
                                     <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactEmail
-                                    }}</div>
+                                        }}</div>
                                 </div>
 
                                 <div class="mb-3">
@@ -718,7 +730,7 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Phone:</label>
                                     <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactPhone
-                                    }}</div>
+                                        }}</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Total Rooms:</label>

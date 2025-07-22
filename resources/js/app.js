@@ -1,6 +1,7 @@
 import 'bootstrap'; // Importing Bootstrap
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+import './bootstrap';
 import { createApp } from 'vue'; // Vue 3
 import TenantRegister from './components/tenants/tenantRegister.vue';
 import LandlordRegister from './components/landlord/landlordregister.vue';
@@ -21,7 +22,14 @@ import roomBook from './components/tenants/auth/bookingProcess/bookRoom.vue';
 import dormitoriesMap from './components/tenants/auth/dormitoriesmap.vue';
 import dormitories from './components/tenants/auth/dormitories.vue';
 import tenantmessage from './components/tenants/auth/tenantmessage.vue';
+import viewBooking from './components/tenants/auth/nav/booking/mybooking.vue';
+import viewBookingDetails from './components/tenants/auth/nav/booking/mybookingdetails.vue';
 import reservationPage from './components/landlord/auth/reservationpage.vue';
+import nextPayment from './components/tenants/auth/nav/nextpayment/nextpaymentdue.vue';
+import myRooms from './components/tenants/auth/nav/rooms/myrooms.vue';
+import myReservation from './components/tenants/auth/nav/reservation/reservation.vue';
+
+
 
 import AOS from 'aos';
 import 'aos/dist/aos.css'
@@ -126,14 +134,47 @@ const reservationController = document.querySelector('#reservationPage');
 if (reservationController) {
     createApp(reservationPage).mount('#reservationPage');
 }
+const viewBookingController = document.querySelector('#viewBooking');
+
+if (viewBookingController) {
+    createApp(viewBooking).mount('#viewBooking');
+}
+const viewBookingDetailsController = document.querySelector('#viewBookingDetails');
+
+if (viewBookingDetailsController) {
+    createApp(viewBookingDetails).mount('#viewBookingDetails');
+}
+const nextPaymentController = document.querySelector('#nextPayment');
+
+if (nextPaymentController) {
+    createApp(nextPayment).mount('#nextPayment');
+}
+const myRoomsController = document.querySelector('#myRooms');
+
+if (myRoomsController) {
+    createApp(myRooms).mount('#myRooms');
+}
+const myReservationController = document.querySelector('#myReservation');
+
+if (myReservationController) {
+    createApp(myReservation).mount('#myReservation');
+}
 
 window.Pusher = Pusher;
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    key: import.meta.env.VITE_PUSHER_APP_KEY,
-    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-    forceTLS: true
+    key: '282b6afa40698be3bece', // ← your pusher key
+    cluster: 'ap1',
+    forceTLS: true,
+    encrypted: true,
+    authEndpoint: '/broadcasting/auth',
+    auth: {
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        },
+    },
 });
+
 
 
 

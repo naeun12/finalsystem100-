@@ -1,5 +1,5 @@
 @include('tenant.auth.partials.header')
-@if (session('tenant_logged_in'))
+@auth('tenant')
     <nav class="navbar navbar-expand-lg navbar-light bg-light d-flex justify-content-end custom-navbar-border mb-1">
         <div class="container-fluid  d-flex justify-content-between align-items-center">
             <!-- Logo -->
@@ -51,18 +51,15 @@
                 <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
                     <!-- Notifications -->
                     <div class="nav-item dropdown">
-                        <button
-                            class="btn p-0 border-0 bg-transparent nav-link dropdown-toggle d-flex align-items-center"
+                        <button class="btn p-0 border-0 bg-transparent nav-link dropdown-toggle d-flex align-items-center"
                             id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false"
                             aria-label="Notifications" style="cursor:pointer;">
                             <i class="bi bi-bell-fill fs-5"></i>
-                            <span
-                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                 3
                             </span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg mt-2"
-                            aria-labelledby="notificationDropdown">
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg mt-2" aria-labelledby="notificationDropdown">
                             <!-- Notification items -->
                             <li class="dropdown-item">No new notifications</li>
                         </ul>
@@ -70,8 +67,8 @@
 
                     <!-- User Avatar -->
                     <div class="dropdown">
-                        <a class="d-flex align-items-center text-black text-decoration-none dropdown-toggle"
-                            href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="d-flex align-items-center text-black text-decoration-none dropdown-toggle" href="#"
+                            id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="{{ asset(session('profile_pic_url')) }}" alt="User Avatar" width="40"
                                 height="40" class="rounded-circle me-2">
                             <span class="fw-semibold d-none d-md-inline">
@@ -96,9 +93,9 @@
             </div>
         </div>
     </nav>
-@endif
+    @endif
 
 
-<style>
+    <style>
 
-</style>
+    </style>

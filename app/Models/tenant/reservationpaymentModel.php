@@ -4,7 +4,7 @@ namespace App\Models\tenant;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\landlord\reservationModel;
+use App\Models\tenant\reservationModel;
 
 class reservationpaymentModel extends Model
 {
@@ -17,6 +17,7 @@ class reservationpaymentModel extends Model
     protected $fillable = [
         'reservationID',
         'paymentType',
+        'paymentAmount',
         'paymentImage',
         'status'
     ];

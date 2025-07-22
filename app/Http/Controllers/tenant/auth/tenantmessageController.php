@@ -14,14 +14,15 @@ use App\Models\conversationModel;
 
 class tenantmessageController extends Controller
 {
-    public function tenantMessageIndex($tenant_id)
+  public function tenantMessageIndex($tenant_id)
 {
     $conversations = conversationModel::where('initiatorID', $tenant_id)
         ->where('initiatorRole', 'tenant')
         ->get();
 
     $history = $conversations->map(function ($convo) {
-        $landlord_id = $this->extractLandlordId($convo->topic);
+        preg_match('/landlord_([a-z0-9\-]+)/', $convo->topic, $matches);
+        $landlord_id = $matches[1] ?? null;
 
         $landlord = $landlord_id ? landlordModel::find($landlord_id) : null;
 
@@ -30,56 +31,23 @@ class tenantmessageController extends Controller
             ->first();
 
         return [
-            'conversation_id' => $convo->id,
-            'receiver_name' => $landlord ? $landlord->firstname . ' ' . $landlord->lastname : 'Unknown',
-            'receiver_profile' => $landlord->profilePicUrl ?? 'default-profile.png',
-            'last_message' => $lastMessage->message ?? '',
-            'sent_at' => $lastMessage->sentAt ?? null,
+            'conversation_id'   => $convo->id,
+            'receiver_name'     => $landlord ? $landlord->firstname . ' ' . $landlord->lastname : 'Unknown',
+            'receiver_profile'  => $landlord->profilePicUrl ?? 'default-profile.png',
+            'last_message'      => $lastMessage->message ?? '',
+            'sent_at'           => $lastMessage->sentAt ?? null,
         ];
-    });
+    })->sortByDesc('sent_at')->values();
 
     return view('tenant.auth.tenantmessage', [
-        'title' => 'My Conversations',
-        'cssPath' => '',
-        'demo' => '',
-        'tenant_id' => $tenant_id,
-        'history' => $history,
+        'title'      => 'My Conversations',
+        'cssPath'    => '',
+        'demo'       => '',
+        'tenant_id'  => $tenant_id,
+        'history'    => $history,
     ]);
 }
-
-    
-
-    public function displayConversation($tenant_id)
-    {
-        $conversations = conversationModel::where('initiatorID', $tenant_id)->get();
-
-        $history = $conversations->map(function ($convo) {
-            $landlord_id = $this->extractLandlordId($convo->topic);
-
-            $landlord = landlordModel::where('landlordID', $landlord_id)->first();
-
-            return [
-                'conversation_id' => $convo->id,
-                'receiver_id' => $landlord_id,
-                'receiver_name' => $landlord ? $landlord->firstname . ' ' . $landlord->lastname : 'Unknown',
-'receiver_profile' => $landlord ? asset($landlord->profilePicUrl) : null,
-                'last_message' => messageModel::where('conversationID', $convo->id)->latest()->first()->message ?? '',
-            ];
-        });
-
-        return response()->json([
-            'history' => $history,
-        ]);
-    }
-
-    private function extractLandlordId($topic)
-    {
-        if (preg_match('/_landlord_([a-zA-Z0-9\-]+)/', $topic, $matches)) {
-            return $matches[1];
-        }
-        return null;
-    }
-    public function landlordtenantmessageIndex(Request $request, $tenant_id)
+      public function landlordtenantmessageIndex(Request $request, $tenant_id)
     {
         $landlord_id = $request->input('landlord_id');
     
@@ -121,82 +89,84 @@ class tenantmessageController extends Controller
         ]);
     }
     
-
-    public function sendMessage(Request $request)
+    public function getLandlordConversation($tenant_id)
     {
-        $tenant_id = $request->tenant_id ?? session('tenant_id');
+        $conversations = conversationModel::where('topic', 'like', '%tenant_' . $tenant_id . '%')->get();
+        $history = $conversations->map(function ($convo) {
+        preg_match('/landlord_([a-z0-9\-]+)/', $convo->topic, $matches);
+        $landlord_id = $matches[1] ?? null;
+        $landlord = $landlord_id ? landlordModel::find($landlord_id) : null;
 
-        $request->validate([
-            'receiver_id' => 'required',
-            'message' => 'required|string',
-            'conversation_id' => 'nullable|integer',
-            'reply_to_id' => 'nullable|integer',
-        ]);
+        $lastMessage = messageModel::where('conversationID', $convo->id)
+            ->orderBy('sentAt', 'desc')
+            ->first();
 
-        $landlord_id = $request->receiver_id;
+        return [
+            'conversation_id'   => $convo->id,
+            'receiver_name'     => $landlord ? $landlord->firstname . ' ' . $landlord->lastname : 'Unknown Landlord',
+            'receiver_profile'  => $landlord->profilePicUrl ?? 'default-profile.png',
+            'last_message'      => $lastMessage->message ?? '(No messages yet)',
+            'sent_at'           => $lastMessage->sentAt ?? null,
+        ];
+    });
+    return response()->json($history);
+}
+    public function getLandlordMessages($conversation_id)
+{
+    $messages = \App\Models\messageModel::where('conversationID', $conversation_id)
+        ->orderBy('sentAt', 'asc')
+        ->get();
 
-        $conversation = conversationModel::firstOrCreate([
-            'initiatorID' => $tenant_id,
-            'initiatorRole' => 'tenant',
-            'topic' => "tenant_{$tenant_id}_landlord_{$landlord_id}",
-        ]);
+    return response()->json($messages);
+    }
+    public function sendLandlordMessage(Request $request)
+{
+    $validated = $request->validate([
+        'conversationID' => 'required|exists:conversations,id',
+        'message' => 'required|string',
+        'senderID' => 'required|string',
+        'senderRole' => 'required|in:tenant,landlord',
+        
+    ]);
 
-        $message = messageModel::create([
-            'conversationID' => $conversation->id,
-            'senderID' => $tenant_id,
-            'senderRole' => 'tenant',
-            'receiverID' => $landlord_id,
-            'receiverRole' => 'landlord',
-            'message' => $request->input('message'),
-            'replyToId' => $request->input('reply_to_id'),
-            'isRead' => false,
-            'sentAt' => now(),
-        ]);
+    // Get the conversation
+    $conversation = \App\Models\conversationModel::find($validated['conversationID']);
 
-        event(new MessageSent($message));
+    // Extract tenant and landlord IDs from the topic
+    preg_match('/tenant_([a-z0-9\-]+)_landlord_([a-z0-9\-]+)/', $conversation->topic, $matches);
+    $tenantID = $matches[1] ?? null;
+    $landlordID = $matches[2] ?? null;
 
+
+    // Determine receiver ID
+    $receiverID = $validated['senderRole'] === 'landlord' ? $tenantID : $landlordID;
+    $receiverRole = $validated['senderRole'] === 'landlord' ? 'tenant' : 'landlord';
+
+    // Validate resolved receiver
+    if (!$receiverID) {
         return response()->json([
-            'status' => 'success',
-            'message' => 'Message sent.',
-            'newMessage' => $message,
-        ]);
+            'success' => false,
+            'message' => 'Unable to resolve receiver ID from topic.'
+        ], 422);
     }
 
-    public function getMessages($tenant_id, $landlord_id)
-    {
-        $conversation = conversationModel::where([
-            ['initiatorID', '=', $tenant_id],
-            ['initiatorRole', '=', 'tenant'],
-            ['topic', '=', "tenant_{$tenant_id}_landlord_{$landlord_id}"],
-        ])->first();
+    // Create message
+    $message = new \App\Models\messageModel();
+    $message->conversationID = $validated['conversationID'];
+    $message->message = $validated['message'];
+    $message->senderID = $validated['senderID'];
+    $message->senderRole = $validated['senderRole'];
+    $message->receiverID = $receiverID;
+    $message->receiverRole = $receiverRole;
+    $message->sentAt = now();
+    $message->isRead = 0;
+    $message->save();
 
-        if (!$conversation) {
-            return response()->json([]);
-        }
 
-        $messages = messageModel::where('conversationID', $conversation->id)
-            ->orderBy('sentAt', 'asc')
-            ->get();
-
-        return response()->json($messages);
-    }
-
-    public function getLandlordInformation(Request $request)
-    {
-        $tenant_id = $request->input('tenant_id');
-
-        $historyConvo = conversationModel::where('initiatorID', $tenant_id)
-            ->with(['messages' => function ($query) {
-                $query->orderBy('sentAt', 'asc');
-            }])
-            ->get();
-
-        if ($historyConvo->isEmpty()) {
-            return response()->json(['message' => 'Landlord not found'], 404);
-        }
-
-        return response()->json([
-            'historyConvo' => $historyConvo,
-        ]);
-    }
+    return response()->json([
+        'success' => true,
+        'message' => 'Message sent successfully.',
+        'data' => $message
+    ]);
+}
 }
