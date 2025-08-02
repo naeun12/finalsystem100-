@@ -326,6 +326,7 @@ export default {
         // Attach initMap function globally
         window.initMap = this.initMap;
         this.tenant_id = window.tenant_id;
+        console.log("Tenant ID:", this.tenant_id);
 
     },
 }

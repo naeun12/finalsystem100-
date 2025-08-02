@@ -92,72 +92,6 @@
                 </span>
             </div>
         </div>
-        <div class="container py-4 mb-4">
-            <div class="mb-3">
-                <label for="paymentType" class="form-label fw-semibold text-dark">
-                    <i class="bi bi-credit-card-2-front-fill text-primary me-2"></i>Payment
-                    Method
-                </label>
-                <input type="text" class="form-control form-control-lg shadow-sm" id="paymentType"
-                    v-model="payment_type" placeholder="e.g., GCash, Bank Transfer, Maya" readonly
-                    aria-describedby="paymentTypeHelp" />
-                <div id="paymentTypeHelp" class="form-text text-muted">
-                    Specify your preferred method of payment.
-                </div>
-
-            </div>
-            <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
-                <div v-for="(src, name) in payment" :key="name"
-                    class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
-                    :class="{ 'border-primary bg-light': payment_type === name }" role="button"
-                    style="cursor: pointer; width: 120px; height: 130px;" @click="paymentTypeSelection(name)"
-                    title="Click to select">
-                    <img :src="src" :alt="name" class="img-fluid mb-2"
-                        style="width: 50px; height: 50px; object-fit: contain;" />
-                    <small class="fw-semibold text-capitalize text-center">
-                        {{ name.replace('_', ' ') }}
-                    </small>
-                </div>
-
-            </div>
-            <div class="justify-content-center d-flex mt-2">
-                <span v-if="errors.payment_type" class="error text-danger small mt-1 d-block">
-                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.payment_type[0] }}
-                </span>
-            </div>
-
-        </div>
-        <!-- Payment Image Upload -->
-        <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
-            v-if="isPaymentImage" @click="triggerPaymentImage">
-
-            <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
-                @change="handlePaymentPicture" />
-
-            <!-- Payment Icon -->
-            <div class="d-flex flex-column align-items-center text-center mb-3">
-                <img :src="paymentIcon" alt="Payment Icon" style="max-width: 60px; height: auto;" class="mb-2" />
-                <h5 class="text-secondary mt-2">Upload Payment Image</h5>
-                <small class="text-muted">Click to browse and select an image
-                    file</small>
-            </div>
-        </div>
-        <!-- Image Preview -->
-        <div v-if="PaymentPicturePreview" class="text-center mb-3">
-            <img :src="PaymentPicturePreview" alt="Uploaded Payment Image" class="img-fluid rounded mb-2"
-                style="max-height: 250px;" />
-            <div>
-                <button type="button" @click="removePaymentPicture" class="btn  btn-sm">
-                    Remove Uploaded Image
-                </button>
-            </div>
-        </div>
-        <div class="justify-content-center d-flex mb-2">
-            <span v-if="errors.payment_image" class="error text-danger small mt-1 d-block">
-                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.payment_image[0] }}
-            </span>
-        </div>
-
         <!-- Submit Button -->
         <button type="submit" class="btn  w-100 py-2 fw-semibold shadow-sm" @click="bookRoom">
             <i class="bi bi-calendar-check-fill me-2"></i>Make a Booking
@@ -198,18 +132,9 @@ export default {
             moveOutDate: '',
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
             id_picture: '/images/tenant/allimagesResouces/vector-id-card-icon.jpg',
-            payment: {
-                gcash: '/images/tenant/allimagesResouces/GCash-Logo.png',
-                maya: '/images/tenant/allimagesResouces/maya.png',
-                bank_transer: '/images/tenant/allimagesResouces/bank-transfer-logo.png',
 
-            },
-            payment_type: '',
             openPaymentModel: false,
-            PaymentPicturePreview: '',
-            PaymentPictureFile: null,
             imageUrl: '',
-            paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
         }
     },
     methods: {
@@ -222,38 +147,21 @@ export default {
 
             }
         },
-        handlePaymentPicture(event) {
-            const file = event.target.files[0];
-            if (file) {
-                // Create object URL and revoke previous one if exists
-                if (this.PaymentPicturePreview) {
-                    URL.revokeObjectURL(this.PaymentPicturePreview);
-                }
-                this.PaymentPictureFile = file;
-                this.isPaymentImage = false;
+        tenantData() {
+            this.room_id = '';
+            this.tenant_id = '';
+            this.firstname = '';
+            this.lastname = '';
+            this.contactInfo = '';
+            this.email = '';
+            this.age = '';
+            this.sex = '';
+            this.imageUrl = '';
+            this.moveInDate = '';
+            this.moveOutDate = '';
+        },
 
-                this.PaymentPicturePreview = URL.createObjectURL(file);
-            }
-        },
-        triggerPaymentImage() {
-            if (this.$refs.PaymentPicturesInput) {
-                this.$refs.PaymentPicturesInput.click();
-            }
-        },
-        removePaymentPicture() {
-            if (this.PaymentPicturePreview) {
-                URL.revokeObjectURL(this.PaymentPicturePreview);
-            }
-            this.PaymentPicturePreview = null;
-            // Add null check for safety
-            if (this.$refs.PaymentPicturePreview) {
-                this.$refs.PaymentPicturePreview.value = ''; // Reset file input
-            }
-            this.isPaymentImage = true;
-        },
-        paymentTypeSelection(name) {
-            this.payment_type = name;
-        },
+
         async bookRoom() {
             try {
                 const confirmed = await this.$refs.modal.show({
@@ -274,16 +182,17 @@ export default {
                 formdata.append('contact_number', this.contactInfo);
                 formdata.append('email', this.email);
                 formdata.append('age', this.age);
-                formdata.append('payment_type', this.payment_type)
                 formdata.append('gender', this.sex);
-                formdata.append('payment_image', this.PaymentPictureFile)
                 formdata.append('studentpicture_id', this.imageUrl);
                 formdata.append('moveInDate', this.moveInDate);
                 formdata.append('moveOutDate', this.moveOutDate);
-                formdata.append('studentpicture_id', this.imageUrl);
                 const response = await axios.post('/book-room', formdata);
                 if (response.data.status === 'success') {
                     this.$refs.toast.showToast(response.data.message, 'success');
+                    this.tenantData();
+                    this.tenant_id = window.tenant_id;
+                    window.location.href = `/view/booking/${this.tenant_id}`;
+
                 }
             } catch (error) {
                 if (error.response && error.response.status === 422) {
@@ -325,6 +234,7 @@ export default {
             this.idPicturePreview = parsed.idPicturePreview;
             this.imageUrl = parsed.imageUrl;
         }
+        console.log(this.imageUrl);
         const element = document.getElementById('roomBook');
         this.dormitory_id = element.dataset.dormId;
         this.room_id = element.dataset.roomId;

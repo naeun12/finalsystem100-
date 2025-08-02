@@ -6,7 +6,7 @@
 
         <div class="col-md-10 main-content">
             @include('landlord.auth.partials.navigation')
-            <div id="landlorddormManagement">
+            <div id="landlorddormManagement" data-landlord-id="{{ $landlord_id }}">
                 <landlord-auth-dormManagement></landlord-auth-dormManagement>
 
             </div>

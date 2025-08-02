@@ -34,6 +34,12 @@
                     <p><strong>🏠 Move-in Date:</strong> {{ booking.moveInDate }}</p>
                     <p><strong>🏁 Move-out Date:</strong> {{ booking.moveOutDate }}</p>
                 </div>
+                <div v-if="booking.status === 'confirmed' || booking.status === 'pending'">
+                    <button class="btn " @click="cancelBooking(booking.bookingID)">
+                        <i class="bi bi-x-circle-fill me-2"></i>Cancel Booking
+                    </button>
+                </div>
+
             </div>
 
             <!-- Right Section -->
@@ -94,25 +100,19 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="ispayment === 'Pending Payment Confirmation'"
-                    class="alert alert-warning d-flex align-items-center mt-3 shadow-sm rounded" role="alert">
-                    <i class="bi bi-hourglass-split me-2 fs-5"></i>
+
+                <div v-if="getStatusMessage(booking.status)"
+                    class="alert d-flex align-items-start gap-3 mt-3 shadow-sm rounded"
+                    :class="getStatusMessage(booking.status).alertClass" role="alert">
+                    <i :class="getStatusMessage(booking.status).iconClass + ' fs-4 mt-1'"></i>
                     <div>
-                        <strong>Waiting for Landlord Confirmation</strong><br>
-                        Your payment has been submitted and is pending verification.
-                    </div>
-                </div>
-                <div v-if="ispayment === 'Fully Approved'"
-                    class="alert alert-success d-flex align-items-start gap-3 mt-3 shadow-sm rounded" role="alert">
-                    <i class="bi bi-check-circle-fill fs-4 text-success mt-1"></i>
-                    <div>
-                        <h6 class="mb-1 fw-bold">Booking Approved Successfully!</h6>
-                        <p class="mb-0">You can now view your approved room under <a href="#"
-                                class="fw-semibold text-decoration-underline">My Room</a>.</p>
+                        <h6 class="mb-1 fw-bold" v-html="getStatusMessage(booking.status).title"></h6>
+                        <p class="mb-0" v-html="getStatusMessage(booking.status).message"></p>
                     </div>
                 </div>
 
-                <div v-if="ispayment === 'Accepted by Landlord'">
+
+                <div v-if="ispayment === 'confirmed'">
                     <!-- Payment method selection -->
                     <div class="container py-4 mb-4">
                         <div class="mb-3">
@@ -245,6 +245,26 @@ export default {
 
                 });
         },
+        async cancelBooking(bookingID) {
+            try {
+                const confirmed = await this.$refs.modal.show({
+                    title: `Cancel Booking`,
+                    message: `Are you sure you want to Cancelled this booking?`,
+                    functionName: 'Confirm Cancelled Booking'
+                });
+
+                if (!confirmed) {
+                    return;
+                }
+                const response = await axios.get(`/cancel/booking/${bookingID}`);
+                this.$refs.toast.showToast(response.data.message, 'success');
+
+                this.getBookingDetails();
+            } catch (error) {
+                console.error(error);
+                alert('Failed to cancel reservation.');
+            }
+        },
         paymentTypeSelection(name) {
             this.payment_type = name;
         },
@@ -326,6 +346,52 @@ export default {
             }
 
         },
+        getStatusMessage(status) {
+            const map = {
+                approved: {
+                    alertClass: 'alert-success',
+                    iconClass: 'bi bi-check-circle-fill text-success',
+                    title: 'Booking Approved Successfully!',
+                    message: 'You can now view your approved room under <a href="#" class="fw-semibold text-decoration-underline">My Room</a>.'
+                },
+                confirmed: {
+                    alertClass: 'alert-info',
+                    iconClass: 'bi bi-cash-coin text-info',
+                    title: 'Awaiting Payment.',
+                    message: 'Please upload your payment to confirm the reservation.',
+                },
+
+                pending: {
+                    alertClass: 'alert-warning',
+                    iconClass: 'bi bi-hourglass-split text-warning',
+                    title: 'Booking is Pending!',
+                    message: 'Please wait while your booking is being reviewed.'
+                },
+                rejected: {
+                    alertClass: 'alert-danger',
+                    iconClass: 'bi bi-x-circle-fill text-danger',
+                    title: 'Booking Rejected!',
+                    message: 'Your booking was not approved. Please contact support for more information.'
+                },
+                cancelled: {
+                    alertClass: 'alert-danger',
+                    iconClass: 'bi bi-x-circle-fill',
+                    title: 'Booking Has Been Cancelled',
+                    message: 'Your booking has been successfully cancelled. If this was a mistake, please contact landlord immediately.',
+                },
+                paid: {
+                    alertClass: 'alert-info',
+                    iconClass: 'bi bi-credit-card text-primary',
+                    title: 'Payment Submitted',
+                    message: 'Your payment was received. Please wait for landlord verification.',
+                },
+
+
+                // Add more statuses as needed...
+            };
+
+            return map[status?.toLowerCase()] || null;
+        }
     },
 
     mounted() {

@@ -2,7 +2,9 @@
 
     <div class="container mt-5">
         <Loader ref="loader" />
+        <NotificationList ref="toastRef" />
         <Toastcomponents ref="toast" />
+
         <!-- Header -->
         <div class="d-flex justify-content-end align-items-center mb-4">
             <div class="col-md-6 col-lg-5 d-flex gap-3">
@@ -207,7 +209,7 @@
                         </div>
                         <div class="mb-3 d-flex justify-content-center align-items-center">
                             <span class="text-danger small mb-3" v-if="errors.roomImageFile">{{ errors.roomImageFile[0]
-                                }}</span>
+                            }}</span>
                         </div>
 
 
@@ -230,7 +232,7 @@
                                     <label>Dorm ID</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.dormsId">{{ errors.dormsId[0]
-                                    }}</span>
+                                }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <input type="text" class="form-control" id="roomNumber" placeholder="Room Number"
@@ -238,7 +240,7 @@
                                     <label for="roomNumber">Room Number</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.roomNumber">{{ errors.roomNumber[0]
-                                    }}</span>
+                                }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="roomType" v-model="roomType">
@@ -256,7 +258,7 @@
                                     <label for="roomType">Room Type</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.roomType">{{ errors.roomType[0]
-                                    }}</span>
+                                }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="availability" v-model="availability">
@@ -268,14 +270,14 @@
                                     <label for="availability">Availability Status</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.availability">{{ errors.availability[0]
-                                    }}</span>
+                                }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <input type="number" class="form-control" id="areaSqm" v-model="area_sqm" min="1"
                                         placeholder="Enter area in sqm" required>
                                     <label for="areaSqm">Area (sqm)</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.area_sqm">{{ errors.area_sqm[0]
-                                    }}</span>
+                                }}</span>
 
                             </div>
 
@@ -287,7 +289,7 @@
                                     <label for="price">Price (₱)</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.price">{{ errors.price[0]
-                                    }}</span>
+                                }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="bedType" v-model="listing_type" required>
                                         <option value="" disabled selected>Select Bed Type</option>
@@ -299,7 +301,7 @@
                                 </div>
 
                                 <span class="text-danger small" v-if="errors.listing_type">{{ errors.listing_type[0]
-                                    }}</span>
+                                }}</span>
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="furnishingStatus" v-model="furnishing_status"
                                         required>
@@ -312,7 +314,7 @@
                                 </div>
                                 <span class="text-danger small" v-if="errors.furnishing_status">{{
                                     errors.furnishing_status[0]
-                                    }}</span>
+                                }}</span>
 
                                 <div class="form-floating mb-2 mt-2">
                                     <select class="form-select" id="genderPreference" v-model="gender_preference"
@@ -326,7 +328,7 @@
                                 </div>
                                 <span class="text-danger small" v-if="errors.gender_preference">{{
                                     errors.gender_preference[0]
-                                    }}</span>
+                                }}</span>
 
 
                                 <span class="text-danger small" v-if="errors.price">{{ errors.price[0] }}</span>
@@ -370,7 +372,7 @@
                             :id="'feature' + index" placeholder="Enter room feature" />
                         <label :for="'feature' + index">Room Feature {{ index + 1 }}</label>
                         <span class="text-danger mb-3 " v-if="errors.roomFeatures">{{ errors.roomFeatures[0]
-                            }}</span>
+                        }}</span>
 
                     </div>
 
@@ -456,7 +458,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.roomNumber">{{
                                 errors.editData.roomNumber[0]
-                                }}</span>
+                            }}</span>
                             <div class="form-floating mb-2 mt-2">
                                 <input type="number" class="form-control" id="areaSqm" v-model="editData.areaSqm"
                                     min="1" placeholder="Enter area in sqm" required>
@@ -464,7 +466,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.areaSqm">{{
                                 errors.editData.areaSqm[0]
-                                }}</span>
+                            }}</span>
 
 
                             <div class="form-floating mb-2 mt-2">
@@ -485,7 +487,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.roomType">{{
                                 errors.editData.roomType[0]
-                                }}</span>
+                            }}</span>
                             <div class="form-floating mb-2">
                                 <select class="form-select" id="availability" v-model="editData.availability">
                                     <option value="" selected>Select Availability</option>
@@ -497,7 +499,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.availability">{{
                                 errors.editData.availability[0]
-                                }}</span>
+                            }}</span>
                         </div>
 
                         <!-- Column 2 -->
@@ -509,7 +511,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.price">{{
                                 errors.editData.price[0]
-                                }}</span>
+                            }}</span>
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="bedType" v-model="editData.listingType" required>
                                     <option value="" disabled>Select Bed Type</option>
@@ -521,7 +523,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.listingType">{{
                                 errors.editData.listingType[0]
-                                }}</span>
+                            }}</span>
 
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="furnishingStatus" v-model="editData.furnishing_status"
@@ -535,7 +537,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.furnishing_status">{{
                                 errors.editData.furnishing_status[0]
-                                }}</span>
+                            }}</span>
                             <div class="form-floating mb-2 mt-2">
                                 <select class="form-select" id="genderPreference" v-model="editData.genderPreference"
                                     required>
@@ -548,7 +550,7 @@
                             </div>
                             <span class="text-danger small" v-if="errors.editData?.genderPreference">{{
                                 errors.editData.genderPreference[0]
-                                }}</span>
+                            }}</span>
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" @click="updateRoom" class="btn btn-outline-primary btn-lg">
                                     Update Room
@@ -630,13 +632,13 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Room Number:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.roomNumber
-                                    }}
+                                }}
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Room Type:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{ selectedRoom?.roomType
-                                    }}
+                                }}
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -678,7 +680,7 @@
                                 <label class="form-label fw-bold">Contact Email:</label>
                                 <div class="p-2 border rounded bg-light text-break"> {{
                                     selectedRoom?.dorm.contactEmail
-                                    }}
+                                }}
 
                                 </div>
                             </div>
@@ -686,7 +688,7 @@
                                 <label class="form-label fw-bold">Contact Phone:</label>
                                 <div class="p-2 border rounded bg-light text-break">{{
                                     selectedRoom?.dorm.contactPhone
-                                    }}
+                                }}
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -733,16 +735,21 @@ import axios from 'axios';
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
+import NotificationList from '@/components/notifications.vue';
+
 
 
 export default {
     components: {
         Toastcomponents,
         Loader,
-        Modalconfirmation
+        Modalconfirmation,
+        NotificationList
+
     },
     data() {
         return {
+            notifications: [],
             VisibleAddModal: false,
             VisibleDeleteModal: false,
             VisibleUpdateModal: false,
@@ -810,6 +817,24 @@ export default {
         };
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return; // prevent multiple subscriptions
+            this.hasSubscribed = true;
+
+            this.receiverID = this.landlord_id;
+            Echo.private(`notifications.${this.receiverID}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
         dormId(dorm) {
             this.dormsId = dorm.dormID;
         },
@@ -1435,6 +1460,9 @@ export default {
 
     },
     mounted() {
+        const element = document.getElementById("landlordroomManagement"); // ✅ define it
+        this.landlord_id = element.dataset.landlordId;
+        this.subscribeToNotifications();
         this.handlePagination();
         // this.fetchRooms();
     },

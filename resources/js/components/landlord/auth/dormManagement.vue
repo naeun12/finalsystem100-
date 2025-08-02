@@ -1,5 +1,6 @@
 <template>
     <Loader ref="loader" />
+    <NotificationList ref="toastRef" />
 
     <div class="container mt-5">
         <div class="d-flex justify-content-end align-items-center mb-4">
@@ -360,7 +361,7 @@
                                 placeholder="Enter rule or policy" />
                             <label :for="'rule' + index">Rule/Policy {{ index + 1 }}</label>
                             <span class="text-danger mb-3 " v-if="errors.rules">{{ errors.rules[0]
-                                }}</span>
+                            }}</span>
 
                         </div>
 
@@ -694,7 +695,7 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Email:</label>
                                     <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactEmail
-                                        }}</div>
+                                    }}</div>
                                 </div>
 
                                 <div class="mb-3">
@@ -730,7 +731,7 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Contact Phone:</label>
                                     <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactPhone
-                                        }}</div>
+                                    }}</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Total Rooms:</label>
@@ -1063,6 +1064,7 @@ import axios from 'axios';
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
+import NotificationList from '@/components/notifications.vue';
 import { debounce } from 'lodash';
 
 
@@ -1070,13 +1072,13 @@ export default {
     components: {
         Toastcomponents,
         Loader,
-        Modalconfirmation
-
-
+        Modalconfirmation,
+        NotificationList
     },
     name: "MapView",
     data() {
         return {
+            landlord_id: '',
             searchTerm: '',
             debouncedSearchTearm: '',
             selectedLocation: '',
@@ -1158,6 +1160,8 @@ export default {
             currentPage: 1,
             newAmenity: '',
             newrules: "",
+            notifications: [],
+
 
         };
     },
@@ -1166,6 +1170,24 @@ export default {
         modalconfirmation() {
             this.$refs.modal.visible = true;
 
+        },
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return; // prevent multiple subscriptions
+            this.hasSubscribed = true;
+
+            this.receiverID = this.landlord_id;
+            Echo.private(`notifications.${this.receiverID}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
         },
         handlePagination(page) {
             this.currentPage = page;
@@ -1305,8 +1327,7 @@ export default {
         //end fill data
         //redirect rooms page
         ViewRoomsPage() {
-            const landlord = window.landlordId;
-            window.location.href = `/landlordRoomManagement/${landlord}`;
+            window.location.href = `/landlordRoomManagement/${this.landlord_id}`;
         },
         //end room page
         //functions for adding dormitories
@@ -2363,6 +2384,7 @@ export default {
         },
 
 
+
         // end deleting functions
         //google map api function
         getAssetPath(path) {
@@ -2579,7 +2601,11 @@ export default {
         } else {
             this.initMap(); // If already loaded
         }
+        const element = document.getElementById("landlorddormManagement"); // ✅ define it
+        this.landlord_id = element.dataset.landlordId;
+
         this.fetchDorms();
+        this.subscribeToNotifications();
 
     },
 

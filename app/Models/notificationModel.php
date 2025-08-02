@@ -8,31 +8,32 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class notificationModel extends Model
 {
     use HasFactory;
+    protected $table = 'notifications'; // ✅ correct table name
 
     protected $fillable = [
-        'sender_id',
-        'sender_type',
-        'receiver_id',
-        'receiver_type',
+        'senderID',
+        'senderType',
+        'receiverID',
+        'receiverType',
         'title',
         'message',
-        'is_read',
-        'read_at',
+        'isRead',
+        'readAt',
     ];
 
     protected $casts = [
-        'is_read' => 'boolean',
-        'read_at' => 'datetime',
+        'isRead' => 'boolean',
+        'readAt' => 'datetime',
     ];
 
     // Polymorphic relationship for the sender (Landlord or Tenant)
     public function sender()
     {
-        return $this->morphTo(__FUNCTION__, 'sender_type', 'sender_id');
+        return $this->morphTo(__FUNCTION__, 'senderType', 'senderID');
     }
     public function receiver()
     {
-        return $this->morphTo(__FUNCTION__, 'receiver_type', 'receiver_id');
+        return $this->morphTo(__FUNCTION__, 'receiverType', 'receiverID');
     }
 
 }

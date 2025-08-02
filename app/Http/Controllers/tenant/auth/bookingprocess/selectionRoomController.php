@@ -4,7 +4,13 @@ namespace App\Http\Controllers\tenant\auth\bookingprocess;
 
 use App\Http\Controllers\Controller;
 use App\Models\landlord\roomModel;
+use App\Models\landlord\dormModel;
 use App\Models\tenant\reservationModel;
+use App\Models\notificationModel;
+use App\Mail\TenantLandlordReminder;
+use App\Events\NewNotificationEvent;
+
+use Illuminate\Support\Facades\Mail;
 
 use Illuminate\Http\Request;
 
@@ -12,7 +18,12 @@ class selectionRoomController extends Controller
 {
     public function SelectionRoom($dormitoryID,$tenantID)
     {
-        return view('tenant.auth.bookingProcess.roomSelection',['title'=>'Room Selection','cssPath'=>asset('css/tenantpage/auth/roomselect.css'),'dormitory_id' =>$dormitoryID,'tenant_id'=>$tenantID]);
+return view('tenant.auth.bookingProcess.roomSelection', [
+    'title' => 'Room Selection',
+    'cssPath' => asset('css/tenantpage/auth/roomselect.css'),
+    'dormitory_id' => $dormitoryID,
+    'tenant_id' => $tenantID
+]);
     }
     public function availableRooms($dormitoryID)
     {
@@ -24,18 +35,21 @@ class selectionRoomController extends Controller
     }
     public function occupiedRooms($dormitoryID)
     {
-        $rooms = roomModel::where('fkdormID',$dormitoryID)
-        ->where('availability','Occupied')
+         $reservedRoomIDs = reservationModel::where('fkdormitoryID', $dormitoryID)
+        ->whereIn('status', ['approved', 'paid']) 
+        ->pluck('fkroomID');
+       $rooms = roomModel::with('currentTenant')
+        ->where('fkdormID', $dormitoryID)
+        ->where(function ($query) use ($reservedRoomIDs) {
+            $query->where('availability', 'Occupied')
+                  ->orWhereIn('roomID', $reservedRoomIDs);
+        })
         ->get();
+
+
         return response()->json(['rooms' => $rooms]);
     }
-    public function maintenanceRooms($dormitoryID)
-    {
-        $rooms = roomModel::where('dormitory_id',$dormitoryID)
-        ->where('availability','Under Maintenance')
-        ->get();
-        return response()->json(['rooms' => $rooms]);
-    }
+   
     public function selectedPriceRange(Request $request, $dormitoryID)
 {
     $min = $request->query('min');
@@ -63,7 +77,7 @@ public function filterGender(Request $request, $dormitoryID)
 }
     public function viewRoomDetails($id)
     {
-        $room = roomModel::where('roomID',$id)->first();
+        $room = roomModel::with('approvedTenant')->where('roomID',$id)->first();
         return response()->json([
             'status' => 'success',
             'room' => $room,
@@ -72,7 +86,8 @@ public function filterGender(Request $request, $dormitoryID)
     public function reservation(Request $request)
     {
         try {
-            // 1. VALIDATE FIRST
+               $room = roomModel::with('landlord')->find($request->room_id);
+            $landlord = $room->landlord;
             $validatedData = $request->validate([
                 'dormitory_id'        => 'required|integer',
                 'room_id'             => 'required|integer',
@@ -99,7 +114,20 @@ public function filterGender(Request $request, $dormitoryID)
                 'studentpictureId'  => $request->studentpicture_id,
                 'status'             => 'pending',
             ]);
-    
+            $tenantName = $request->firstname . ' ' . $request->lastname;
+            $tenantMessage = "Hi $tenantName, your room reservation has been submitted successfully and is currently pending approval.";
+            Mail::to($request->email)->send(new TenantLandlordReminder($tenantName, $tenantMessage, 'tenant'));
+            $notifications = notificationModel::create([
+                'senderID'     => $request->tenant_id,
+                'senderType'   => 'tenant',
+                'receiverID'   => $landlord->landlordID,
+                'receiverType' => 'landlord',
+                'title'         => 'New Reservation Request',
+                'message'       => "A tenant has reserved Room #{$room->roomNumber}. Please review the request.",
+                'isRead'       => false,
+                'readAt'       => null,
+            ]);
+broadcast(new \App\Events\NewNotificationEvent($notifications));
             return response()->json([
                 'status' => 'success',
                 'message' => 'Room reserved successfully. Waiting for landlord confirmation.',

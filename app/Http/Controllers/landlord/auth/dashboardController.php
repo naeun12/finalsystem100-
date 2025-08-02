@@ -9,7 +9,7 @@ use App\Models\landlord\roomModel;
 use App\Models\landlord\bookingModel;
 use App\Models\tenant\approvetenantsModel;
 use App\Models\tenant\reservationModel;
-
+use App\Models\notificationModel;
 
 use App\Models\landlord\dormModel;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -21,7 +21,10 @@ class dashboardController extends Controller
      public function landlordDashboard($landlord_id)
     {
           $sessionLandlordId = session('landlord_id');
-    
+            $notifications = notificationModel::where('receiverID', $sessionLandlordId)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
         if (!$sessionLandlordId) {
             return redirect()->route('loginLandlord')->with('error', 'Please log in as a landlord.');
         }
@@ -34,13 +37,19 @@ class dashboardController extends Controller
         if (!$landlord) {
             return redirect()->route('loginLandlord')->with('error', 'Landlord not found.');
         }
+        $unreadCount = notificationModel::where('receiverID', $landlord_id)
+            ->where('isRead', false)
+            ->count();
     
         return view ('landlord.auth.dashboard', ['title' => 'Landlord - Dashboard',
         'headerName' => 'Dashboard',
         'color' =>'primary'
-        ,'landlord_id'=> $landlord]);
-    }
-    public function getLandlord(Request $request, $landlord_id)
+        ,'landlord_id'=> $landlord,
+        'notifications' => $notifications,
+        'unread_count' => $unreadCount
+    ]);
+}
+public function getLandlord(Request $request, $landlord_id)
 {
     $dateParam = $request->query('date');
 $date = $dateParam ? \Carbon\Carbon::parse($dateParam) : \Carbon\Carbon::today();

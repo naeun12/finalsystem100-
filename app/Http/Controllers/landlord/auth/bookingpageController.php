@@ -9,7 +9,7 @@ use App\Models\landlord\bookingModel;
 use App\Models\landlord\roomModel;
 use App\Models\landlord\dormModel;
 use App\Models\tenant\bookingpaymentModel;
-
+use App\Models\notificationModel;
 
 use App\Models\tenant\approvetenantsModel;
 
@@ -18,7 +18,13 @@ class bookingpageController extends Controller
     public function bookingpageIndex($landlord_id)
     {
         $sessionLandlordId = session('landlord_id');
-    
+          $notifications = notificationModel::where('receiverID', $sessionLandlordId)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $landlord_id)
+            ->where('isRead', false)
+            ->count();
         if (!$sessionLandlordId) {
             return redirect()->route('loginLandlord')->with('error', 'Please log in as a landlord.');
         }
@@ -37,6 +43,8 @@ class bookingpageController extends Controller
         'headerName' => 'Tenants Booking',           
         'landlord' => $landlord,
         'landlord_id' => $landlord_id,
+        'notifications' => $notifications,
+        'unread_count' => $unreadCount,
     ]);   
     }
     public function searchBooking(Request $request)

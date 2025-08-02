@@ -28,17 +28,7 @@
             <div class="col-md-8">
                 <div class="bg-light border rounded shadow-sm" style="height: 760px; overflow: hidden;">
                     <div id="map" style="width: 100%; height: 100%;"></div>
-                    <div id="radarPulse" style="
-                        position: absolute;
-                        width: 160px; 
-                        height: 160px; 
-                        border: 5px solid #007bff;
-                        border-radius: 50%;
-                        animation: radarPulse 2s infinite;
-                        pointer-events: none;
-                        transform: translate(-50%, -50%);
-                        z-index: 999;
-                    "></div>
+
 
 
                 </div>
@@ -55,29 +45,10 @@
                     </h5>
                     <div class="row mb-4">
                         <!-- Price Range Dropdown -->
-                        <div class="col-md-6 col-lg-4 mb-2 w-50">
-                            <select class="form-select shadow-sm" v-model="selectedPriceRange"
-                                @change="dropdownPriceRange">
-                                <option disabled value="">Select Price Range (based on rooms)</option>
-                                <option value="all">All Prices</option>
-                                <option value="0-100">₱0 - ₱100</option>
-                                <option value="101-200">₱101 - ₱200</option>
-                                <option value="201-300">₱201 - ₱300</option>
-                                <option value="301+">₱301 and above</option>
-                            </select>
-                        </div>
+
 
                         <!-- Occupancy Type Dropdown -->
-                        <div class="col-md-6 col-lg-4 mb-2 w-50">
-                            <select class="form-select shadow-sm" v-model="selectedGenderType"
-                                @change="dropdownGenderType">
-                                <option disabled value="">Select Occupancy Type</option>
-                                <option value="all">All Types</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Mixed">Mixed</option>
-                            </select>
-                        </div>
+
                     </div>
 
 
@@ -211,7 +182,6 @@ export default {
                 scrollwheel: true,
                 disableDoubleClickZoom: false
             });
-            this.addRadarOverlay(centerBetween.lat, centerBetween.lng);
             this.fetchNearbyDorms(centerBetween.lat, centerBetween.lng);
             this.draggableMarker = new google.maps.Marker({
                 position: centerBetween,
@@ -233,7 +203,6 @@ export default {
                 const lat = e.latLng.lat();
                 const lng = e.latLng.lng();
                 this.fetchNearbyDorms(lat, lng);
-                this.addRadarOverlay(lat, lng); // Move radar to new position
             });
         },
         async fetchNearbyDorms(lat, lng) {
@@ -259,18 +228,19 @@ export default {
                         if (km > 2) return;
 
                         const latLng = new google.maps.LatLng(lat, lng);
-                        if (!bounds.contains(latLng)) return;
+                        if (bounds && !bounds.contains(latLng)) return;
 
                         // Check if the dorm is within the map bounds
                         const marker = new google.maps.Marker({
                             position: { lat, lng },
                             map: this.map,
                             icon: {
-                                url: '/images/tenant/allimagesResouces/dormmap.webp',
+                                url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png', // Default red pin
                                 scaledSize: new google.maps.Size(40, 40)
                             },
                             title: `${dorm.dormName} (${dorm.distance_km} km)`
                         });
+
 
                         const infoWindow = new google.maps.InfoWindow({
                             content: `
@@ -289,7 +259,6 @@ export default {
 
 
                     });
-                    this.addRadarOverlay(lat, lng);
                     this.$refs.loader.loading = false;
                 }
             } catch (error) {
@@ -312,36 +281,7 @@ export default {
             this.markers = []; // Clear tracking
 
         },
-        addRadarOverlay(lat, lng) {
-            const radar = document.getElementById("radarPulse");
-            // Remove radar from old parent
-            if (radar.parentNode) {
-                radar.parentNode.removeChild(radar);
-            }
-            // Remove old overlay
-            if (this.radarOverlay && this.radarOverlay.setMap) {
-                this.radarOverlay.setMap(null);
-            }
-            const overlayView = new google.maps.OverlayView();
-            overlayView.onAdd = function () {
-                const panes = this.getPanes();
-                panes.overlayMouseTarget.appendChild(radar); // use mouseTarget for better positioning
-            };
-            overlayView.draw = function () {
-                const projection = this.getProjection();
-                const position = projection.fromLatLngToDivPixel(new google.maps.LatLng(lat, lng));
-                // Set radar center correctly
-                radar.style.left = `${position.x}px`;
-                radar.style.top = `${position.y}px`;
-            };
-            overlayView.onRemove = function () {
-                if (radar.parentNode) {
-                    radar.parentNode.removeChild(radar);
-                }
-            };
-            overlayView.setMap(this.map);
-            this.radarOverlay = overlayView;
-        },
+
         onDragStart(event) {
             this.offsetX = event.offsetX;
             this.offsetY = event.offsetY;
@@ -351,85 +291,6 @@ export default {
             this.pinX = event.pageX - containerRect.left - this.offsetX;
             this.pinY = event.pageY - containerRect.top - this.offsetY;
         },
-
-        async dropdownPriceRange() {
-            try {
-                const lat = this.draggableMarker.getPosition().lat();
-                const lng = this.draggableMarker.getPosition().lng();
-
-                const response = await axios.post('/price-range',
-                    {
-                        price_range: this.selectedPriceRange,
-                        lat: lat,
-                        lng: lng
-
-                    });
-                if (this.combinePriceAndGender && this.selectedGenderType !== 'all') {
-                    await this.combinePriceAndGender();
-                    this.isPrice = true;
-
-                    return;
-                }
-                if (response.status === 200 && response.data.status === 'success') {
-                    this.nearbyDorms = response.data.data;
-                    this.isPrice = true;
-
-                }
-            } catch (error) {
-                this.nearbyDorms = [];
-
-            }
-        },
-        async dropdownGenderType() {
-            try {
-                const lat = this.draggableMarker.getPosition().lat();
-                const lng = this.draggableMarker.getPosition().lng();
-                const response = await axios.post('/selected-gender-type', {
-                    gender_type: this.selectedGenderType,
-                    lat: lat,
-                    lng: lng
-                });
-                if (this.combinePriceAndGender && this.selectedPriceRange !== 'all') {
-                    await this.combinePriceAndGender();
-
-                    return;
-                }
-
-                if (response.data.status === 'success') {
-                    this.nearbyDorms = response.data.data;
-                    this.isPrice = false;
-                }
-            } catch (error) {
-                console.error('Gender filter error:', error);
-                this.nearbyDorms = [];
-            }
-        },
-        async combinePriceAndGender() {
-            try {
-                const lat = this.draggableMarker.getPosition().lat();
-                const lng = this.draggableMarker.getPosition().lng();
-                const response = await axios.post('/filter-price-gender', {
-                    price_range: this.selectedPriceRange,
-                    gender_type: this.selectedGenderType,
-                    lat: lat,
-                    lng: lng
-                });
-                if (response.status === 200 && response.data.status === "success") {
-                    this.nearbyDorms = response.data.data;
-                    this.isPrice = true;
-
-                }
-
-            }
-            catch (error) {
-                console.error('Combined filter error:', error);
-                this.nearbyDorms = [];
-            }
-        }
-
-
-
-
     }
 }
 </script>

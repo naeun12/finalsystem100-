@@ -27,10 +27,11 @@ use App\Http\Controllers\tenant\auth\nav\booking\mybookingdetailsController;
 use App\Http\Controllers\tenant\auth\nav\nextpayment\nextpaymentController;
 use App\Http\Controllers\tenant\auth\nav\myroom\myroomsController;
 use App\Http\Controllers\tenant\auth\nav\reservations\myreservationController;
-
-
 use App\Models\tenant\messageModel;
+use App\Events\NewNotificationEvent;
+
 use App\Models\Landlord;
+use App\Models\notificationModel;
 use App\Http\Middleware\LandlordAuth;
 use Illuminate\Support\Facades\Broadcast;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
@@ -178,6 +179,8 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/booking-process/{roomId}/{tenantID}', [bookroomController::class, 'bookRoomPage'])->name('room.selection');
     Route::get('/get-room-details/{roomID}', [bookroomController::class, 'getRoom'])->name('get.room.details');
     Route::post('/book-room',[bookroomController::class,'bookingaRoom']);
+
+    
     Route::post('/tenant-information', [dormdetailscontroller::class, 'tenantInformation'])->name('tenant.information');
     Route::post('/tenant-idPicture', [dormdetailscontroller::class, 'uploadTenantId'])->name('tenant.idPicture');
 
@@ -185,9 +188,7 @@ Route::middleware([TenantAuth::class])->group(function () {
     //map dormitories page
     Route::get('/dorm-map{tenant_id}', [dormitoriesmapcontroller::class, 'dormitoriesMap'])->name('dorm.map');
     Route::get('/nearby-dorms', [dormitoriesmapcontroller::class, 'getNearbyByCoordinates']);
-    Route::post('/price-range', [dormitoriesmapcontroller::class, 'priceRange']);
-    Route::post('/selected-gender-type', [dormitoriesmapcontroller::class, 'SelectedGenderType']);
-    Route::post('/filter-price-gender', [dormitoriesmapcontroller::class, 'filterPriceGender']);
+    
 
 
     // dormitories page
@@ -215,6 +216,8 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/view/booking/details/{tenant_id}/{booking_id}', [mybookingdetailsController::class, 'viewBookingDetails'])->name('view.booking.details');
     Route::get('/my-bookings/details/{booking_id}', [mybookingdetailsController::class, 'bookingDetails']);
     Route::post('/tenant/pay-room/', [mybookingdetailsController::class, 'payRoom']);
+        Route::get('/cancel/booking/{bookingID}',[mybookingdetailsController::class,'cancelbooking']);
+
     // view next payment
     Route::get('/view/payment/{tenant_id}', [nextpaymentController::class, 'nextpaymentIndex'])->name('next.payment');
     Route::get('/tenant/payment/history/list/{tenant_id}', [nextpaymentController::class, 'paymentHistory']);
@@ -228,15 +231,32 @@ Route::middleware([TenantAuth::class])->group(function () {
     //reservations view
     Route::get('/view/reservation/{tenant_id}', [myreservationController::class, 'viewReservation'])->name('view.reservation');
     Route::get('/tenant/my-reservation/{tenant_id}', [myreservationController::class, 'myReservationList']);
-
-    
-
-
-    
-
-
-
+    Route::get('/tenant/my-reservation/details/{reservationID}', [myreservationController::class, 'reservationDetails']);
+    Route::get('/tenant/cancel/reservation/{reservationID}', [myreservationController::class, 'cancelReservation']);
+    Route::post('/tenant/pay/reservation/{reservationID}', [myreservationController::class, 'paymentReservation']);
 });
+Route::get('/test-broadcast', function () {
+    // Create a notification record in the DB
+    $notif = notificationModel::create([
+        'senderID' => 'afbb0302-8210-4ced-8cf0-81df2d7ebb8e',
+        'senderType' => 'tenant',
+        'receiverID' => 'be33805a-5424-4ee9-b4b3-9a7bb5db1deb',
+        'receiverType' => 'landlord',
+        'title' => 'New Reservation Request',
+        'message' => 'A tenant has reserved Room #100.',
+        'isRead' => false,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    // Pass the model instance to the event (no more error)
+    broadcast(new NewNotificationEvent($notif));
+});
+
+
+
+
+
 
 
 

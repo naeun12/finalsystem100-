@@ -114,6 +114,19 @@ public function payRoom(Request $request)
         ], 500);
     }
 }
+ public function cancelbooking($bookingID)
+{
+    $booking = bookingModel::where('bookingID', $bookingID)->first();
+
+    if ($booking) {
+        $booking->status = 'cancelled';
+        $booking->save();
+
+        return response()->json(['message' => 'Booking cancelled successfully', 'booking' => $booking]);
+    }
+
+    return response()->json(['message' => 'Booking not found'], 404);
+    }
 
 
 

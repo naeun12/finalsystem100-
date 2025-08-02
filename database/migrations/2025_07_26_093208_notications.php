@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('senderID');        // ID of who sent the notification
+            $table->string('senderID');        // ID of who sent the notification
             $table->string('senderType');                  // 'landlord' or 'tenant'
-            $table->unsignedBigInteger('receiverID');      // ID of who will receive
+            $table->string('receiverID');      // ID of who will receive
             $table->string('receiverType');                // 'landlord' or 'tenant'
             $table->string('title');                        // Notification title
             $table->text('message');                        // Notification message

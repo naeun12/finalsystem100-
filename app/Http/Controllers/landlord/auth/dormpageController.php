@@ -12,13 +12,20 @@ use App\Models\landlord\dormModel;
 use App\Models\landlord\dormimagesModel;
 use App\Models\landlord\dormrulesModel;
 use App\Models\landlord\rulesModel;
+use App\Models\NotificationModel;
 
 class dormpageController extends Controller
 {
     public function DormManagement($landlordId)
     {
         $sessionLandlordId = session('landlord_id');
-    
+         $notifications = notificationModel::where('receiverID', $sessionLandlordId)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+             $unreadCount = notificationModel::where('receiverID', $landlordId)
+            ->where('isRead', false)
+            ->count();
         if (!$sessionLandlordId) {
             return redirect()->route('loginLandlord')->with('error', 'Please log in as a landlord.');
         }
@@ -38,6 +45,9 @@ class dormpageController extends Controller
             'headerName' => 'Dorm Management',
             'color' => 'primary',
             'landlord' => $landlord,
+            'landlord_id' => $landlordId,
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount
         ]);
     }
      public function searchDorms(Request $request)

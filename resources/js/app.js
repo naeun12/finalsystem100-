@@ -1,8 +1,8 @@
-import 'bootstrap'; // Importing Bootstrap
+import 'bootstrap';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import './bootstrap';
-import { createApp } from 'vue'; // Vue 3
+import { createApp } from 'vue';
 import TenantRegister from './components/tenants/tenantRegister.vue';
 import LandlordRegister from './components/landlord/landlordregister.vue';
 import LandlordLogin from './components/landlord/landlordlogin.vue';
@@ -28,9 +28,6 @@ import reservationPage from './components/landlord/auth/reservationpage.vue';
 import nextPayment from './components/tenants/auth/nav/nextpayment/nextpaymentdue.vue';
 import myRooms from './components/tenants/auth/nav/rooms/myrooms.vue';
 import myReservation from './components/tenants/auth/nav/reservation/reservation.vue';
-
-
-
 import AOS from 'aos';
 import 'aos/dist/aos.css'
 AOS.init();
@@ -160,20 +157,9 @@ if (myReservationController) {
     createApp(myReservation).mount('#myReservation');
 }
 
-window.Pusher = Pusher;
-window.Echo = new Echo({
-    broadcaster: 'pusher',
-    key: '282b6afa40698be3bece', // ← your pusher key
-    cluster: 'ap1',
-    forceTLS: true,
-    encrypted: true,
-    authEndpoint: '/broadcasting/auth',
-    auth: {
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        },
-    },
-});
+
+
+
 
 
 

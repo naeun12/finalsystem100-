@@ -3,6 +3,8 @@
 namespace App\Models\tenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\tenant\tenantModel;
+
 use App\Models\landlord\dormModel;
 use App\Models\landlord\roomModel;
 

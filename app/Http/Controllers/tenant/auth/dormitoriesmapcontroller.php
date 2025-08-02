@@ -93,7 +93,7 @@ public function priceRange(Request $request)
         ->map(function ($dorm) {
             // Add computed field to each dorm
             $dorm->price = optional($dorm->rooms->first())->price;
-            $dorm->main_image = optional($dorm->images)->mainImage;
+            $dorm->mainImage = optional($dorm->images)->mainImage;
             return $dorm;
         });
 
@@ -104,81 +104,6 @@ public function priceRange(Request $request)
 }
 
 
-public function SelectedGenderType(Request $request)
-{
-    $gender_type = strtolower(trim($request->input('gender_type')));
-    $lat = $request->input('lat');
-    $lng = $request->input('lng');
 
-    $dorms = dormModel::with('images')
-        ->selectRaw("dorms.*, (
-            6371 * acos(
-                cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) +
-                sin(radians(?)) * sin(radians(latitude))
-            )
-        ) AS distance_km", [$lat, $lng, $lat])
-        ->having('distance_km', '<=', 2)
-        ->when($gender_type !== 'all', function ($query) use ($gender_type) {
-            if ($gender_type === 'male') {
-                $query->whereRaw("LOWER(occupancyType) LIKE 'male only'");
-            } elseif ($gender_type === 'female') {
-                $query->whereRaw("LOWER(occupancyType) LIKE 'female only'");
-            } elseif ($gender_type === 'mixed') {
-                $query->whereRaw("LOWER(occupancyType) LIKE '%mixed%'");
-            }
-        })
-        ->get();
-
-    return response()->json([
-        'status' => 'success',
-        'data' => $dorms
-    ]);
-}
-
-public function filterPriceGender(Request $request)
-{
-    try {
-        $range = $request->input('price_range');
-        $gender_type = strtolower(trim($request->input('gender_type')));
-        $lat = $request->input('lat');
-        $lng = $request->input('lng');
-
-        $dorms = dormModel::with(['rooms', 'images'])
-            ->selectRaw("dorms.*, (
-                6371 * acos(
-                    cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) +
-                    sin(radians(?)) * sin(radians(latitude))
-                )
-            ) AS distance_km", [$lat, $lng, $lat])
-            ->having('distance_km', '<=', 2)
-            ->when($range !== 'all', function ($query) use ($range) {
-                if ($range === '301+') {
-                    $query->whereHas('rooms', function ($q) {
-                        $q->where('price', '>=', 301);
-                    });
-                } elseif (str_contains($range, '-')) {
-                    [$min, $max] = explode('-', $range);
-                    $query->whereHas('rooms', function ($q) use ($min, $max) {
-                        $q->whereBetween('price', [(int)$min, (int)$max]);
-                    });
-                }
-            })
-            ->when($gender_type !== 'all', function ($query) use ($gender_type) {
-                $query->whereRaw("LOWER(occupancyType) LIKE ?", [$gender_type === 'mixed' ? '%mixed%' : "$gender_type only"]);
-            })
-            ->get();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $dorms
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage(),
-            'line' => $e->getLine(),
-        ], 500);
-    }
-}
 
 }

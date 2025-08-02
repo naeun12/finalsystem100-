@@ -269,7 +269,6 @@
                             <option value="" disabled>Select</option>
                             <option>Male</option>
                             <option>Female</option>
-                            <option>Other</option>
                         </select>
                         <span v-if="errors.sex" class="error text-danger small mt-1 d-block">
                             <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.sex[0] }}
@@ -404,14 +403,19 @@ export default {
         };
     },
     mounted() {
-        const element = document.getElementById('RoomDetails');
-        this.dormitory_id = element.dataset.dormId;
-        this.tenant_id = element.dataset.tenantId;
-
-        this.displayDorms();
-        this.dormLocation();
-
+        nextTick(() => {
+            const element = document.getElementById('RoomDetails');
+            if (element) {
+                this.dormitory_id = element.dataset.dormId;
+                this.tenant_id = element.dataset.tenantId;
+                this.displayDorms();
+                this.dormLocation();
+            } else {
+                console.error("RoomDetails element not found!");
+            }
+        });
     },
+
     methods: {
         changeMainImage(imgSrc) {
             this.mainImage = imgSrc;
@@ -621,7 +625,7 @@ export default {
                 map: mapLapu,
                 title: this.dorm.dorm.dorm_name || "Dorm Location",
                 icon: {
-                    url: '/images/tenant/allimagesResouces/dormmap.webp',
+                    url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
                     scaledSize: new google.maps.Size(40, 40),
                     origin: new google.maps.Point(0, 0),
                     anchor: new google.maps.Point(20, 40)

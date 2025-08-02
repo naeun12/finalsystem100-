@@ -1,5 +1,6 @@
 <template>
     <Loader ref="loader" />
+    <NotificationList ref="toastRef" />
 
     <div class="p-4 mt-4">
         <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden">
@@ -49,8 +50,8 @@
                         <option value="" disabled> Select Application Status</option>
                         <option value="all"> All Application Status</option>
                         <option value="pending"> Pending</option>
-                        <option value="for-confirmation"> For confirmation</option>
-                        <option value="rejected"> Ejected application</option>
+                        <option value="confirmed"> Confirmed</option>
+                        <option value="Rejected"> Rejected</option>
 
                     </select>
 
@@ -59,21 +60,15 @@
             </div>
         </div>
 
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3" style="">
             <div class="col" v-for="reservation in reservations" :key="reservation.reservationID">
                 <div class="card shadow-sm rounded-4 border-0 h-100">
-                    <div class="card-body p-4">
+                    <div class="card-body p-4" style="border:1px solid #e0e0e0;">
                         <!-- Header -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h5 class="fw-bold text-primary mb-0">Reservation #{{ reservation.reservationID }}</h5>
-                            <span class="badge px-3 py-2 rounded-pill text-capitalize" :class="{
-                                'bg-success text-white': reservation.status === 'for-confirmation',
-                                'bg-warning text-dark': reservation.status === 'pending',
-                                'bg-danger text-white': reservation.status === 'rejected',
-                                'bg-secondary text-white': !['for-confirmation', 'pending', 'rejected'].includes(reservation.status)
-                            }">
-                                {{ reservation.status.replace('-', ' ') }}
-                            </span>
+                            <StatusBadge :status="reservation.status" />
+
                         </div>
 
                         <!-- Body Content -->
@@ -165,13 +160,8 @@
                                 class="rounded-circle border border-3 border-light shadow-sm"
                                 style="width: 130px; height: 130px; object-fit: cover;" />
                             <p class="mt-3">
-                                <span class="badge rounded-pill px-3 py-2 fs-6 text-capitalize" :class="{
-                                    'bg-success text-white': selectedReservation.status === 'for-confirmation',
-                                    'bg-danger text-white': selectedReservation.status === 'rejected',
-                                    'bg-warning text-dark': selectedReservation.status !== 'for-confirmation' && selectedReservation.status !== 'rejected'
-                                }">
-                                    {{ selectedReservation.status.replace('-', ' ') }}
-                                </span>
+                                <StatusBadge :status="selectedReservation.status" />
+
                             </p>
                         </div>
 
@@ -189,7 +179,6 @@
                                 <p><strong>🚻 Gender:</strong> {{ selectedReservation.gender }}</p>
                                 <p><strong>📱 Contact:</strong> {{ selectedReservation.contactNumber }}</p>
                                 <p><strong>🏠 Dorm:</strong> {{ selectedReservation.room?.dorm?.dormName || 'N/A' }}</p>
-                                <p><strong>🔑 Room ID:</strong> {{ selectedReservation.room?.roomID }}</p>
                                 <p><strong>💰 Price:</strong> ₱{{
                                     Number(selectedReservation.room?.price).toLocaleString(undefined, {
                                         minimumFractionDigits: 2
@@ -199,13 +188,6 @@
                         </div>
 
                         <!-- Additional Notes -->
-                        <div class="mt-4 text-center" v-if="selectedReservation.status === 'for-confirmation'">
-                            <p class="fw-semibold text-muted">
-                                💳⏳🗓️ The tenant is currently finalizing their payment and selecting a move-in date to
-                                begin their stay.
-                            </p>
-                        </div>
-
                         <!-- Current Occupant Info -->
                         <div class="mt-5">
                             <h6 class="text-center fw-bold mb-3">👥 Current Occupant Details</h6>
@@ -215,38 +197,90 @@
                                         {{ selectedReservation.room?.current_tenant?.firstname }}
                                         {{ selectedReservation.room?.current_tenant?.lastname }}
                                     </p>
-                                    <p><strong>📅 Start:</strong> {{
-                                        selectedReservation.room?.current_tenant?.moveInDate || 'N/A' }}</p>
                                 </div>
-                                <div class="col-md-6">
-                                    <p><strong>🔄 Will Extend Stay?:</strong> Yes</p>
-                                    <p><strong>📅 End:</strong> {{ selectedReservation.room?.current_tenant?.moveOutDate
-                                        || 'N/A' }}</p>
+                                <p><strong>📅 Date Booking:</strong></p>
+                                <div class="d-flex gap-2">
+                                    <input type="date" class="form-control form-control-sm"
+                                        v-model="selectedReservation.room.current_tenant.moveInDate" readonly />
+                                    <input type="date" class="form-control form-control-sm"
+                                        v-model="selectedReservation.room.current_tenant.moveOutDate" readonly />
                                 </div>
+
                             </div>
                         </div>
-                    </div>
+                        <ReservationStatusAlert :status="selectedReservation.status" role="landlord" class="mt-4" />
+                        <div v-if="selectedReservation.status === 'paid'">
+                            <p class="text-success fw-bold mt-3">
+                                ✅ Reservation has been paid. You can now accept or reject this reservation.
+                            </p>
+                            <div class="d-flex justify-content-center mt-3">
+                                <img :src="selectedReservation.payment.paymentImage" alt="Payment Receipt"
+                                    class="img-fluid rounded border shadow-sm"
+                                    style="max-width: 400px; max-height: 400px; object-fit: contain; cursor: pointer;"
+                                    @click="viewPaymentImage" />
+                            </div>
+                        </div>
 
-                    <!-- Footer -->
+                    </div>
                     <div class="modal-footer justify-content-between bg-light border-top-0 px-4 py-3">
                         <button class="btn btn-outline-primary px-4">
                             💬 Message Tenant
                         </button>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-success px-4" @click="acceptReservation(selectedReservation)"
-                                :disabled="selectedReservation.status === 'for-confirmation'">
-                                ✅ Accept Reservation
+                            <!-- Accept Button -->
+                            <button class="btn px-4"
+                                :class="['approved', 'confirmed'].includes(selectedReservation.status) ? 'bg-success text-white' : 'btn-outline-success'"
+                                @click="acceptReservation(selectedReservation)"
+                                :disabled="['approved', 'confirmed', 'rejected', 'cancelled', 'expired'].includes(selectedReservation.status)">
+                                ✅
+                                {{
+                                    ['approved', 'confirmed'].includes(selectedReservation.status)
+                                        ? 'Reservation Approved'
+                                        : 'Accept Reservation'
+                                }}
                             </button>
-                            <button class="btn btn-danger px-4" @click="rejectReservation(selectedReservation)"
-                                :disabled="selectedReservation.status === 'rejected'">
-                                ❌ Reject Reservation
+
+
+                            <!-- Reject Button -->
+                            <button class="btn px-4"
+                                :class="selectedReservation.status === 'rejected' ? 'bg-danger text-white' : 'btn-outline-danger'"
+                                @click="rejectReservation(selectedReservation)"
+                                :disabled="['rejected', 'approved', 'cancelled', 'expired'].includes(selectedReservation.status)">
+                                ❌
+                                {{
+                                    selectedReservation.status
+                                        === 'rejected' ? 'Reservation Rejected' : 'Reject Reservation'
+                                }}
                             </button>
                         </div>
+
+
                     </div>
                 </div>
             </div>
 
+
         </div>
+        <!-- Modal -->
+        <div v-if="paymentImageModal" class="modal d-block" style="background-color: rgba(0, 0, 0, 0.8);">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title">Payment Receipt</h5>
+                        <button type="button" class="btn-close btn-close-white" @click="paymentImageModal = false"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-flex justify-content-center align-items-center p-0">
+                        <img :src="selectedReservation.payment?.paymentImage" class="img-fluid"
+                            style="max-height: 100vh; max-width: 100vw; object-fit: contain; transition: transform 0.3s ease;"
+                            @mouseover="$event.target.style.transform = 'scale(2)'"
+                            @mouseleave="$event.target.style.transform = 'scale(1)'" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     </div>
     <Modalconfirmation ref="modal" />
     <Toastcomponents ref="toast" />
@@ -258,11 +292,24 @@ import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
 import { debounce } from 'lodash';
+import NotificationList from '@/components/notifications.vue';
+import StatusBadge from '@/components/statusmap.vue';
+import ReservationStatusAlert from '@/components/ReservationStatusAlert.vue';
+
+
 export default {
     components: {
         Toastcomponents,
         Loader,
-        Modalconfirmation
+        Modalconfirmation,
+        NotificationList,
+        StatusBadge,
+        ReservationStatusAlert,
+
+
+    },
+    props: {
+        reservation: Object,
     },
     data() {
         return {
@@ -277,10 +324,34 @@ export default {
             selectedroomNumber: '',
             VisibleModalApproval: false,
             currentPage: 1,
-            lastPage: 1
+            lastPage: 1,
+            notifications: [],
+            receiverID: '',
+            landlord_id: '',
+            paymentImageModal: false,
+            hasSubscribed: false,
+            status: '',
         }
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.landlord_id;
+            Echo.private(`notifications.${this.receiverID}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
         async searcReservation(page = 1) {
             try {
                 this.$refs.loader.loading = true;
@@ -453,6 +524,10 @@ export default {
             formData.append('firstname', selectedReservation.firstname);
             formData.append('lastname', selectedReservation.lastname);
             formData.append('dorm', selectedReservation.room?.dorm?.dormName);
+            const nextStatus = ['approved', 'confirmed'].includes(selectedReservation.status)
+                ? selectedReservation.status
+                : 'approved';
+            formData.append('status', nextStatus);
 
             this.$refs.loader.loading = true;
 
@@ -460,6 +535,8 @@ export default {
                 const response = await axios.post('/accept-reservation', formData);
                 if (response.data.status === 'success') {
                     this.$refs.toast.showToast(response.data.message, 'success');
+                    this.VisibleModalApproval = false; // Close modal
+
                     this.reservationList(); // Refresh table
                 } else {
                     this.$refs.toast.showToast(response.data.message || 'Failed to accept.', 'danger');
@@ -469,6 +546,7 @@ export default {
                 this.$refs.toast.showToast('An error occurred.', 'danger');
             } finally {
                 this.$refs.loader.loading = false;
+
             }
         },
         async rejectReservation(selectedReservation) {
@@ -527,6 +605,9 @@ export default {
 
             }
         },
+        viewPaymentImage() {
+            this.paymentImageModal = true;
+        },
 
         handlePagination(page) {
 
@@ -547,6 +628,13 @@ export default {
 
     },
     mounted() {
+        const el = document.getElementById('reservationPage');
+        if (el) {
+            this.landlord_id = el.getAttribute('data-landlord-id');
+        }
+
+
+        this.subscribeToNotifications();
         this.reservationList();
         this.displaydorms();
         this.fetchallRooms();      // ADD THIS to get all room numbers
@@ -565,7 +653,8 @@ export default {
                 seen.add(roomNumber);
                 return true;
             });
-        }
+        },
+
 
     },
     watch: {

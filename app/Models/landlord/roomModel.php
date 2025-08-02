@@ -33,10 +33,11 @@ class roomModel extends Model
         'created_at',
         
     ];
-    public function landlord()
+ public function landlord()
 {
-    return $this->belongsTo(\App\Models\landlord\landlordModel::class, 'landlordID');
+    return $this->belongsTo(\App\Models\landlord\landlordModel::class, 'fklandlordID', 'landlordID');
 }
+
 
     public function dorm()
 {

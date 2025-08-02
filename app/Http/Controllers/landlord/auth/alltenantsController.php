@@ -8,13 +8,20 @@ use App\Models\landlord\landlordModel;
 use App\Models\tenant\approvetenantsModel;
 use App\Models\landlord\roomModel;
 use App\Models\landlord\dormModel;
+use App\Models\notificationModel;
 
 class alltenantsController extends Controller
 {
      public function alltenantIndex($landlord_id)
     {
         $sessionLandlordId = session('landlord_id');
-    
+        $notifications = notificationModel::where('receiverID', $sessionLandlordId)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $landlord_id)
+            ->where('isRead', false)
+            ->count();
         if (!$sessionLandlordId) {
             return redirect()->route('loginLandlord')->with('error', 'Please log in as a landlord.');
         }
@@ -32,6 +39,9 @@ class alltenantsController extends Controller
         "title" => "Landlord - Tenants", 
         'headerName' => 'Tenants List',           
         'landlord' => $landlord,
+        'landlord_id' => $landlord_id,
+        'notifications' => $notifications,
+        'unread_count' => $unreadCount,
     ]); 
 }
  public function tenantsList(Request $request)

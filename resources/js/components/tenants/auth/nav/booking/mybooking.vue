@@ -7,13 +7,7 @@
         </div>
 
 
-        <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden">
-            <span class="input-group-text bg-white border-0">
-                <i class="bi bi-search text-primary"></i>
-            </span>
-            <input type="text" class="form-control border-0 shadow-none" placeholder="Search Locations"
-                aria-label="Search Tenant name" v-model="searchQuery" @input="debouncedSearch" />
-        </div>
+
         <div class="d-flex justify-content-end">
             <button class="btn  px-4 py-2 mb-3 rounded-pill fw-semibold">
                 💸 View Payment
@@ -21,8 +15,8 @@
         </div>
 
 
-        <div class="card mb-3 shadow-sm border-0 rounded-4" v-for="(booking, index) in bookings" :key="index"
-            style="transition: transform 0.2s ease-in-out;">
+        <div class="card mb-3 shadow-sm border-0 rounded-4" v-for="(booking, index) in bookings.slice(0, showCount)"
+            :key="index" style="transition: transform 0.2s ease-in-out;">
             <div class="row g-0">
                 <!-- Image Column -->
                 <div class="col-md-2 d-flex align-items-center justify-content-center  rounded-start-4">
@@ -85,6 +79,12 @@
                 </div>
             </div>
         </div>
+        <div class="text-center mt-3">
+            <button class="btn btn-primary rounded-pill px-4" v-if="bookings.length > 3" @click="toggleShow">
+                {{ showAll ? 'Show Less' : 'Show More' }}
+            </button>
+        </div>
+
     </div>
 </template>
 
@@ -99,7 +99,8 @@ export default {
         return {
             bookings: [],
             tenantid: '',
-            searchQuery: '',
+            showAll: false, // default is false
+            showCount: 3,   // show 3 items by default
             viewBookingModal: false,
         };
     },
@@ -121,18 +122,27 @@ export default {
 
             }
         },
+
         getStatusClass(status) {
-            switch (status.toLowerCase()) {
-                case 'approved':
-                    return 'text-success';
-                case 'declined':
-                case 'rejected':
-                    return 'text-danger';
-                case 'pending':
-                    return 'text-warning';
-                default:
-                    return 'text-secondary';
+            const map = {
+                approved: 'text-success',
+                pending: 'text-warning',
+                confirmed: 'text-warning',
+                rejected: 'text-danger',
+                cancelled: 'text-danger',
+                expired: 'text-secondary',
+                paid: 'text-info',
+            };
+
+            return map[status.toLowerCase()] || 'text-secondary';
+        },
+        toggleShow() {
+            if (this.showAll) {
+                this.showCount = 3;
+            } else {
+                this.showCount = this.bookings.length;
             }
+            this.showAll = !this.showAll;
         }
     },
     mounted() {

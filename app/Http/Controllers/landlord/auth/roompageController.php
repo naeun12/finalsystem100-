@@ -12,7 +12,7 @@ use App\Models\landlord\roomModel;
 use App\Models\landlord\dormModel;
 use App\Models\landlord\roomfeaturesModel;
 use App\Models\landlord\featuresModel;
-
+use App\Models\NotificationModel;
 use Illuminate\Support\Facades\Auth;
 
 class roompageController extends Controller
@@ -20,7 +20,13 @@ class roompageController extends Controller
     public function RoomManagement($landlordId)
     {
         $sessionLandlordId = session('landlord_id');
-    
+         $notifications = notificationModel::where('receiverID', $sessionLandlordId)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $landlordId)
+            ->where('isRead', false)
+            ->count();
         if (!$sessionLandlordId) {
             return redirect()->route('loginLandlord')->with('error', 'Please log in as a landlord.');
         }
@@ -39,7 +45,10 @@ class roompageController extends Controller
         'headerName' => 'Room Management',
         'color' =>'primary',
         'landlord' => $landlord,
+        'landlord_id' => $landlordId,
         'dorms' => $dorms,
+        'notifications' => $notifications,
+        'unread_count' => $unreadCount
     ]);
     }
     public function getRoomsByDorm($dormId)
@@ -48,7 +57,7 @@ class roompageController extends Controller
         $rooms = roomModel::where('fklandlordID', $landlordId)
             ->where('fkdormID', $dormId)
             ->with('dorm')
-            ->paginate(5);
+            ->paginate(6);
             return response()->json([
                 'rooms' => $rooms // ✅ this is important!
             ]);   
@@ -58,7 +67,7 @@ class roompageController extends Controller
         $landlordId = session('landlord_id');
         $rooms = roomModel::where('fklandlordID', $landlordId)
             ->where('genderPreference', $gender)
-            ->paginate(5);
+            ->paginate(6);
         return response()->json([
             'rooms' => $rooms 
         ]);
@@ -68,7 +77,7 @@ class roompageController extends Controller
         $landlordId = session('landlord_id');
         $rooms = roomModel::where('fklandlordID', $landlordId)
             ->where('availability', $availability)
-            ->paginate(5);
+            ->paginate(6);
         return response()->json([
             'rooms' => $rooms 
         ]);
@@ -80,7 +89,7 @@ class roompageController extends Controller
         $landlordId = session('landlord_id');
         $rooms = roomModel::where('fklandlordID', $landlordId)
             ->where('roomType', $roomType)
-            ->paginate(5);
+            ->paginate(6);
         return response()->json([
             'rooms' => $rooms 
         ]);
@@ -217,7 +226,7 @@ class roompageController extends Controller
     
         $rooms = roomModel::where('fklandlordID', $landlordId)
         ->orderBy('created_at', 'desc')
-        ->paginate(5);    
+        ->paginate(6);    
         return response()->json([
             'status' => 'success',
             'rooms' => $rooms

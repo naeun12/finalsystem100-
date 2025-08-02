@@ -1,15 +1,17 @@
 <template>
 
+
     <div class="main-content w-100">
 
         <div class="dashboard-content px-4 py-3">
+            <NotificationList ref="toastRef" />
             <Loader ref="loader" />
-
             <div class="py-3 px-4 mb-3 bg-light border-start border-primary border-4 rounded shadow-sm">
                 <h3 class="mb-1 text-primary">
                     <i class="bi bi-person-circle me-2"></i>
                     {{ landlord.firstname }} {{ landlord.lastname }}
                 </h3>
+
 
                 <!-- Today's Date and Generate Reports in one row -->
                 <div class="d-flex align-items-center mb-3">
@@ -190,13 +192,21 @@
                                 </table>
                             </div>
                         </div>
+
                     </a>
                 </div>
 
 
+
+
             </div>
+
         </div>
+
+
     </div>
+
+
 
 </template>
 <script>
@@ -204,6 +214,9 @@ import axios from 'axios';
 import LineChart from './chart/LineChart.vue';
 import DoughnutChart from './chart/DoughnuChart.vue';
 import Loader from '@/components/loader.vue';
+import NotificationList from '@/components/notifications.vue';
+import { Title } from 'chart.js';
+
 
 
 export default
@@ -212,13 +225,17 @@ export default
             LineChart,
             DoughnutChart,
             Loader,
+            NotificationList
 
         },
         data() {
             return {
+                receiverID: '',
+                hasSubscribed: false,
                 landlord_id: '',
                 landlord: [],
                 reservations: [],
+                notifications: [],
                 rooms: [],
                 bookings: [],
                 newDate: '',
@@ -252,6 +269,8 @@ export default
         mounted() {
             const element = document.getElementById('dashboard');
             this.landlord_id = element.dataset.landlordId;
+            this.receiverID = this.landlord_id;  // set receiverID here, early
+            this.subscribeToNotifications();
             this.today = this.getTodayDate();
             this.newDate = this.today; // default value to today
             this.getLandlord();
@@ -259,6 +278,24 @@ export default
         },
         methods:
         {
+            subscribeToNotifications() {
+                if (this.hasSubscribed) return; // prevent multiple subscriptions
+                this.hasSubscribed = true;
+
+                this.receiverID = this.landlord_id;
+                Echo.private(`notifications.${this.receiverID}`)
+                    .subscribed(() => {
+                        console.log('✔ Subscribed!');
+                    })
+                    .listen('.NewNotificationEvent', (e) => {
+                        this.notifications.unshift(e); // save for list
+                        this.$refs.toastRef.pushNotification({
+                            title: e.title || 'New Notification',
+                            message: e.message,
+                            color: 'success',
+                        });
+                    });
+            },
             async getLandlord() {
                 try {
                     this.$refs.loader.loading = true;
@@ -392,13 +429,24 @@ export default
                 const mm = String(today.getMonth() + 1).padStart(2, '0');
                 const dd = String(today.getDate()).padStart(2, '0');
                 return `${yyyy}-${mm}-${dd}`;
+            },
+            formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return date.toLocaleString();
             }
+
 
         },
         watch: {
             newDate(newVal) {
                 if (newVal) {
                     this.getLandlord();
+                }
+            },
+            landlord_id(newVal) {
+                if (newVal) {
+                    this.subscribeToNotifications();
                 }
             }
         }

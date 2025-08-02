@@ -29,7 +29,6 @@
                 <option value="all">All Gender</option>
                 <option value="Male Only">Male</option>
                 <option value="Female Only">Female</option>
-                <option value="Any Gender">Any Gender</option>
             </select>
 
 
@@ -168,9 +167,13 @@
 
                                 <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
                                     <label class="form-label fw-semibold text-secondary">
-                                        <i class="bi bi-people-fill me-2 text-primary"></i> Tenant Name
+                                        <i class="bi bi-people-fill me-2 text-primary"></i>Current Tenant Name
                                     </label>
-                                    <div class="text-dark fw-medium">Lance Monsanto</div>
+                                    <div class="text-dark fw-medium">{{ roomsDetail.approved_tenant?.firstname }} {{
+                                        roomsDetail.approved_tenant?.lastname }}
+
+
+                                    </div>
                                 </div>
 
                                 <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
@@ -178,7 +181,8 @@
                                         <i class="bi bi-calendar-event-fill me-2 text-primary"></i> Lease Expiration
                                         Date
                                     </label>
-                                    <div class="text-dark fw-medium">June 23, 2025</div>
+                                    <div class="text-dark fw-medium">{{ roomsDetail.approved_tenant?.moveOutDate }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -485,6 +489,8 @@ export default {
                 if (!confirmed) {
                     return;
                 }
+                this.$refs.loader.loading = true;
+
                 const formdata = new FormData();
                 formdata.append('dormitory_id', this.dormitory_id);
                 formdata.append('room_id', this.room_id);
@@ -496,8 +502,6 @@ export default {
                 formdata.append('age', this.age);
                 formdata.append('gender', this.sex);
                 formdata.append('studentpicture_id', this.imageUrl);
-
-
                 const response = await axios.post('/reserved-room', formdata);
                 if (response.data.status === 'success') {
                     this.$refs.toast.showToast(response.data.message, 'success');
@@ -506,6 +510,10 @@ export default {
 
             } catch (error) {
                 console.error('Reservation error:', error);
+
+            }
+            finally {
+                this.$refs.loader.loading = false;
 
             }
         },
@@ -549,7 +557,6 @@ export default {
             this.imageUrl = parsed.imageUrl;
 
         }
-        console.log(data);
         const element = document.getElementById('roomSelection');
         this.dormitory_id = element.dataset.dormId;
         this.tenant_id = element.dataset.tenantId;

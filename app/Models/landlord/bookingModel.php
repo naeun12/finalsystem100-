@@ -19,14 +19,14 @@ class bookingModel extends Model
         'fktenantID',
         'firstname',
         'lastname',
-        'contact_number',
-        'contact_email',
+        'contactNumber',
+        'contactEmail',
+        'moveInDate',
+        'moveOutDate',
         'age',
         'gender',
         'status',
-        'payment_type',
-        'payment_image',
-        'studentpicture_id'
+        'studentpictureID'
     ];
    
 

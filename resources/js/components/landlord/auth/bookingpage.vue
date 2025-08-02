@@ -1,5 +1,6 @@
 <template>
     <Loader ref="loader" />
+    <NotificationList ref="toastRef" />
 
     <div class="p-4 mt-4">
         <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden">
@@ -253,12 +254,15 @@ import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
 import { debounce } from 'lodash';
+import NotificationList from '@/components/notifications.vue';
+
 import { toHandlers } from 'vue';
 export default {
     components: {
         Toastcomponents,
         Loader,
-        Modalconfirmation
+        Modalconfirmation,
+        NotificationList
     },
     data() {
         return {
@@ -272,17 +276,37 @@ export default {
             selectedapplicationStatus: '',
             selectedroomNumber: '',
             selectedtenant: [],
-
             selectedBookingID: '',
             showFullImage: false,
             tenant: {},
             filteredTenants: [],
             currentPage: 1, // 👈 ADD THIS
-            lastPage: 1
+            lastPage: 1,
+            notifications: [],
+            receiverID: '',
+            hasSubscribed: false,
         };
     },
 
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return; // prevent multiple subscriptions
+            this.hasSubscribed = true;
+
+            this.receiverID = this.landlord_id;
+            Echo.private(`notifications.${this.receiverID}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
         async searchBooking(page = 1) {
             try {
                 this.$refs.loader.loading = true;
@@ -419,7 +443,6 @@ export default {
                 if (response.data.status === 'success') {
                     this.tenants = response.data.booking.data;
                     this.lastPage = response.data.booking.last_page;
-                    console.log("Bookings with payments:", this.tenants); // Check this in browser console
 
                 } else {
                     this.$refs.toast.showToast(response.data.message, 'danger');
@@ -601,6 +624,7 @@ export default {
         if (el) {
             this.landlord_id = el.getAttribute('landlord-id');
         }
+        this.subscribeToNotifications();
         this.bookingList();
         this.displaydorms();
 

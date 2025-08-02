@@ -1,4 +1,7 @@
 <template>
+    <NotificationList ref="toastRef" />
+    <Loader ref="loader" />
+
     <div class="p-4 mt-4">
         <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden">
             <span class="input-group-text bg-white border-0">
@@ -144,11 +147,24 @@
             </div>
         </div>
     </div>
+    <Modalconfirmation ref="modal" />
+
 </template>
 <script>
 import axios from 'axios';
+import Toastcomponents from '@/components/Toastcomponents.vue';
+import Loader from '@/components/loader.vue';
+import Modalconfirmation from '@/components/modalconfirmation.vue';
+import { debounce } from 'lodash';
+import NotificationList from '@/components/notifications.vue';
 export default {
+    components: {
+        Toastcomponents,
+        Loader,
+        Modalconfirmation,
+        NotificationList
 
+    },
     data() {
         return {
             searchTerm: '',
@@ -158,9 +174,32 @@ export default {
             dorms: [],
             selectedtenant: '',
             VisibleTenantModal: false,
+            notifications: [],
+            hasSubscribed: false,
+            receiverID: '',
+            landlord_id: '',
+
         }
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.landlord_id;
+            Echo.private(`notifications.${this.receiverID}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
         displaydorms() {
             axios.get('/api/dorms')
                 .then(response => {
@@ -172,18 +211,23 @@ export default {
         },
         async getTenantList() {
             try {
+                this.$refs.loader.loading = true;
+
                 const response = await axios.get('/tenants-list', { withCredentials: true });
                 this.tenants = response.data.tenant;
                 this.tenants = response.data.tenant.data;
             } catch (error) {
                 console.error("Error fetching tenant list:", error.response?.data || error.message);
             } finally {
+                this.$refs.loader.loading = false;
+
             }
         },
 
         async displaytenantInformation(tenantID) {
             // this.$refs.loader.loading = true;
             try {
+                this.$refs.loader.loading = true;
 
                 const response = await axios.get(`/tenants-view/${tenantID}`);
                 if (response.data.status === 'success') {
@@ -195,13 +239,15 @@ export default {
                 console.error('Error fetching reservation details:', error);
             }
             finally {
-                // this.$refs.loader.loading = false;
+                this.$refs.loader.loading = false;
 
             }
         },
 
     },
     mounted() {
+        this.landlord_id = document.getElementById('tenantpage').dataset.landlordId;
+        this.subscribeToNotifications();
         this.getTenantList();
     },
     computed:
