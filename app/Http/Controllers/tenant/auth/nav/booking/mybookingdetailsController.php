@@ -9,6 +9,8 @@ use App\Models\landlord\bookingModel;
 use App\Models\landlord\roomModel;
 use App\Models\tenant\bookingpaymentModel;
 use App\Models\tenant\tenantModel;
+use App\Models\notificationModel;
+use Carbon\Carbon;
 class mybookingdetailsController extends Controller
 {
     public function viewBookingDetails($tenant_id,$booking_id)
@@ -71,32 +73,42 @@ public function payRoom(Request $request)
         }
 
         // 🖼️ Step 3: Image upload
-        $imagePath = null;
 
+          $mainImageUrl = null;
         if ($request->hasFile('paymentImage')) {
-            $file = $request->file('paymentImage');
-
-            if (!$file->isValid()) {
-                return response()->json([
-                    'message' => 'Invalid image file. Please try again.',
-                ], 400);
-            }
-
-            $imagePath = $file->store('paymentImages', 'public');
+            $image1 = $request->file('paymentImage');
+            $image1Name = time() . '_1.' . $image1->getClientOriginalExtension();
+            $image1->storeAs('public/uploads/roomImages', $image1Name);
+            $mainImageUrl = asset('storage/uploads/roomImages/' . $image1Name);
         }
 
-        // 💾 Step 4: Store payment
+
         $payment = bookingpaymentModel::create([
             'fkbookingID' => $request->fkbookingID,
             'paymentType' => $request->paymentType,
-            'paymentImage' => $imagePath,
+            'paymentImage' => $mainImageUrl,
         ]);
-        bookingModel::where('bookingID', $request->fkbookingID)->update([
-            'status' => 'Pending Payment Confirmation'
+        bookingModel::with('tenant', 'room.dorm')->where('bookingID', $request->fkbookingID)->update([
+            'status' => 'paid'
         ]);
+        $booking = bookingModel::with(['tenant', 'room.dorm'])->where('bookingID', $request->fkbookingID)->first();
+        $landlordBooking = bookingModel::with('room.landlord')->find($request->fkbookingID);
+        $landlordID = optional($landlordBooking->room->landlord)->landlordID;
 
-        // ✅ Step 5: Success
-        return response()->json([
+           $notifications = notificationModel::create([
+        'senderID'     => $booking->fktenantID,
+        'senderType'   => 'tenant',
+        'receiverID'   => $landlordID,    
+        'receiverType' => 'landlord',
+        'title'        => 'Checked Tenant Payment',
+        'message'      => "The tenant has completed the payment for Room #{$booking->room->roomNumber}. Please review it.",
+        'isRead'       => false,
+        'readAt'       => null,
+    ]);
+
+    broadcast(new \App\Events\NewNotificationEvent($notifications));
+        
+                return response()->json([
             'message' => 'Payment submitted successfully!',
             'payment' => $payment
         ], 201);
@@ -121,7 +133,21 @@ public function payRoom(Request $request)
     if ($booking) {
         $booking->status = 'cancelled';
         $booking->save();
+         $booking = bookingModel::with(['tenant', 'room.dorm'])->where('bookingID', $bookingID)->first();
+         $landlord = bookingModel::with('room.landlord')->find($bookingID);
+            $landlord = $booking->room->landlord;
+          $notifications = notificationModel::create([
+        'senderID'     => $booking->fktenantID,
+        'senderType'   => 'tenant',
+        'receiverID'   => $landlord->landlordID,
+        'receiverType' => 'landlord',
+        'title'        => 'Checked Tenant Payment',
+        'message'      => "A tenant has paid for Room #{$booking->room->roomNumber}. Please review the payment.",
+        'isRead'       => false,
+        'readAt'       => null,
+    ]);
 
+    broadcast(new \App\Events\NewNotificationEvent($notifications));
         return response()->json(['message' => 'Booking cancelled successfully', 'booking' => $booking]);
     }
 

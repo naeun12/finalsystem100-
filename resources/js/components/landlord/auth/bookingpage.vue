@@ -3,18 +3,18 @@
     <NotificationList ref="toastRef" />
 
     <div class="p-4 mt-4">
-        <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden">
+        <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden" style="border:2px solid #4edce2;">
             <span class="input-group-text bg-white border-0">
                 <i class="bi bi-search text-primary"></i>
             </span>
             <input type="text" class="form-control border-0 shadow-none" placeholder="Search Tenants name"
-                aria-label="Search Tenant " v-model="searchTerm" />
+                aria-label="Search Tenant " v-model="searchTerm" style="border:2px solid #4edce2;" />
         </div>
         <div class="row g-3 py-3">
             <!-- Dorm Dropdown -->
             <div class="col-12 col-md-4">
-                <select class="form-select form-select-lg shadow-sm rounded-3" v-model="selectedDormId"
-                    @change="filterDorms">
+                <select class="form-select form-select-lg shadow-sm rounded-3" style="border:2px solid #4edce2;"
+                    v-model="selectedDormId" @change="filterDorms">
                     <option disabled value="">Select Dorm</option>
                     <option value="all">All Dorms</option>
                     <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
@@ -25,8 +25,8 @@
 
             <!-- Room Dropdown -->
             <div class="col-12 col-md-4">
-                <select class="form-select form-select-lg shadow-sm rounded-3" v-model="selectedroomNumber"
-                    @change="filterroomNumber">
+                <select class="form-select form-select-lg shadow-sm rounded-3" style="border:2px solid #4edce2;"
+                    v-model="selectedroomNumber" @change="filterroomNumber">
                     <option disabled value="">Select Room Number</option>
                     <option value="all">All Rooms</option>
                     <option v-for="room in uniqueRooms" :key="room.fkroomID" :value="room.room?.roomNumber">
@@ -37,13 +37,17 @@
 
             <!-- Application Status Dropdown -->
             <div class="col-12 col-md-4">
-                <select class="form-select form-select-lg shadow-sm rounded-3" v-model="selectedapplicationStatus"
-                    @change="filterApplicationStatus">
+                <select class="form-select form-select-lg shadow-sm rounded-3" style="border:2px solid #4edce2;"
+                    v-model="selectedapplicationStatus" @change="filterApplicationStatus">
                     <option disabled value="">Select Application Status</option>
-                    <option value="all">All Statuses</option>
+                    <option value="all">All Status</option>
                     <option value="pending">Pending</option>
-                    <option value="not approved">Not Approved</option>
+                    <option value="confirmed">Confirmed</option>
                     <option value="approved">Approved</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="paid">Paid</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="expired">Expired</option>
                 </select>
             </div>
         </div>
@@ -52,18 +56,11 @@
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
             <div class="col" v-for="booking in tenants" :key="booking.bookingID">
                 <div class="card shadow-sm rounded-4 h-100 w-100 border-0">
-                    <div class="card-body p-4">
+                    <div class="card-body p-4 rounded-4" style="border:2px solid #4edce2;">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h5 class="fw-bold text-primary mb-0">Booking #{{ booking.bookingID }}</h5>
-                            <span class="badge text-wrap text-center fw-semibold fs-6" :class="{
-                                'bg-success text-white': booking.status === 'Fully Approved',
-                                'bg-warning text-dark': booking.status === 'pending',
-                                'bg-danger text-white': booking.status === 'Not Approved',
-                                'bg-info text-dark': booking.status === 'Accepted by Landlord',
-                                'bg-secondary text-white': booking.status === 'Pending Payment Confirmation'
-                            }" style="min-width: 150px; max-width: 100%; white-space: normal;">
-                                {{ booking.status }}
-                            </span>
+                            <statusMap :status="booking.status" />
+
 
                         </div>
 
@@ -149,11 +146,8 @@
                                 class="rounded-circle border border-3 border-light shadow-sm"
                                 style="width: 130px; height: 130px; object-fit: cover;" />
                             <p class="mt-3">
-                                <span class="badge rounded-pill px-3 py-2 fs-6" :class="{
-                                    'bg-success text-white': selectedtenant.status === 'Approved',
-                                    'bg-danger text-white': selectedtenant.status === 'Not Approved',
-                                    'bg-warning text-dark': selectedtenant.status !== 'Approved' && selectedtenant.status !== 'Not Approved'
-                                }">{{ selectedtenant.status }}</span>
+                                <statusMap :status="selectedtenant.status" />
+
                             </p>
                         </div>
 
@@ -181,43 +175,38 @@
 
                             </div>
                         </div>
+                        <div class="mb-2 mt-2">
+                            <select class="form-select" v-model="status">
+                                <option value="" disabled selected>Select Action</option>
+                                <option value="pending">Pending - Awaiting Confirmation</option>
+                                <option value="confirmed">Confirmed - Tenant Process Payment</option>
+                                <option value="approved">Approved - Fully Booked</option>
+                                <option value="cancelled">Cancelled - User Initiated</option>
+                                <option value="paid">Paid - Payment Completed</option>
+                                <option value="rejected">Rejected - User Initiated</option>
+                            </select>
+                        </div>
 
                         <!-- Payment Image -->
-                        <div class="text-center mt-4" v-if="selectedtenant.payment.length">
-                            <p><strong>💳 Payment Type:</strong> {{ selectedtenant.payment[0].paymentType }}</p>
-                            <img :src="selectedtenant.payment[0].paymentImage"
-                                class="img-thumbnail rounded shadow-sm mt-2"
-                                style="width: 220px; height: 220px; object-fit: cover; cursor: pointer;"
-                                @click="showFullImage = true" />
+                        <div class="mb-2" v-if="selectedtenant.status === 'paid'">
+                            <div class="text-center mt-4" v-if="selectedtenant.payment.length">
+                                <p><strong>💳 Payment Type:</strong> {{ selectedtenant.payment[0].paymentType }}</p>
+                                <img :src="selectedtenant.payment[0].paymentImage"
+                                    class="img-thumbnail rounded shadow-sm mt-2"
+                                    style="width: 220px; height: 220px; object-fit: cover; cursor: pointer;"
+                                    @click="showFullImage = true" />
+                            </div>
                         </div>
-                        <div v-else class="text-center mt-4">
-                            <p><strong>💳 Payment Type:</strong> No payment yet</p>
-                        </div>
-
+                        <div class="mt-2"></div>
+                        <BookingStatus :status="selectedtenant.status" role="landlord" />
                     </div>
-
                     <!-- Footer -->
                     <div class="modal-footer justify-content-between bg-light border-top-0 px-4 py-3">
                         <button class="btn btn-outline-primary px-4" @click="messagePage(selectedtenant.fktenantID)">
                             💬 Message Tenant
                         </button>
-                        <div v-if="selectedtenant.status === 'Pending Payment Confirmation'">
-                            <button class="btn btn-success px-4" @click="confirmApplication(selectedtenant.bookingID)"
-                                :disabled="selectedtenant.status === 'Approved'">
-                                ✅ Confirm Application
-                            </button>
-                        </div>
-
-                        <div class="d-flex gap-2"
-                            v-if="selectedtenant.status === 'Approved' || selectedtenant.status === 'Not Approved' || selectedtenant.status === 'pending'">
-                            <button class="btn btn-success px-4" @click="approveTenant(selectedtenant.bookingID)">
-                                ✅ Approve
-                            </button>
-                            <button class="btn btn-danger px-4" @click="notapproveTenant(selectedtenant.bookingID)">
-                                ❌ Not Approve
-                            </button>
-                        </div>
-
+                        <button class="btn btn-success" @click="handleBookingAction(selectedtenant.bookingID)">
+                            Update Booking</button>
                     </div>
                 </div>
             </div>
@@ -255,6 +244,8 @@ import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
 import { debounce } from 'lodash';
 import NotificationList from '@/components/notifications.vue';
+import BookingStatus from '@/components/BookingStatusAlert.vue';
+import statusMap from '@/components/statusmap.vue';
 
 import { toHandlers } from 'vue';
 export default {
@@ -262,7 +253,9 @@ export default {
         Toastcomponents,
         Loader,
         Modalconfirmation,
-        NotificationList
+        NotificationList,
+        BookingStatus,
+        statusMap
     },
     data() {
         return {
@@ -280,10 +273,11 @@ export default {
             showFullImage: false,
             tenant: {},
             filteredTenants: [],
-            currentPage: 1, // 👈 ADD THIS
+            currentPage: 1,
             lastPage: 1,
             notifications: [],
             receiverID: '',
+            status: '',
             hasSubscribed: false,
         };
     },
@@ -463,7 +457,6 @@ export default {
             try {
                 const response = await axios.get(`/booking-tenant-view/${this.selectedBookingID}`);
                 this.selectedtenant = response.data.tenant;
-                console.log(this.selectedtenant);
                 this.VisibleModalApproval = true;
                 this.$refs.loader.loading = false;
             }
@@ -475,50 +468,22 @@ export default {
 
             }
         },
-        async approveTenant(booking_id) {
+        async handleBookingAction(booking_id) {
             try {
                 this.$refs.loader.loading = true;
-
-                const response = await axios.post('/approve-tenant', {
-                    bookingID: booking_id
-                });
-                // Success: show modal or success message
-                this.$refs.toast.showToast(response.data.message, 'success');
-                this.selectedtenant = response.data.tenant;
-                this.errors = {};
-                this.VisibleModalApproval = false;
-                this.$refs.loader.loading = false;
-                this.bookingList();
-
-            } catch (error) {
-                this.$refs.loader.loading = false;
-
-                if (error.response && error.response.status === 403) {
-
-                    this.$refs.toast.showToast(error.response.data.message, 'danger'); // ✅ Show danger toast
-                } else {
-                    console.error('Error approving tenant:', error);
-                    this.$refs.toast.showToast('Something went wrong while approving the tenant.', 'danger');
+                const formdata = new FormData();
+                formdata.append('bookingID', booking_id);
+                formdata.append('status', this.status);
+                const response = await axios.post('/handle-tenant-booking', formdata);
+                if (response.data.status === 'success') {
+                    this.$refs.toast.showToast(response.data.message, 'success');
+                    this.selectedtenant = response.data.tenant;
+                    this.errors = {};
+                    this.VisibleModalApproval = false;
+                    this.$refs.loader.loading = false;
+                    this.bookingList();
+                    return;
                 }
-            } finally {
-                this.$refs.loader.loading = false;
-                this.VisibleModalApproval = false;
-
-            }
-        },
-        async confirmApplication(booking_id) {
-            try {
-                this.$refs.loader.loading = true;
-
-                const response = await axios.post('/accept-tenant', {
-                    bookingID: booking_id
-                });
-                this.$refs.toast.showToast(response.data.message, 'success');
-                this.selectedtenant = response.data.tenant;
-                this.errors = {};
-                this.VisibleModalApproval = false;
-                this.$refs.loader.loading = false;
-                this.bookingList();
 
             } catch (error) {
                 this.$refs.loader.loading = false;
@@ -537,27 +502,6 @@ export default {
             }
         },
 
-        async notapproveTenant(booking_id) {
-            try {
-                this.$refs.loader.loading = true;
-
-                const response = await axios.post('/not-approve-tenant', {
-                    bookingID: booking_id  // ✅ CamelCase
-                });
-                this.selectedtenant = response.data.tenant;
-                this.VisibleModalApproval = false;
-                this.$refs.loader.loading = false;
-                this.bookingList();
-
-            } catch (error) {
-                this.$refs.loader.loading = false;
-                console.error('Error approving tenant:', error.response?.data || error);
-            }
-            finally {
-                this.$refs.loader.loading = false;
-
-            }
-        },
         async deleteBooking(booking_id) {
             try {
                 // Confirm user action

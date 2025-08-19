@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\tenant\reservationModel;
 use App\Models\tenant\reservationpaymentModel;
 use App\Models\tenant\tenantModel;
-
+use App\Models\notificationModel;
+use Carbon\Carbon;
 class myreservationController extends Controller
 {
     public function viewReservation($tenant_id)
@@ -33,22 +34,46 @@ class myreservationController extends Controller
         }
         public function myReservationList($tenant_id)
         {
-            $bookings = reservationModel::with(['tenant','room.dorm' ])
+            $reservations = reservationModel::with(['tenant','room.dorm', ])
                 ->where('fktenantID', $tenant_id)
-                ->orderBy('created_at', 'desc')
+                ->orderBy('updated_at', 'desc')
                 ->get();
+                foreach($reservations as $reservation)
+                {
+                    if(Carbon::parse($reservation->created_at)->diffInDays(now()) > 3)
+                    {
+                        if($reservation->status === 'pending' || $reservation->status === 'confirmed')
+                        {
+                            $reservation->status = 'expired';
+                            $reservation->save();
+                        }   
+                    }
+                }
 
-            return response()->json($bookings);
+            return response()->json($reservations);
         }
         public function reservationDetails($reservationID)
         {
-            $reservation = reservationModel::with(['tenant','room.dorm'])->find($reservationID);
+            $reservation = reservationModel::with(['tenant','room.dorm','room.currentTenant'])->find($reservationID);
             return response()->json(['status' => 'success'
             ,'data' => $reservation]);
         }
        public function cancelReservation($reservationID)
 {
-    $reservation = reservationModel::with(['tenant', 'room.dorm'])->where('reservationID', $reservationID)->first();
+    $reservation = reservationModel::with(['tenant', 'room.dorm','room.landlord'])->where('reservationID', $reservationID)->first();
+      $landlord = $reservation->room->landlord;
+      $tenant = $reservation->tenant;
+        $notifications = notificationModel::create([
+        'senderID'     => $tenant->tenantID,
+        'senderType'   => 'tenant',
+        'receiverID'   => $landlord->landlordID,
+        'receiverType' => 'landlord',
+        'title'        => 'Tenant Cancelled Reservation',
+        'message'      => "A tenant has cancelled their reservation for Room #{$reservation->room->roomNumber}.",
+        'isRead'       => false,
+        'readAt'       => null,
+    ]);
+        broadcast(new \App\Events\NewNotificationEvent($notifications));
 
     if ($reservation) {
         $reservation->status = 'cancelled';
@@ -62,9 +87,12 @@ class myreservationController extends Controller
     public function paymentReservation(Request $request, $reservationID)
 {
     try {
+       
         $validatedData = $request->validate([
+            'moveInDate' => 'required|date',
             'paymentType' => 'required|string|max:255',
             'paymentImage' => 'required|image|mimes:jpeg,png,jpg|max:1024',
+            'tenant_id' => 'required|exists:tenants,tenantID',
         ],
         [
             'paymentType.required' => 'Please select a payment method.',
@@ -72,8 +100,9 @@ class myreservationController extends Controller
             'paymentImage.mimes' => 'Payment image must be in JPEG, PNG, or JPG format.',
             'paymentImage.max' => 'Payment image must not be larger than 1MB.',
         ]);
-
-        // Handle image upload
+           
+        $reservation = reservationModel::findOrFail($reservationID);
+      
         $mainImageUrl = null;
         if ($request->hasFile('paymentImage')) {
             $image1 = $request->file('paymentImage');
@@ -81,15 +110,28 @@ class myreservationController extends Controller
             $image1->storeAs('public/uploads/roomImages', $image1Name);
             $mainImageUrl = asset('storage/uploads/roomImages/' . $image1Name);
         }
-
-        // Save to payment table
+        $reservation->update(['moveInDate' => $request->moveInDate]);
         $reservationPayment = reservationpaymentModel::create([
             'reservationID' => $reservationID,
             'paymentType' => $request->paymentType,
             'paymentImage' => $mainImageUrl,
         ]);
         $reservation = reservationModel::with(['tenant', 'room.dorm'])->where('reservationID', $reservationID)->first();
+         $reservation = reservationModel::with('room.landlord')->find($reservationID);
+            $landlord = $reservation->room->landlord;
+          $notifications = notificationModel::create([
+        'senderID'     => $request->tenant_id,
+        'senderType'   => 'tenant',
+        'receiverID'   => $landlord->landlordID,
+        'receiverType' => 'landlord',
+        'title'        => 'Checked Tenant Payment',
+        'message'      => "A tenant has paid for Room #{$reservation->room->roomNumber}. Please review the payment.",
+        'isRead'       => false,
+        'readAt'       => null,
+    ]);
 
+    broadcast(new \App\Events\NewNotificationEvent($notifications));
+        
         if ($reservation) {
             $reservation->status = 'paid';
             $reservation->save();

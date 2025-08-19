@@ -10,13 +10,14 @@ use App\Models\tenant\reservationModel;
 use App\Models\landlord\roomModel;
 use App\Models\landlord\dormModel;
 use App\Models\notificationModel;
-
+use App\Models\tenant\approvetenantsModel;
+use Carbon\Carbon;
 class reservationController extends Controller
 {
     public function reservationIndex($landlord_id)
     {
         $sessionLandlordId = session('landlord_id');
-          $notifications = notificationModel::where('receiverID', $sessionLandlordId)
+        $notifications = notificationModel::where('receiverID', $sessionLandlordId)
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
@@ -90,7 +91,7 @@ class reservationController extends Controller
         ->whereHas('room', function ($query) use ($landlordId) {
             $query->where('fklandlordID', $landlordId);
         })
-        ->orderBy('created_at', 'desc')
+        ->orderBy('updated_at', 'desc')
         ->paginate(6);
     
         return response()->json([
@@ -223,23 +224,44 @@ public function acceptReservation(Request $request)
         'dorm' => 'required|string',
         'firstname' => 'required|string',
         'lastname' => 'required|string',
-        'status'        => 'required|in:approved,confirmed', // <-- Validate status input
+        'status'        => 'required|in:approved,confirmed,rejected', // <-- Validate status input
     ]);
 
-
+        $reservation = reservationModel::findOrFail($request->reservationID);
     try {
-        if($request->status === 'approved') {
+        if($request->status === 'rejected')
+        {
+              $tenantName = $request->firstname . ' ' . $request->lastname;
+            $message = "Hi! 👋 We regret to inform you that your reservation for Room {$request->roomNumber} at {$request->dorm} has been declined by the landlord. If you have any questions or wish to explore other available rooms, feel free to contact us. Thank you!";
+            $type = 'tenant';
+        }
+        if($request->status === 'confirmed') {
             $tenantName = $request->firstname . ' ' . $request->lastname;
             $message = "Hi {$tenantName}, 👋 Your reservation for Room {$request->roomNumber} at {$request->dorm} has been *approved*. Please proceed with the payment to confirm your slot. Thank you!";
             $type = 'tenant';
         }
-         if($request->status === 'confirmed') {
+         if($request->status === 'approved') {
+            $moveIn = Carbon::parse($reservation->moveInDate);
+            $moveOut = $moveIn->copy()->addMonth()->subDay();
+            $approvedTenant = approvetenantsModel::create([
+                'fktenantID' => $reservation->fktenantID,
+                'fkroomID' => $reservation->fkroomID,
+                'firstname' => $request->firstname,
+                'lastname' => $request->lastname,
+                'contactNumber' => $reservation->contactNumber,
+                'contactEmail' => $reservation->contactEmail,
+                'age' => $reservation->age,
+                'gender' => $reservation->gender,
+                'studentpictureId' => $reservation->studentpictureID,
+                'moveInDate' => $moveIn,
+                'moveOutDate' => $moveOut,
+            ]);
             $tenantName = $request->firstname . ' ' . $request->lastname;
             $message = "Hi {$tenantName}, 👋 Thank you for completing your reservation for Room {$request->roomNumber} at {$request->dorm}. Your payment has been verified and your move-in is confirmed. Please prepare for your scheduled move-in date!";
             $type = 'tenant';
         }
+        
         Mail::to($request->email)->send(new TenantLandlordReminder($tenantName, $message, $type));
-        $reservation = reservationModel::findOrFail($request->reservationID);
         $reservation->status = $request->status; // Use the validated status
         $reservation->updated_at = now();
         $reservation->save();
@@ -256,40 +278,6 @@ public function acceptReservation(Request $request)
         ], 500);
     }
 }
-public function EjectReservation(Request $request)
-{
-    $request->validate([
-        'reservationID' => 'required|integer|exists:reservation,reservationID',
-        'email'         => 'required|email',
-        'roomNumber'    => 'required|string',
-        'dorm' => 'required|string',
-        'firstname' => 'required|string',
-        'lastname' => 'required|string',
-    ]);
 
-
-    try {
-            $tenantName = $request->firstname . ' ' . $request->lastname;
-            $message = "Hi! 👋 We regret to inform you that your reservation for Room {$request->roomNumber} at {$request->dorm} has been declined by the landlord. If you have any questions or wish to explore other available rooms, feel free to contact us. Thank you!";
-            $type = 'tenant';
-
-    Mail::to($request->email)->send(new TenantLandlordReminder($tenantName, $message, $type));
-        $reservation = reservationModel::findOrFail($request->reservationID);
-        $reservation->status = 'rejected';
-        $reservation->updated_at = now();
-        $reservation->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Reservation has been rejected by the landlord.',
-        ]);
-    } catch (Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to update reservation.',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
 
 }

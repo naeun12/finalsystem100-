@@ -51,7 +51,11 @@
                         <option value="all"> All Application Status</option>
                         <option value="pending"> Pending</option>
                         <option value="confirmed"> Confirmed</option>
-                        <option value="Rejected"> Rejected</option>
+                        <option value="rejected"> Rejected</option>
+                        <option value="paid"> Paid</option>
+                        <option value="approved"> Approved</option>
+                        <option value="cancelled"> Cancelled</option>
+                        <option value="expired"> Expired</option>
 
                     </select>
 
@@ -63,7 +67,7 @@
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3" style="">
             <div class="col" v-for="reservation in reservations" :key="reservation.reservationID">
                 <div class="card shadow-sm rounded-4 border-0 h-100">
-                    <div class="card-body p-4" style="border:1px solid #e0e0e0;">
+                    <div class="card-body p-4" style="border:2px solid #4edce2;">
                         <!-- Header -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h5 class="fw-bold text-primary mb-0">Reservation #{{ reservation.reservationID }}</h5>
@@ -189,28 +193,52 @@
 
                         <!-- Additional Notes -->
                         <!-- Current Occupant Info -->
-                        <div class="mt-5">
+                        <div class="mt-2">
                             <h6 class="text-center fw-bold mb-3">👥 Current Occupant Details</h6>
                             <div class="row g-3">
+                                <!-- First Column: Tenant Info -->
                                 <div class="col-md-6">
-                                    <p><strong>👤 Name:</strong>
+                                    <label><strong>👤 Firstname:</strong>
                                         {{ selectedReservation.room?.current_tenant?.firstname }}
-                                        {{ selectedReservation.room?.current_tenant?.lastname }}
-                                    </p>
+                                    </label>
+
                                 </div>
-                                <p><strong>📅 Date Booking:</strong></p>
+
+                                <!-- Second Column: Booking Dates -->
+                                <div class="col-md-6">
+                                    <label><strong>👤 Lastname:</strong>
+                                        {{ selectedReservation.room?.current_tenant?.lastname }}
+                                    </label>
+                                </div>
+                                <div class="d-flex">
+                                    <div class="col-md-6">
+                                        <label><strong>👤 Email:</strong>
+                                            {{ selectedReservation.room?.current_tenant?.contactEmail }}
+                                        </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="ms-2"><strong>📱 Contact:</strong>
+                                            {{ selectedReservation.room?.current_tenant?.contactNumber }}
+                                        </label>
+                                    </div>
+
+
+                                </div>
+                                <label><strong>📅 Current Tenant End of Lease:</strong></label>
                                 <div class="d-flex gap-2">
-                                    <input type="date" class="form-control form-control-sm"
-                                        v-model="selectedReservation.room.current_tenant.moveInDate" readonly />
                                     <input type="date" class="form-control form-control-sm"
                                         v-model="selectedReservation.room.current_tenant.moveOutDate" readonly />
                                 </div>
 
                             </div>
+
                         </div>
                         <ReservationStatusAlert :status="selectedReservation.status" role="landlord" class="mt-4" />
-                        <div v-if="selectedReservation.status === 'paid'">
-                            <p class="text-success fw-bold mt-3">
+                        <div v-if="selectedReservation.status === 'paid' || selectedReservation.status === 'approved'">
+                            <label class="mb-2"> <strong>📅 Reservation Start of Lease:</strong></label>
+                            <input type="text" class="form-control form-control-sm"
+                                v-model="selectedReservation.moveInDate" readonly />
+                            <p class="text-success fw-bold mt-3" v-if="selectedReservation.status === 'paid'">
                                 ✅ Reservation has been paid. You can now accept or reject this reservation.
                             </p>
                             <div class="d-flex justify-content-center mt-3">
@@ -227,31 +255,30 @@
                             💬 Message Tenant
                         </button>
                         <div class="d-flex gap-2">
-                            <!-- Accept Button -->
-                            <button class="btn px-4"
-                                :class="['approved', 'confirmed'].includes(selectedReservation.status) ? 'bg-success text-white' : 'btn-outline-success'"
-                                @click="acceptReservation(selectedReservation)"
-                                :disabled="['approved', 'confirmed', 'rejected', 'cancelled', 'expired'].includes(selectedReservation.status)">
-                                ✅
-                                {{
-                                    ['approved', 'confirmed'].includes(selectedReservation.status)
-                                        ? 'Reservation Approved'
-                                        : 'Accept Reservation'
-                                }}
-                            </button>
-
-
-                            <!-- Reject Button -->
-                            <button class="btn px-4"
-                                :class="selectedReservation.status === 'rejected' ? 'bg-danger text-white' : 'btn-outline-danger'"
-                                @click="rejectReservation(selectedReservation)"
-                                :disabled="['rejected', 'approved', 'cancelled', 'expired'].includes(selectedReservation.status)">
-                                ❌
-                                {{
-                                    selectedReservation.status
-                                        === 'rejected' ? 'Reservation Rejected' : 'Reject Reservation'
-                                }}
-                            </button>
+                            <div
+                                v-if="selectedReservation.status === 'confirmed' || selectedReservation.status === 'pending'">
+                                <button :disabled="selectedReservation.status === 'confirmed'"
+                                    class="btn btn-outline-success"
+                                    @click="handleReservationAction('confirmed', selectedReservation)">
+                                    ✅ Accept Reservation
+                                </button>
+                            </div>
+                            <div
+                                v-if="selectedReservation.status === 'paid' || selectedReservation.status === 'approved'">
+                                <button :disabled="selectedReservation.status === 'approved'"
+                                    class="btn btn-outline-success"
+                                    @click="handleReservationAction('approved', selectedReservation)">
+                                    ✅ Confirmed Reservation
+                                </button>
+                            </div>
+                            <div v-if="['pending', 'paid'].includes(selectedReservation.status)">
+                                <button
+                                    :disabled="['approved', 'confirmed', 'rejected', 'cancelled', 'expired'].includes(selectedReservation.status)"
+                                    class="btn btn-outline-danger"
+                                    @click="handleReservationAction('rejected', selectedReservation)">
+                                    ❌ Reject Reservation
+                                </button>
+                            </div>
                         </div>
 
 
@@ -516,6 +543,10 @@ export default {
 
             }
         },
+        handleReservationAction(newStatus, reservation) {
+            this.status = newStatus;
+            this.acceptReservation(reservation);
+        },
         async acceptReservation(selectedReservation) {
             const formData = new FormData();
             formData.append('reservationID', selectedReservation.reservationID);
@@ -524,10 +555,7 @@ export default {
             formData.append('firstname', selectedReservation.firstname);
             formData.append('lastname', selectedReservation.lastname);
             formData.append('dorm', selectedReservation.room?.dorm?.dormName);
-            const nextStatus = ['approved', 'confirmed'].includes(selectedReservation.status)
-                ? selectedReservation.status
-                : 'approved';
-            formData.append('status', nextStatus);
+            formData.append('status', this.status);
 
             this.$refs.loader.loading = true;
 
@@ -549,32 +577,7 @@ export default {
 
             }
         },
-        async rejectReservation(selectedReservation) {
-            const formData = new FormData();
-            formData.append('reservationID', selectedReservation.reservationID);
-            formData.append('email', selectedReservation.contactEmail);
-            formData.append('roomNumber', selectedReservation.room?.roomNumber);
-            formData.append('firstname', selectedReservation.firstname);
-            formData.append('lastname', selectedReservation.lastname);
-            formData.append('dorm', selectedReservation.room?.dorm?.dormName);
 
-            this.$refs.loader.loading = true;
-
-            try {
-                const response = await axios.post('/eject-reservation', formData);
-                if (response.data.status === 'success') {
-                    this.$refs.toast.showToast(response.data.message, 'success');
-                    this.reservationList(); // Refresh table
-                } else {
-                    this.$refs.toast.showToast(response.data.message || 'Failed to accept.', 'danger');
-                }
-            } catch (error) {
-                console.error('Accept reservation error:', error);
-                this.$refs.toast.showToast('An error occurred.', 'danger');
-            } finally {
-                this.$refs.loader.loading = false;
-            }
-        },
         async deleteReservation(reservationID) {
 
             const confirmed = await this.$refs.modal.show({

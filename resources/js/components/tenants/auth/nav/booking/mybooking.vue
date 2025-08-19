@@ -9,7 +9,7 @@
 
 
         <div class="d-flex justify-content-end">
-            <button class="btn  px-4 py-2 mb-3 rounded-pill fw-semibold">
+            <button class="custom-btn  px-4 py-2 mb-3 rounded-pill fw-semibold">
                 💸 View Payment
             </button>
         </div>
@@ -17,7 +17,7 @@
 
         <div class="card mb-3 shadow-sm border-0 rounded-4" v-for="(booking, index) in bookings.slice(0, showCount)"
             :key="index" style="transition: transform 0.2s ease-in-out;">
-            <div class="row g-0">
+            <div class="row g-0 rounded-3" style="border:2px solid #4edce2;">
                 <!-- Image Column -->
                 <div class="col-md-2 d-flex align-items-center justify-content-center  rounded-start-4">
                     <img :src="booking.studentpictureID" alt="Dorm Image" class="img-fluid rounded-start-4"
@@ -64,7 +64,7 @@
                                 <i class="bi bi-info-circle-fill me-1 text-primary"></i>
                                 Booking Status:
 
-                                <span :class="['ms-1', getStatusClass(booking.status)]">{{ booking.status }}</span>
+                                <statusMap :status="booking.status" role="tenant" />
                             </p>
 
                         </div>
@@ -73,14 +73,14 @@
 
                 <!-- Button Column -->
                 <div class="col-md-1 d-flex align-items-center justify-content-center bg-white rounded-end">
-                    <button @click="viewBooking(booking)" class="btn  btn-sm rounded-3 w-100 m-2 p-1 fw-semibold">
+                    <button @click="viewBooking(booking)" class=" custom-btn rounded-3 w-100 m-2 p-1 fw-semibold">
                         View
                     </button>
                 </div>
             </div>
         </div>
         <div class="text-center mt-3">
-            <button class="btn btn-primary rounded-pill px-4" v-if="bookings.length > 3" @click="toggleShow">
+            <button class="custom-btn rounded-pill px-4" v-if="bookings.length > 3" @click="toggleShow">
                 {{ showAll ? 'Show Less' : 'Show More' }}
             </button>
         </div>
@@ -91,9 +91,13 @@
 <script>
 import axios from 'axios';
 import Loader from '@/components/loader.vue';
+import BookingStatus from '@/components/BookingStatusAlert.vue';
+import statusMap from '@/components/statusmap.vue';
 export default {
     components: {
         Loader,
+        BookingStatus,
+        statusMap
     },
     data() {
         return {
@@ -121,20 +125,6 @@ export default {
                 this.$refs.loader.loading = false;
 
             }
-        },
-
-        getStatusClass(status) {
-            const map = {
-                approved: 'text-success',
-                pending: 'text-warning',
-                confirmed: 'text-warning',
-                rejected: 'text-danger',
-                cancelled: 'text-danger',
-                expired: 'text-secondary',
-                paid: 'text-info',
-            };
-
-            return map[status.toLowerCase()] || 'text-secondary';
         },
         toggleShow() {
             if (this.showAll) {

@@ -10,6 +10,8 @@ use App\Models\landlord\roomModel;
 use App\Models\landlord\dormModel;
 use App\Models\tenant\bookingpaymentModel;
 use App\Models\notificationModel;
+use App\Mail\TenantLandlordReminder;
+use Illuminate\Support\Facades\Mail;
 
 use App\Models\tenant\approvetenantsModel;
 
@@ -73,7 +75,7 @@ class bookingpageController extends Controller
         });
     }
 
-    $bookings = $query->orderBy('created_at', 'asc')->paginate(5);
+    $bookings = $query->orderBy('updated_at', 'asc')->paginate(5);
 
     return response()->json([
         'status' => 'success',
@@ -94,8 +96,8 @@ class bookingpageController extends Controller
         ->whereHas('room', function ($query) use ($landlordId) {
             $query->where('fklandlordID', $landlordId);
         })
-        ->orderBy('created_at', 'desc')
-        ->paginate(5);
+        ->orderBy('updated_at', 'desc')
+        ->paginate(6);
     
         return response()->json([
             'status' => 'success',
@@ -114,7 +116,7 @@ public function getTenantsByDorm($dormId)
     $tenants = bookingModel::whereHas('room.dorm', function ($query) use ($dormId) {
         $query->where('dormID', $dormId);
     })->with(['room.dorm'])
-      ->paginate(5);
+      ->paginate(6);
 
     return response()->json($tenants);
 }
@@ -188,87 +190,39 @@ public function getApplications(Request $request)
         'tenant' => $tenant
     ]);
 }
-public function approveTenant(Request $request)
+
+public function handletenantBooking(Request $request)
 {
     $request->validate([
         'bookingID' => 'required|integer|exists:bookings,bookingID',
+        'status' => 'required|string|in:approved,rejected,confirmed,paid,pending,cancelled'
     ]);
-
     try {
         $booking = bookingModel::findOrFail($request->bookingID);
         $room = roomModel::findOrFail($booking->fkroomID);
-        if ($room->availability === 'Occupied') {
+         if ($request->status === 'approved' && $room->availability === 'Occupied') {
             return response()->json([
                 'status' => 'error',
                 'message' => 'This room is already occupied. You cannot approve another tenant.',
             ], 403);
         }
-        $booking->status = 'Accepted by Landlord';
-        $booking->updated_at = now();
-        $booking->save();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tenant has been approved successfully.',
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to approve tenant.',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-}
-public function notapproveTenant(Request $request)
-{
-    $request->validate([
-        'bookingID' => 'required|integer|exists:bookings,bookingID',
-    ]);
+         if($request->status === 'rejected')
+        {
+              $tenantName = $booking->firstname . ' ' . $booking->lastname;
+            $message = "Hi! 👋 We regret to inform you that your Booking for Room {$room->roomNumber} at {$room->dorm} has been declined by the landlord. If you have any questions or wish to explore other available rooms, feel free to contact us. Thank you!";
+            $type = 'tenant';
+                     Mail::to($booking->contactEmail)->send(new TenantLandlordReminder($tenantName, $message, $type));
 
-    try {
-        // Get the screening record
-        $booking = bookingModel::findOrFail($request->bookingID);
-        $booking->status = 'Not Approved';
-        $booking->updated_at = now();
-        $booking->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tenant application has been declined.',
-        ]);
-
-    } catch (\Exception $e) {
-        \Log::error('Error declining tenant: ' . $e->getMessage());
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to decline tenant.',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-}
-public function acceptBooking(Request $request)
-{
-    $request->validate([
-        'bookingID' => 'required|integer|exists:bookings,bookingID',
-    ]);
-
-    try {
-        $booking = bookingModel::findOrFail($request->bookingID);
-        $room = roomModel::findOrFail($booking->fkroomID);
-
-        if ($room->availability === 'Occupied') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'This room is already occupied. You cannot approve another tenant.',
-            ], 403);
         }
+        if($request->status === 'confirmed') {
+            $tenantName = $booking->firstname . ' ' . $booking->lastname;
+$message = "Hi {$tenantName}, 👋 Your booking for Room {$room->roomNumber} at {$room->dorm} has been *approved*. Please proceed with the payment to confirm your reservation.";
+            $type = 'tenant';
+                     Mail::to($booking->contactEmail)->send(new TenantLandlordReminder($tenantName, $message, $type));
 
-        $booking->status = 'Fully Approved';
-        $booking->updated_at = now();
-        $booking->save();
-        $room->availability = 'Occupied';
-        $room->save();
-
-        $approve = approvetenantsModel::create([
+        }
+        if($request->status === 'paid') {
+             $approve = approvetenantsModel::create([
             'fkroomID'          => $booking->fkroomID,
             'firstname'         => $booking->firstname,
             'lastname'          => $booking->lastname,
@@ -282,11 +236,22 @@ public function acceptBooking(Request $request)
             'paymentImage'      => $booking->paymentImage,
             'studentpictureId'  => $booking->studentpictureID,
         ]);
+         $tenantName = $booking->firstname . ' ' . $booking->lastname;
+            $message = "Hi {$tenantName}, 👋 Your Booking for Room {$room->roomNumber} at {$room->dorm} has been *confirmed*. Thank you!";
+            $type = 'tenant';
+             Mail::to($booking->contactEmail)->send(new TenantLandlordReminder($tenantName, $message, $type));
+            $room->availability = 'Occupied'; 
+            $room->save();
+        } 
 
-        return response()->json([
+
+        $booking->status = $request->status; // Use the validated status
+        $booking->updated_at = now();
+        $booking->save();
+
+            return response()->json([
             'status' => 'success',
             'message' => 'Tenant has been approved successfully.',
-            'approveID' => $approve->approveID
         ]);
     } catch (\Exception $e) {
         return response()->json([

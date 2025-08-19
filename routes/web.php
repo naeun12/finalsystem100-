@@ -130,9 +130,7 @@ Route::middleware([LandlordAuth::class])->group(function () {
     //functions for booking approval
     Route::get('/booking-list', [bookingpageController::class, 'bookingList']);
     Route::get('/booking-tenant-view/{id}', [bookingpageController::class, 'ViewTenant']);
-    Route::post('/approve-tenant',[bookingpageController::class,'approveTenant']);
-    Route::post('/accept-tenant',[bookingpageController::class,'acceptBooking']);
-    Route::post('/not-approve-tenant',[bookingpageController::class,'notapproveTenant']);
+    Route::post('/handle-tenant-booking',[bookingpageController::class,'handletenantBooking']);
     Route::delete('/delete-booking/{id}',[bookingpageController::class,'deleteBooking']);
     Route::get('/search-booking', [bookingpageController::class, 'searchBooking']);
     Route::get('/api/dorms', [bookingpageController::class, 'getDormName']);
@@ -149,11 +147,13 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/api/roomnumber/reservation', [reservationController::class, 'getRoomsNumber']);
     Route::get('/get/allroomNumbers', [reservationController::class, 'getAllReservations']);
     Route::post('/accept-reservation', [reservationController::class, 'acceptReservation']);
-    Route::post('/eject-reservation', [reservationController::class, 'EjectReservation']);
     Route::get('/api/applications/reservation', [reservationController::class, 'getapplications']);
     //functions for all tenants
     Route::get('/tenants-list', [alltenantsController::class, 'tenantsList']);
     Route::get('/tenants-view/{id}', [alltenantsController::class, 'ViewTenant']);
+    Route::put('/tenants-update/{id}', [alltenantsController::class, 'updateTenantInformation']);
+    Route::get('get-dorms/{landlordId}', [alltenantsController::class, 'getDorms']);
+
     //functions for messaging landlord 
     Route::get('/api/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'getConversations']);
     Route::get('/api/select/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'selecttenantToMessage']);

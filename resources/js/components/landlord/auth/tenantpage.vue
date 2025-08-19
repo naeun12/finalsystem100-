@@ -3,7 +3,7 @@
     <Loader ref="loader" />
 
     <div class="p-4 mt-4">
-        <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden">
+        <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden" style="border: 1px solid #4edce2;">
             <span class="input-group-text bg-white border-0">
                 <i class="bi bi-search text-primary"></i>
             </span>
@@ -12,7 +12,8 @@
         </div>
         <div class="py-3 d-flex gap-3 align-items-center">
             <!-- Dorm No Dropdown -->
-            <div class="mb-2 d-flex align-items-center gap-2">
+            <div class="mb-2 d-flex align-items-center gap-2"
+                style="border:1px solid #4edce2; border-radius: 0.375rem;">
                 <div class="w-100">
 
                     <select id="dormSelect" class="form-select form-select-lg shadow-sm" @change="filterDorms"
@@ -23,12 +24,11 @@
                             {{ dorm.dormName }} (ID: {{ dorm.dormID }})
                         </option>
                     </select>
-
-
                 </div>
             </div>
             <!-- Room No Dropdown -->
-            <div class="mb-2 d-flex align-items-center gap-2">
+            <div class="mb-2 d-flex align-items-center gap-2"
+                style="border:1px solid #4edce2; border-radius: 0.375rem;">
                 <div class="w-100">
                     <select id="dormSelect" class="form-select form-select-lg shadow-sm" v-model="selectedroomNumber"
                         @change="filterroomNumber">
@@ -41,44 +41,50 @@
                 </div>
             </div>
         </div>
-        <div class="table-responsive shadow-sm rounded p-3 bg-white">
-            <!-- Table -->
-            <table class="table table-bordered table-hover align-middle mb-0">
-                <thead class="table-primary bg-primary text-center">
-                    <tr>
-                        <th>Tenant ID</th>
-                        <th>Tenant Name</th>
-                        <th>Email</th>
-                        <th>Dorm Name</th>
-                        <th>Room No</th>
-                        <th>End Occupancy Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="text-center">
-                    <tr v-for="tenant in tenants" :key="tenant.approvedID">
-                        <td>{{ tenant.approvedID }}</td>
-                        <td>{{ tenant.firstname }} {{ tenant.lastname }}</td>
-                        <td>{{ tenant.contactEmail }}</td>
-                        <td>{{ tenant.room?.dorm?.dormName ?? 'N/A' }}</td>
-                        <td>{{ tenant.room?.roomNumber ?? 'N/A' }}</td>
-                        <td>
-                            {{ tenant.moveOutDate }}
-                        </td>
+        <div class="container bg-white rounded shadow-sm " style="border:1px solid #4edce2; border-radius: 0.375rem;">
+            <div class="row fw-bold bg-primary text-white text-center py-3 rounded">
+                <div class="col">#</div>
+                <div class="col">Tenant Name</div>
+                <div class="col">Email</div>
+                <div class="col">Dorm Name</div>
+                <div class="col">Room No</div>
+                <div class="col">Status</div>
+                <div class="col">Actions</div>
+            </div>
 
-                        <td>
-                            <button class="btn btn-sm btn-primary"
-                                @click="displaytenantInformation(tenant.approvedID)">View</button>
-                            <button class="btn btn-sm btn-danger ms-2"
-                                @click="deleteReservation(tenant.approvedID)">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <!-- Tenant Rows -->
+            <div v-for="tenant in tenants" :key="tenant.approvedID"
+                class="row text-center align-items-center border-bottom py-2">
+                <div class="col">{{ tenant.approvedID }}</div>
+                <div class="col">{{ tenant.firstname }} {{ tenant.lastname }}</div>
+                <div class="col">{{ tenant.contactEmail }}</div>
+                <div class="col">{{ tenant.room?.dorm?.dormName ?? 'N/A' }}</div>
+                <div class="col">{{ tenant.room?.roomNumber ?? 'N/A' }}</div>
+                <div class="col">
+                    <span class="badge rounded-pill px-3 py-2" :class="{
+                        'bg-success text-white': tenant.status === 'active',
+                        'bg-secondary text-white': tenant.status === 'moved_out',
+                        'bg-danger text-white': tenant.status === 'terminated',
+                        'bg-warning text-dark': tenant.status === 'pending_moveout',
+                        'bg-info text-white': tenant.status === 'transferring',
+                        'bg-dark text-white': tenant.status === 'suspended'
+                    }">
+                        {{ tenant.status?.replace('_', ' ').toUpperCase() }}
+                    </span>
+                </div>
+                <div class="col">
+                    <button class="btn btn-sm btn-outline-primary"
+                        @click="displaytenantInformation(tenant.approvedID)">View</button>
+                    <button class="btn btn-sm btn-outline-danger ms-2"
+                        @click="deleteReservation(tenant.approvedID)">Delete</button>
+                </div>
+            </div>
         </div>
+
+
         <div v-if="VisibleTenantModal" class="modal fade show d-block" style="background: rgba(0, 0, 0, 0.5);"
             tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content shadow-lg rounded-4 border-0">
                     <!-- Header -->
                     <div class="modal-header bg-white border-bottom-0">
@@ -97,37 +103,145 @@
                                 style="width: 130px; height: 130px; object-fit: cover;" />
                             <p class="mt-3">
                                 <span class="badge rounded-pill px-3 py-2 fs-6" :class="{
-                                    'bg-success text-white': selectedtenant.status === 'Approved',
-                                    'bg-danger text-white': selectedtenant.status === 'Not Approved',
-                                    'bg-warning text-dark': selectedtenant.status !== 'Approved' && selectedtenant.status !== 'Not Approved'
-                                }">{{ selectedtenant.status }}</span>
+                                    'bg-success text-white': selectedtenant.status === 'active',
+                                    'bg-secondary text-white': selectedtenant.status === 'moved_out',
+                                    'bg-danger text-white': selectedtenant.status === 'terminated',
+                                    'bg-warning text-dark': selectedtenant.status === 'pending_moveout',
+                                    'bg-info text-white': selectedtenant.status === 'transferring',
+                                    'bg-dark text-white': selectedtenant.status === 'suspended'
+                                }">
+                                    {{ selectedtenant.status?.replace('_', ' ').toUpperCase() }}
+                                </span>
+
                             </p>
                         </div>
 
                         <!-- Information Grid -->
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <p><strong>👤 First Name:</strong> {{ selectedtenant.firstname }}</p>
-                                <p><strong>🎂 Age:</strong> {{ selectedtenant.age }}</p>
-                                <p><strong>📧 Email:</strong> {{ selectedtenant.contactEmail }}</p>
-                                <p><strong>📍 Address:</strong> {{ selectedtenant.room?.dorm?.address }}</p>
-                                <p><strong>🚪 Room #:</strong> {{ selectedtenant.room?.roomNumber }}</p>
-                                <p><strong>📅 Start Occupancy Date:</strong> {{ selectedtenant.moveInDate || 'N/A' }}
-                                </p>
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-person-fill me-2"></i>First Name</label>
+                                    <input type="text" class="form-control" v-model="selectedtenant.firstname">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-123 me-2"></i>Age</label>
+                                    <input type="number" class="form-control" v-model="selectedtenant.age">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-envelope-fill me-2"></i>Email</label>
+                                    <input type="email" class="form-control" v-model="selectedtenant.contactEmail">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-building me-2"></i> Dorm Name
+                                    </label>
+
+                                    <select v-model="selectedDormId" class="form-select" @change="fetchRooms">
+                                        <option disabled value="">Select Dorm</option>
+                                        <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
+                                            {{ dorm.dormName }}
+                                        </option>
+                                    </select>
+
+                                </div>
 
 
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-geo-alt-fill me-2"></i>Dorm Address
+                                    </label>
+                                    <input type="text" class="form-control" :value="selectedDorm.address" readonly>
+                                </div>
+
+
+
+
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-calendar-check-fill me-2"></i>Move-In
+                                        Date</label>
+                                    <input type="text" class="form-control" v-model="selectedtenant.moveInDate"
+                                        readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-door-closed-fill me-2"></i>Room
+                                        Number</label>
+                                    <select class="form-select" v-model="selectedRoomNumber">
+                                        <option disabled value="">Select Room</option>
+                                        <option v-for="room in filteredRooms" :key="room.roomID"
+                                            :value="room.roomNumber">
+                                            {{ room.roomNumber }}
+                                        </option>
+                                    </select>
+                                </div>
                             </div>
+
                             <div class="col-md-6">
-                                <p><strong>👤 Last Name:</strong> {{ selectedtenant.lastname }}</p>
-                                <p><strong>🚻 Gender:</strong> {{ selectedtenant.gender }}</p>
-                                <p><strong>📱 Contact:</strong> {{ selectedtenant.contactNumber }}</p>
-                                <p><strong>🏠 Dorm:</strong> {{ selectedtenant.room?.dorm?.dormName || 'N/A' }}</p>
-                                <p><strong>💰 Price:</strong> ₱{{
-                                    Number(selectedtenant.room?.price).toLocaleString(undefined, {
-                                        minimumFractionDigits: 2
-                                    }) }}</p>
-                                <p><strong>📅 End Occupancy Date:</strong> {{ selectedtenant.moveOutDate || 'N/A' }}</p>
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-person-fill me-2"></i>Last Name</label>
+                                    <input type="text" class="form-control" v-model="selectedtenant.lastname">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-gender-ambiguous me-2"></i>Gender</label>
+                                    <input type="text" class="form-control" v-model="selectedtenant.gender">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-telephone-fill me-2"></i>Contact
+                                        Number</label>
+                                    <input type="text" class="form-control" v-model="selectedtenant.contactNumber">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-house-door-fill me-2"></i>Room
+                                        Type</label>
+                                    <input type="text" class="form-control" :value="selectedtenant.room?.roomType"
+                                        readonly>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-currency-dollar me-2"></i>Monthly
+                                        Rent</label>
+                                    <input type="text" class="form-control" :value="'₱ ' + selectedtenant.room?.price"
+                                        readonly>
+
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-calendar-x me-2"></i>Move-Out Date</label>
+                                    <input type="text" class="form-control" v-model="selectedtenant.moveOutDate"
+                                        readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="mb-3">
+                                        <label for="status" class="form-label">
+                                            <i class="bi bi-person-check-fill me-2"></i>Status
+                                        </label>
+                                        <select v-model="selectedtenant.status" id="status" class="form-select" :class="{
+                                            'text-success': selectedtenant.status === 'active',
+                                            'text-secondary': selectedtenant.status === 'moved_out',
+                                            'text-danger': selectedtenant.status === 'terminated',
+                                            'text-warning': selectedtenant.status === 'pending_moveout',
+                                            'text-info': selectedtenant.status === 'transferring',
+                                            'text-dark': selectedtenant.status === 'suspended'
+                                        }">
+                                            <option value="active">Active</option>
+                                            <option value="moved_out">Moved Out</option>
+                                            <option value="terminated">Terminated</option>
+                                            <option value="pending_moveout">Pending Move Out</option>
+                                            <option value="transferring">Transferring</option>
+                                            <option value="suspended">Suspended</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+
                             </div>
+                            <StatusAlert :status="selectedtenant.status" role="Landlord" />
+
+
                         </div>
                         <!-- Current Occupant Information -->
                     </div>
@@ -140,9 +254,11 @@
                         <button class="btn btn-outline-success px-4">
                             📩 Notify Tenant about Rent Extension
                         </button>
-
-
+                        <button class="btn btn-outline-secondary px-4" @click="updateTenantInformation">
+                            Update Tenant Information
+                        </button>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -157,21 +273,25 @@ import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
 import { debounce } from 'lodash';
 import NotificationList from '@/components/notifications.vue';
+import StatusAlert from '@/components/approveTenantsAlert.vue';
+import { update } from 'lodash';
 export default {
     components: {
         Toastcomponents,
         Loader,
         Modalconfirmation,
-        NotificationList
+        NotificationList,
+        StatusAlert
 
     },
     data() {
         return {
             searchTerm: '',
             selectedDormId: '',
+            selectedRoomNumber: '', // bound to room number dropdown
+            dorms: [],
             selectedroomNumber: '',
             tenants: [],
-            dorms: [],
             selectedtenant: '',
             VisibleTenantModal: false,
             notifications: [],
@@ -179,6 +299,14 @@ export default {
             receiverID: '',
             landlord_id: '',
 
+        }
+    },
+    watch:
+    {
+        'selectedtenant.room.dorm.dormID'(newVal) {
+            if (newVal) {
+                this.selectedDormId = newVal;
+            }
         }
     },
     methods: {
@@ -200,14 +328,11 @@ export default {
                     });
                 });
         },
-        displaydorms() {
-            axios.get('/api/dorms')
-                .then(response => {
-                    this.dorms = response.data;
-                });
-        },
-        dormId(dorm) {
-            this.selectedDormId = dorm;
+
+        async getDormId() {
+            const res = await axios.get(`/get-dorms/${this.landlord_id}`);
+            this.dorms = res.data.dorms;
+            console.log(this.dorms);
         },
         async getTenantList() {
             try {
@@ -243,12 +368,32 @@ export default {
 
             }
         },
+        async updateTenantInformation() {
+            try {
+                this.$refs.loader.loading = true;
+
+                const response = await axios.put(`/tenants-update/${this.selectedtenant.approvedID}`, this.selectedtenant);
+                if (response.data.status === 'success') {
+                    this.VisibleTenantModal = false;
+                    this.getTenantList();
+                }
+            } catch (error) {
+                console.error('Error updating tenant information:', error);
+            } finally {
+                this.$refs.loader.loading = false;
+            }
+        },
 
     },
     mounted() {
         this.landlord_id = document.getElementById('tenantpage').dataset.landlordId;
         this.subscribeToNotifications();
         this.getTenantList();
+        if (this.selectedtenant?.room?.dorm?.dormID) {
+            this.selectedDormId = this.selectedtenant.room.dorm.dormID;
+        }
+        this.getDormId();
+
     },
     computed:
     {
@@ -259,6 +404,14 @@ export default {
                 seen.add(tenants.fkroomID);
                 return true;
             });
+        },
+        selectedDorm() {
+            return this.dorms.find(d => d.dormID === this.selectedDormId) || {};
+        },
+
+        filteredRooms() {
+            const dorm = this.selectedDorm;
+            return dorm ? dorm.rooms : [];
         }
     },
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\tenant\auth\bookingprocess;
 use App\Http\Controllers\Controller;
 use App\Models\landlord\roomModel;
 use App\Models\landlord\bookingModel;
+use App\Models\notificationModel;
 
 use Illuminate\Http\Request;
 
@@ -61,6 +62,21 @@ class bookroomController extends Controller
                 'studentpictureID'  => $request->studentpicture_id,
                 'status'             => 'pending',
             ]);
+            $room = roomModel::with('landlord')->find($request->room_id);
+            $roomNumber = $room->roomNumber;
+            $landlord = $room->landlord;
+
+            $notifications = notificationModel::create([
+                'senderID'     => $request->tenant_id,
+                'senderType'   => 'tenant',
+                'receiverID'   => $landlord->landlordID,
+                'receiverType' => 'landlord',
+                'title'        => 'New Booking Request',
+                'message'      => "A tenant has requested to book Room #{$roomNumber}.",
+                'isRead'       => false,
+                'readAt'       => null,
+            ]);
+        broadcast(new \App\Events\NewNotificationEvent($notifications));
     
             return response()->json([
                 'status' => 'success',

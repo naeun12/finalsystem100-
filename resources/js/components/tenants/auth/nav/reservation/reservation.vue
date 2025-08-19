@@ -9,15 +9,14 @@
                 My Reservations
             </h2>
         </div>
-        <div class="d-flex justify-content-end">
-        </div>
+
         <div class="card mb-3 shadow-sm border-0 rounded-4" v-for="(reservation, index) in visibleReservation"
             :key="index" style="transition: transform 0.2s ease-in-out;">
-            <div class="row g-0">
+            <div class="row g-0" style="border:1px solid #4edce2;">
                 <!-- Image Column -->
                 <div class="col-md-2 d-flex align-items-center justify-content-center  rounded-start-4">
                     <img :src="reservation.studentpictureID" alt="Dorm Image" class="img-fluid rounded-start-4"
-                        style="height: 100px; object-fit: cover; width: 100%;" />
+                        style="height: 100px; object-fit:  cover; width: 100%; border-right:1px solid #4edce2;" />
                 </div>
                 <div class="col-md-9 p-3  rounded-end-4">
                     <div class="row">
@@ -60,10 +59,10 @@
 
                             <p class="mb-0 fw-semibold text-dark d-flex align-items-center">
                                 <i class="bi bi-info-circle-fill me-1 text-primary"></i>
-                                Reservation Status:
+                                Reservation Status
 
-                                <span :class="['ms-1', getStatusClass(reservation.status)]">{{ reservation.status
-                                    }}</span>
+                                <StatusBadge :status="reservation.status" />
+
                             </p>
 
                         </div>
@@ -85,9 +84,9 @@
             </button>
         </div>
     </div>
-    <div v-if="showModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div v-if="showModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5); ">
         <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content rounded-4">
+            <div class="modal-content rounded-4" style="border:2px solid #4edce2;">
                 <div class="modal-header">
                     <h5 class="modal-title">Reservation Details</h5>
                     <button type="button" class="btn-close" @click="showModal = false"></button>
@@ -96,20 +95,13 @@
                     <div class="container-fluid">
                         <div class="row">
                             <!-- Left Column -->
-                            <div class="col-md-4 bg-dark text-white p-3 rounded-start">
+                            <div class="col-md-4  text-black p-3 rounded-start" style="background-color: #4edce2;">
                                 <img :src="reservationDetails.studentpictureID" class="img-fluid rounded mb-3"
                                     alt="ERD Image" />
 
                                 <p><strong>📌 Reservation Status: </strong>
-                                    <span :class="{
-                                        'text-warning': reservationDetails.status === 'pending' || reservationDetails.status === 'awaiting_payment',
-                                        'text-success': reservationDetails.status === 'confirmed' || reservationDetails.status === 'approved',
-                                        'text-danger': reservationDetails.status === 'rejected' || reservationDetails.status === 'cancelled',
-                                        'text-muted': reservationDetails.status === 'expired',
-                                        'text-primary': reservationDetails.status === 'completed',
-                                    }" class="fw-bold">
-                                        {{ reservationDetails.status.replace('_', ' ').toUpperCase() }}
-                                    </span>
+                                    <StatusBadge :status="reservationDetails.status" />
+
                                 </p>
 
                                 <p><strong>👤 Name:</strong> {{ reservationDetails.firstname }} {{
@@ -135,121 +127,154 @@
 
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <p><strong>🏘️ Dormitory Name:</strong> {{
-                                            reservationDetails.room?.dorm.dormName
-                                            }}</p>
-                                        <p><strong>🛏️ Occupancy Type:</strong> {{
-                                            reservationDetails.room?.genderPreference
-                                            }}</p>
-                                        <p><strong>🔢 Room No#:</strong> {{
-                                            reservationDetails.room?.roomNumber
-                                            }}</p>
-                                        <p><strong>🛋️ Area Sqm:</strong> {{
-                                            reservationDetails.room?.areaSqm
-                                            }}</p>
+                                        <p style="border: 1px solid #4edce2; padding: 8px; border-radius: 6px;">
+                                            <strong>🏘️ Dormitory Name:</strong>
+                                            {{ reservationDetails.room?.dorm.dormName }}
+                                        </p>
+
+                                        <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
+                                            <strong>🛏️ Occupancy Type:</strong> {{
+                                                reservationDetails.room?.genderPreference
+                                            }}
+                                        </p>
+                                        <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
+                                            <strong>🔢 Room No#:</strong> {{
+                                                reservationDetails.room?.roomNumber
+                                            }}
+                                        </p>
+                                        <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
+                                            <strong>🛋️ Area Sqm:</strong> {{
+                                                reservationDetails.room?.areaSqm
+                                            }}
+                                        </p>
 
                                     </div>
                                     <div class="col-md-6">
-                                        <p><strong>📍 Address:</strong> {{
-                                            reservationDetails.room?.dorm.address
-                                            }}</p>
-                                        <p><strong>💵 Monthly Rate:</strong> ₱{{
-                                            reservationDetails.room?.price
-                                            }}</p>
-                                        <p><strong>🛋️ Room Type:</strong> {{
-                                            reservationDetails.room?.roomType
-                                            }}</p>
-
-                                    </div>
-                                </div>
-
-                                <div v-if="statusAlert" :class="['alert', statusAlert.class, 'mt-3']" role="alert">
-                                    <strong>{{ statusAlert.icon }} {{ statusAlert.title }}</strong><br>
-                                    {{ statusAlert.message }}
-                                </div>
-                                <div v-if="reservationDetails.status === 'confirmed'">
-                                    <!-- Payment method selection -->
-                                    <div class="container py-4 mb-4">
-                                        <div class="mb-3">
-                                            <label for="paymentType" class="form-label fw-semibold text-dark">
-                                                <i class="bi bi-credit-card-2-front-fill text-primary me-2"></i>Payment
-                                                Method
-                                            </label>
-                                            <input type="text" class="form-control form-control-lg shadow-sm"
-                                                id="paymentType" v-model="payment_type" readonly />
-                                            <div id="paymentTypeHelp" class="form-text text-muted">
-                                                Specify your preferred method of payment.
-                                            </div>
-                                        </div>
-
-                                        <!-- Payment Options -->
-                                        <div
-                                            class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
-                                            <div v-for="(src, name) in payment" :key="name"
-                                                class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
-                                                :class="{ 'border-primary bg-light': payment_type === name }"
-                                                role="button" style="cursor: pointer; width: 120px; height: 130px;"
-                                                @click="paymentTypeSelection(name)">
-                                                <img :src="src" :alt="name" class="img-fluid mb-2"
-                                                    style="width: 50px; height: 50px; object-fit: contain;" />
-                                                <small class="fw-semibold text-capitalize text-center">
-                                                    {{ name.replace('_', ' ') }}
-                                                </small>
-                                            </div>
-
-                                        </div>
-                                        <div class="justify-content-center d-flex mt-2">
-                                            <span v-if="errors.paymentType" class="text-danger small mt-1 d-block">
-                                                <i class="bi bi-exclamation-circle-fill me-1"></i>{{
-                                                    errors.paymentType[0] }}
-                                            </span>
-                                        </div>
-
-
-
-                                    </div>
-
-                                    <!-- Payment Upload -->
-                                    <div class="border border-secondary rounded-3 p-4 mb-3 text-center"
-                                        style="cursor: pointer;" v-if="isPaymentImage" @click="triggerPaymentImage">
-                                        <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
-                                            @change="handlePaymentPicture" />
-                                        <div class="d-flex flex-column align-items-center text-center mb-3">
-                                            <img :src="paymentIcon" alt="Payment Icon"
-                                                style="max-width: 60px; height: auto;" class="mb-2" />
-                                            <h5 class="text-secondary mt-2">Upload Payment Image</h5>
-                                            <small class="text-muted">Click to browse and select an image file</small>
-                                        </div>
-                                    </div>
-
-                                    <!-- Preview -->
-                                    <div v-if="PaymentPicturePreview" class="text-center mb-3">
-                                        <img :src="PaymentPicturePreview" alt="Uploaded Payment Image"
-                                            class="img-fluid rounded mb-2" style="max-height: 250px;" />
-                                        <div>
-                                            <button type="button" @click="removePaymentPicture" class="btn btn-sm">
-                                                Remove Uploaded Image
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="justify-content-center d-flex mb-2">
-                                        <span v-if="errors.payment_image" class="text-danger small mt-1 d-block">
-                                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.payment_image[0]
+                                        <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
+                                            <strong>📍 Address:</strong> {{
+                                                reservationDetails.room?.dorm.address
                                             }}
-                                        </span>
+                                        </p>
+                                        <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
+                                            <strong>💵 Monthly Rate:</strong> ₱{{
+                                                reservationDetails.room?.price
+                                            }}
+                                        </p>
+                                        <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
+                                            <strong>🛋️ Room Type:</strong> {{
+                                                reservationDetails.room?.roomType
+                                            }}
+                                        </p>
+                                        <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
+                                            <strong>🛋️ Tenant Date remaining:</strong> {{ tenantDateRemaining }}
+                                        </p>
+
+
+                                        <input type="hidden" v-model="moveInDateLocal" />
+                                        <input type="hidden" v-model="moveOutDateLocal" />
+                                    </div>
+                                </div>
+
+                                <ReservationStatusAlert :status="reservationDetails.status" role="tenant"
+                                    class="mt-4" />
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 mt-3">
+                        <div v-if="reservationDetails.status === 'confirmed'">
+                            <!-- Payment method selection -->
+                            <div class="container py-4 mb-4">
+                                <div class="mb-3">
+                                    <div class="mb-3">
+                                        <label for="moveInDate" class="form-label fw-semibold text-dark">
+                                            <i class="bi bi-calendar2-check-fill text-primary me-2"></i>Move In
+                                            Date
+                                        </label>
+                                        <input type="date" class="form-control form-control-lg shadow-sm"
+                                            id="moveInDate" v-model="moveInDate" :min="moveOutDateLocal" />
                                     </div>
 
-                                    <!-- Pay Button -->
-                                    <button type="submit" class="btn btn-success w-100 py-2 fw-semibold shadow-sm"
-                                        @click="submitPayment(reservationDetails.reservationID)">
-                                        <i class="bi bi-calendar-check-fill me-2"></i>Pay for Room
-                                    </button>
+                                    <label for="paymentType" class="form-label fw-semibold text-dark">
+                                        <i class="bi bi-credit-card-2-front-fill text-primary me-2"></i>Payment
+                                        Method
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg shadow-sm" id="paymentType"
+                                        v-model="payment_type" readonly />
+                                    <div id="paymentTypeHelp" class="form-text text-muted">
+                                        Specify your preferred method of payment.
+                                    </div>
+                                </div>
+
+                                <!-- Payment Options -->
+                                <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
+                                    <div v-for="(src, name) in payment" :key="name"
+                                        class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
+                                        :class="{ 'border-primary bg-light': payment_type === name }" role="button"
+                                        style="cursor: pointer; width: 120px; height: 130px;"
+                                        @click="paymentTypeSelection(name)">
+                                        <img :src="src" :alt="name" class="img-fluid mb-2"
+                                            style="width: 50px; height: 50px; object-fit: contain;" />
+                                        <small class="fw-semibold text-capitalize text-center">
+                                            {{ name.replace('_', ' ') }}
+                                        </small>
+                                    </div>
+
+                                </div>
+                                <div class="justify-content-center d-flex mt-2">
+                                    <span v-if="errors.paymentType" class="text-danger small mt-1 d-block">
+                                        <i class="bi bi-exclamation-circle-fill me-1"></i>{{
+                                            errors.paymentType[0] }}
+                                    </span>
+                                </div>
+
+
+
+                            </div>
+
+                            <!-- Payment Upload -->
+                            <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
+                                v-if="isPaymentImage" @click="triggerPaymentImage">
+                                <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
+                                    @change="handlePaymentPicture" />
+                                <div class="d-flex flex-column align-items-center text-center mb-3">
+                                    <img :src="paymentIcon" alt="Payment Icon" style="max-width: 60px; height: auto;"
+                                        class="mb-2" />
+                                    <h5 class="text-secondary mt-2">Upload Payment Image</h5>
+                                    <small class="text-muted">Click to browse and select an image
+                                        file</small>
                                 </div>
                             </div>
 
+                            <!-- Preview -->
+                            <div v-if="PaymentPicturePreview" class="text-center mb-3">
+                                <img :src="PaymentPicturePreview" alt="Uploaded Payment Image"
+                                    class="img-fluid rounded mb-2" style="max-height: 250px;" />
+                                <div>
+                                    <button type="button" @click="removePaymentPicture" class="btn btn-sm">
+                                        Remove Uploaded Image
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="justify-content-center d-flex mb-2">
+                                <span v-if="errors.payment_image" class="text-danger small mt-1 d-block">
+                                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{
+                                        errors.payment_image[0]
+                                    }}
+                                </span>
+                            </div>
 
+                            <!-- Pay Button -->
+                            <button type="submit" class="btn btn-success w-100 py-2 fw-semibold shadow-sm"
+                                @click="submitPayment(reservationDetails.reservationID)">
+                                <i class="bi bi-calendar-check-fill me-2"></i>Pay for Room
+                            </button>
                         </div>
+
                     </div>
+
+
+
                 </div>
 
 
@@ -266,11 +291,15 @@ import axios from 'axios';
 import Loader from '@/components/loader.vue';
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
+import StatusBadge from '@/components/statusmap.vue';
+import ReservationStatusAlert from '@/components/ReservationStatusAlert.vue';
 export default {
     components: {
         Toastcomponents,
         Loader,
-        Modalconfirmation
+        Modalconfirmation,
+        StatusBadge,
+        ReservationStatusAlert,
     },
     data() {
         return {
@@ -278,6 +307,7 @@ export default {
             tenantid: '',
             showModal: false,
             searchQuery: '',
+            moveInDate: '',
             reservationDetails: [],
             viewReservationModal: false,
             showAll: '',
@@ -295,6 +325,8 @@ export default {
             PaymentPictureFile: null,
             isPaymentImage: true,
             payment_type: '',
+            moveInDateLocal: '',
+            moveOutDateLocal: ''
 
         };
     },
@@ -349,6 +381,8 @@ export default {
         },
         async showReservationModal(reservation) {
             try {
+                this.$refs.loader.loading = true;
+
                 const response = await axios.get(`/tenant/my-reservation/details/${reservation.reservationID}`);
                 if (response.data.status === 'success') {
                     this.showModal = true;
@@ -357,6 +391,10 @@ export default {
 
             } catch (error) {
                 console.error(error);
+            }
+            finally {
+                this.$refs.loader.loading = false;
+
             }
 
 
@@ -407,6 +445,8 @@ export default {
 
             this.$refs.loader.loading = true;
             const formData = new FormData();
+            formData.append('moveInDate', this.moveInDate);
+            formData.append('tenant_id', this.tenantid);
             formData.append('paymentType', this.payment_type);
             if (this.PaymentPictureFile) {
                 formData.append('paymentImage', this.PaymentPictureFile);
@@ -441,72 +481,54 @@ export default {
 
         },
         async cancelReservation(reservation_id) {
+
+            const confirmed = await this.$refs.modal.show({
+                title: `Cancelled Reservation`,
+                message: `Are you sure you want to cancel this reservation?`,
+                functionName: 'Confirm Cancellation'
+            });
+
+            if (!confirmed) {
+                return;
+            }
+            this.$refs.loader.loading = true;
+
             try {
                 const response = await axios.get(`/tenant/cancel/reservation/${reservation_id}`);
                 this.myreservation();
+                this.closeModal()
+                this.$refs.toast.showToast(response.data.message, 'success');
+                this.$refs.loader.loading = false;
+
             } catch (error) {
                 console.error(error);
                 alert('Failed to cancel reservation.');
+            }
+            finally {
+                this.$refs.loader.loading = false;
+
             }
         },
 
     },
     computed: {
-        visibleReservation() {
-            return this.showAll ? this.reservations : this.reservations.slice(0, 3);
+        tenantDateRemaining() {
+            const moveOut = this.reservationDetails.room?.current_tenant?.moveOutDate;
+            if (!moveOut) return 'N/A';
+
+            const today = new Date();
+            const moveOutDate = new Date(moveOut);
+
+            // Calculate difference in days
+            const diffTime = moveOutDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            return diffDays > 0 ? `${diffDays} day(s) remaining` : 'Move-out date passed';
         },
-        statusAlert() {
-            const status = this.reservationDetails.status;
+        visibleReservation() {
+            return this.showAll ? this.reservations : this.reservations.slice(0, 5);
+        },
 
-            const map = {
-                approved: {
-                    class: 'alert-success',
-                    icon: '✔️',
-                    title: 'Reserve Approved Successfully!',
-                    message: 'You can now view your approved room under My Room.',
-                },
-                pending: {
-                    class: 'alert-warning',
-                    icon: '⏳',
-                    title: 'Your Reservation is Pending.',
-                    message: 'Please wait for the landlord to review your request.',
-                },
-                confirmed: {
-                    class: 'alert-warning',
-                    icon: '💸',
-                    title: 'Awaiting Payment.',
-                    message: 'Please upload your payment to confirm the reservation.',
-                },
-                rejected: {
-                    class: 'alert-danger',
-                    icon: '❌',
-                    title: 'Reservation Rejected.',
-                    message: 'Unfortunately, your reservation was not approved.',
-                },
-                cancelled: {
-                    class: 'alert-danger',
-                    icon: '🚫',
-                    title: 'Reservation Cancelled.',
-                    message: 'You have cancelled this reservation.',
-                },
-                expired: {
-                    class: 'alert-secondary',
-                    icon: '⌛',
-                    title: 'Reservation Expired.',
-                    message: 'The reservation was not completed in time.',
-                },
-                paid: {
-                    class: 'alert-info',
-                    icon: '💳',
-                    title: 'Payment Submitted',
-                    message: 'Your payment was received. Please wait for landlord verification.',
-                },
-
-
-            };
-
-            return map[status] || null;
-        }
     },
     mounted() {
         const el = document.getElementById('myReservation');
@@ -516,6 +538,16 @@ export default {
 
 
     },
+    watch: {
+        reservationDetails: {
+            handler(newVal) {
+                this.moveInDateLocal = newVal.room?.current_tenant?.moveInDate || '';
+                this.moveOutDateLocal = newVal.room?.current_tenant?.moveOutDate || '';
+            },
+            immediate: true,
+            deep: true
+        }
+    }
 };
 </script>
 

@@ -4,6 +4,9 @@
     <Loader ref="loader" />
 
     <div class="container py-3">
+        <h2 class="fw-bold text-center mb-4 p-2 bg-light text-dark border border-2 rounded">
+            ✨ Book Your Room Now
+        </h2>
         <div class="row mb-1">
             <div class="col-md-6">
                 <div class="mb-3">

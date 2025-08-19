@@ -2,10 +2,10 @@
     <Loader ref="loader" />
     <Toastcomponents ref="toast" />
     <Modalconfirmation ref="modal" />
-    <div class="container-fluid py-5">
-        <div class="row shadow rounded overflow-hidden">
+    <div class="container-fluid  p-3">
+        <div class="row shadow rounded overflow-hidden " style="border: 3px solid #4edce2;">
             <!-- Left Section -->
-            <div class="col-md-4 bg-dark text-white text-center py-4">
+            <div class="col-md-4  text-black text-center py-4" style="background-color: #4edce2;">
                 <div class="border mb-4 rounded bg-white d-flex align-items-center justify-content-center overflow-hidden"
                     style="height: 200px;">
                     <img :src="booking.studentpictureID" alt="Profile Image"
@@ -15,16 +15,8 @@
 
                 <div class="text-start px-3">
                     <p><strong>📌 Booking Status:</strong>
-                        <span class="badge px-3 py-2 text-wrap" :class="{
-                            'text-success bg-light-success rounded': booking.status === 'Fully Approved',
-                            'text-primary bg-light-primary rounded': booking.status === 'Accepted by Landlord',
-                            'text-warning bg-light-warning rounded': booking.status === 'Pending Payment Confirmation' || booking.status === 'pending',
-                            'text-danger bg-light-danger rounded': booking.status === 'Not Approved'
-                        }" style="white-space: normal; min-width: 150px;">
-                            {{ booking.status }}
-                        </span>
-
-
+                        {{ booking.status }}
+                        <statusMap :status="this.ispayment" role="tenant" />
                     </p>
                     <p><strong>👤 Name:</strong> {{ booking.firstname }} {{ booking.lastname }}</p>
                     <p><strong>🎂 Age:</strong> {{ booking.age }}</p>
@@ -35,7 +27,7 @@
                     <p><strong>🏁 Move-out Date:</strong> {{ booking.moveOutDate }}</p>
                 </div>
                 <div v-if="booking.status === 'confirmed' || booking.status === 'pending'">
-                    <button class="btn " @click="cancelBooking(booking.bookingID)">
+                    <button class="btn btn-danger" @click="cancelBooking(booking.bookingID)">
                         <i class="bi bi-x-circle-fill me-2"></i>Cancel Booking
                     </button>
                 </div>
@@ -100,16 +92,10 @@
                         </div>
                     </div>
                 </div>
-
-                <div v-if="getStatusMessage(booking.status)"
-                    class="alert d-flex align-items-start gap-3 mt-3 shadow-sm rounded"
-                    :class="getStatusMessage(booking.status).alertClass" role="alert">
-                    <i :class="getStatusMessage(booking.status).iconClass + ' fs-4 mt-1'"></i>
-                    <div>
-                        <h6 class="mb-1 fw-bold" v-html="getStatusMessage(booking.status).title"></h6>
-                        <p class="mb-0" v-html="getStatusMessage(booking.status).message"></p>
-                    </div>
+                <div class="mb-2 mt-4">
+                    <BookingStatus :status="this.ispayment" role="tenant" />
                 </div>
+
 
 
                 <div v-if="ispayment === 'confirmed'">
@@ -169,7 +155,7 @@
                         <img :src="PaymentPicturePreview" alt="Uploaded Payment Image" class="img-fluid rounded mb-2"
                             style="max-height: 250px;" />
                         <div>
-                            <button type="button" @click="removePaymentPicture" class="btn btn-sm">
+                            <button type="button" @click="removePaymentPicture" class="btn btn-danger shadow-sm">
                                 Remove Uploaded Image
                             </button>
                         </div>
@@ -198,11 +184,15 @@ import axios from 'axios';
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
+import BookingStatus from '@/components/BookingStatusAlert.vue';
+import statusMap from '@/components/statusmap.vue';
 export default {
     components: {
         Toastcomponents,
         Loader,
-        Modalconfirmation
+        Modalconfirmation,
+        BookingStatus,
+        statusMap
     },
     data() {
         return {
@@ -346,52 +336,7 @@ export default {
             }
 
         },
-        getStatusMessage(status) {
-            const map = {
-                approved: {
-                    alertClass: 'alert-success',
-                    iconClass: 'bi bi-check-circle-fill text-success',
-                    title: 'Booking Approved Successfully!',
-                    message: 'You can now view your approved room under <a href="#" class="fw-semibold text-decoration-underline">My Room</a>.'
-                },
-                confirmed: {
-                    alertClass: 'alert-info',
-                    iconClass: 'bi bi-cash-coin text-info',
-                    title: 'Awaiting Payment.',
-                    message: 'Please upload your payment to confirm the reservation.',
-                },
 
-                pending: {
-                    alertClass: 'alert-warning',
-                    iconClass: 'bi bi-hourglass-split text-warning',
-                    title: 'Booking is Pending!',
-                    message: 'Please wait while your booking is being reviewed.'
-                },
-                rejected: {
-                    alertClass: 'alert-danger',
-                    iconClass: 'bi bi-x-circle-fill text-danger',
-                    title: 'Booking Rejected!',
-                    message: 'Your booking was not approved. Please contact support for more information.'
-                },
-                cancelled: {
-                    alertClass: 'alert-danger',
-                    iconClass: 'bi bi-x-circle-fill',
-                    title: 'Booking Has Been Cancelled',
-                    message: 'Your booking has been successfully cancelled. If this was a mistake, please contact landlord immediately.',
-                },
-                paid: {
-                    alertClass: 'alert-info',
-                    iconClass: 'bi bi-credit-card text-primary',
-                    title: 'Payment Submitted',
-                    message: 'Your payment was received. Please wait for landlord verification.',
-                },
-
-
-                // Add more statuses as needed...
-            };
-
-            return map[status?.toLowerCase()] || null;
-        }
     },
 
     mounted() {

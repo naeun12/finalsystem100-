@@ -36,7 +36,7 @@ class alltenantsController extends Controller
         }
     
         return view('landlord.auth.tenantpage',[
-        "title" => "Landlord - Tenants", 
+        "title" => "Landlord - Tenants List", 
         'headerName' => 'Tenants List',           
         'landlord' => $landlord,
         'landlord_id' => $landlord_id,
@@ -57,8 +57,8 @@ class alltenantsController extends Controller
         ->whereHas('room', function ($query) use ($landlordId) {
             $query->where('fklandlordID', $landlordId);
         })
-        ->orderBy('created_at', 'asc')
-        ->paginate(5);
+        ->orderBy('created_at', 'desc')
+        ->paginate(11);
     
         return response()->json([
             'status' => 'success',
@@ -97,4 +97,78 @@ class alltenantsController extends Controller
         'tenant' => $tenant
     ]);
 }
+public function updateTenantInformation(Request $request, $id)
+{
+    $landlordId = session('landlord_id');
+    if (!$landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized action. Please log in as a landlord.'
+        ], 403);
+    }
+
+    $tenant = approvetenantsModel::find($id);
+    if (!$tenant || $tenant->room->fklandlordID !== $landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Tenant not found or unauthorized access.'
+        ], 404);
+    }
+      $tenant->firstname = $request->input('firstname');
+        $tenant->lastname = $request->input('lastname');
+        $tenant->gender = $request->input('gender');
+        $tenant->age = $request->input('age');
+        $tenant->contactEmail = $request->input('contactEmail');
+        $tenant->contactNumber = $request->input('contactNumber');
+        $tenant->status = $request->input('status');
+
+        $tenant->save();
+    
+
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Tenant information updated successfully.',
+        'tenant' => $tenant
+    ]);
+}
+public function getDorms()
+{
+    $landlordId = session('landlord_id');
+
+    if (!$landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized action. Please log in as a landlord.'
+        ], 403);
+    }
+
+    // Load dorms with all rooms
+$dorms = dormModel::with('rooms')->where('fklandlordID', $landlordId)->get();
+$uniqueRooms = collect();
+
+    if ($dorms->isEmpty()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'No dorms found for this landlord.'
+        ], 404);
+    }
+
+   foreach ($dorms as $dorm) {
+    foreach ($dorm->rooms as $room) {
+        if (!$uniqueRooms->contains('roomNumber', $room->roomNumber)) {
+            $uniqueRooms->push($room);
+        }
+    }
+            $dorm->setRelation('rooms', $uniqueRooms);
+
+}
+
+
+    return response()->json([
+        'status' => 'success',
+        'dorms' => $dorms
+    ]);
+}
+
 }
