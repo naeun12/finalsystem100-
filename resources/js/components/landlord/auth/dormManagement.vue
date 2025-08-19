@@ -21,7 +21,7 @@
             </div>
         </div>
 
-        <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden">
+        <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden" style="border:2px solid #4edce2;">
             <span class="input-group-text bg-white border-0">
                 <i class="bi bi-search text-primary"></i>
             </span>
@@ -30,7 +30,8 @@
         </div>
         <div class="mb-1 d-flex gap-2 flex-wrap justify-content-start">
             <div class="col-md-6 col-lg-4 mb-2">
-                <select class="form-select shadow-sm" v-model="selectedLocation" @change="dropdownLocation">
+                <select class="form-select shadow-sm rounded-4" v-model="selectedLocation" @change="dropdownLocation"
+                    style="border:2px solid #4edce2;">
 
                     <option disabled value="">Select Locations</option>
                     <option value="all">All Locations</option>
@@ -39,7 +40,8 @@
                 </select>
             </div>
             <div class="col-md-6 col-lg-4 mb-2">
-                <select class="form-select shadow-sm" v-model="selectedAvailability" @change="dropdownAvailability">
+                <select class="form-select shadow-sm rounded-4" v-model="selectedAvailability"
+                    @change="dropdownAvailability" style="border:2px solid #4edce2;">
 
                     <option disabled value="">Select Availability</option>
                     <option value="all">All Availability</option>
@@ -54,49 +56,45 @@
             No dormitories found matching your search criteria.
         </div>
         <!-- Table -->
-        <div class="table-responsive shadow-sm rounded-4 p-4 bg-white">
-            <table class="table table-bordered table-hover align-middle mb-0">
-                <thead class="bg-primary text-white text-center rounded-top">
-                    <tr>
-                        <th>Dorm ID</th>
-                        <th>Dorm Name</th>
-                        <th>Address</th>
-                        <th>Contact Email</th>
-                        <th>Contact Phone</th>
-                        <th>Availability</th>
-                        <th>Total Rooms</th>
-                        <th>Actions</th>
+        <div class="container bg-white rounded shadow-sm p-3"
+            style="border: 1px solid #4edce2; border-radius: 0.5rem; max-height: 700px; overflow-y: auto;">
+
+            <table class="table table-bordered table-hover mb-0" style="border-collapse: separate; border-spacing: 0;">
+                <!-- Table Header -->
+                <thead style="background: linear-gradient(90deg, #0d6efd, #4edce2); color: white;">
+                    <tr class="text-center">
+                        <th style="border: none;">#</th>
+                        <th style="border: none;">Dormitory Name</th>
+                        <th style="border: none;">Address</th>
+                        <th style="border: none;">Contact Email</th>
+                        <th style="border: none;">Contact Phone</th>
+                        <th style="border: none;">Rooms</th>
+                        <th style="border: none;">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="text-center">
-                    <tr v-for="dorm in dorms" :key="dorm.dormID" class="align-middle">
-                        <td>{{ dorm.dormID }}</td>
-                        <td class="text-truncate fw-semibold" style="max-width: 180px;">{{ dorm.dormName }}</td>
-                        <td class="text-truncate" style="max-width: 220px;">{{ dorm.address }}</td>
-                        <td class="text-truncate" style="max-width: 200px;">{{ dorm.contactEmail }}</td>
+
+                <!-- Table Body -->
+                <tbody>
+                    <tr v-for="(dorm, index) in dorms" :key="dorm.dormID"
+                        :style="{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff', transition: 'background-color 0.2s ease' }"
+                        class="text-center align-middle">
+
+                        <td class="fw-semibold">{{ dorm.dormID }}</td>
+                        <td>{{ dorm.dormName }}</td>
+                        <td class="text-truncate" style="max-width: 150px;">{{ dorm.address }}</td>
+                        <td class="text-truncate" style="max-width: 150px;">{{ dorm.contactEmail }}</td>
                         <td>{{ dorm.contactPhone }}</td>
+                        <td class="fw-bold">{{ dorm.totalRooms }}</td>
                         <td>
-                            <span class="badge rounded-pill px-3 py-2 text-uppercase fw-semibold" :class="{
-                                'bg-success': dorm.availability === 'Available',
-                                'bg-danger': dorm.availability === 'Not Available',
-                                'bg-warning text-dark': dorm.availability === 'under maintenance'
-                            }">
-                                {{ dorm.availability }}
-                            </span>
-                        </td>
-                        <td><span class="fw-bold">{{ dorm.totalRooms }}</span></td>
-                        <td>
-                            <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1"
-                                    @click="viewDorm(dorm.dormID)" title="View Dorm">
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-sm btn-success" @click="viewDorm(dorm.dormID)" title="View Dorm">
                                     <i class="bi bi-eye-fill"></i>
                                 </button>
-                                <button class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
-                                    @click="editDorm(dorm.dormID)" title="Edit Dorm">
+                                <button class="btn btn-sm btn-primary" @click="editDorm(dorm.dormID)" title="Edit Dorm">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1"
-                                    @click="deleteDorm(dorm.dormID)" title="Delete Dorm">
+                                <button class="btn btn-sm btn-danger" @click="deleteDorm(dorm.dormID)"
+                                    title="Delete Dorm">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>
                             </div>
@@ -105,6 +103,7 @@
                 </tbody>
             </table>
         </div>
+
 
         <!-- Pagination with Bootstrap 5 -->
         <div v-if="lastPage > 1" class="d-flex justify-content-center align-items-center my-3">
@@ -144,52 +143,68 @@
                     </div>
                     <!-- Modal Body -->
                     <div class="modal-body bg-white">
-                        <div class="p-3 d-flex align-items-center  flex-wrap">
-                            <img :src="getAssetPath('images/Logo/logo.png')" alt="Company Logo" width="50" class="">
-                            <span class="fw-bold fs-5 logo-text me-3">DormHub</span>
+                        <div class="p-3 d-flex align-items-center flex-wrap bg-light border rounded shadow-sm"
+                            style="gap: 1rem;">
+                            <img :src="getAssetPath('images/Logo/logo.png')" alt="Company Logo" width="50" class="me-3"
+                                style="border-radius: 8px;" />
 
-                            <span class="text-muted small">
-                                📍 Click <strong>Select address</strong> to locate your dormitory.
+                            <span class="fw-bold fs-5 logo-text me-4" style="color: #2c3e50; user-select: none;">
+                                DormHub
                             </span>
 
-                            <span class="text-muted small">
-                                ✅ Ensure all required fields are filled before submitting.
-                            </span>
+                            <div class="d-flex flex-column flex-grow-1" style="gap: 0.25rem;">
+                                <small class="text-muted d-flex align-items-center" style="gap: 0.3rem;">
+                                    <span>📍</span>
+                                    Click <strong>Select address</strong> to locate your dormitory.
+                                </small>
+
+                                <small class="text-muted d-flex align-items-center" style="gap: 0.3rem;">
+                                    <span>✅</span>
+                                    Ensure all required fields are filled before submitting.
+                                </small>
+                            </div>
                         </div>
-
 
                         <div class="row g-3">
                             <!-- Left Column -->
                             <div class="col">
                                 <div class="form-floating mb-3 mt-3">
-                                    <input type="text" class="form-control" id="dormName" v-model="dorm_name"
-                                        placeholder="Dorm Name">
-                                    <label for="dormName">Dorm Name</label>
+                                    <input type="text" class="form-control border-primary shadow-sm" id="dormName"
+                                        v-model="dorm_name" placeholder="Dorm Name"
+                                        style="height: 48px; font-size: 1rem;" />
+                                    <label for="dormName" class="fw-semibold text-primary">Dorm Name</label>
                                 </div>
+
                                 <span class="mb-3 text-danger small d-flex align-items-center gap-1"
                                     v-if="errors.dorm_name">
                                     <i class="fa-solid fa-circle-exclamation"></i>
                                     {{ errors.dorm_name[0] }}
                                 </span>
-                                <div class="form-floating  mt-3">
-                                    <input type="text" class="form-control" id="address" v-model="address"
-                                        placeholder="Address" readonly>
-                                    <label for="address">Address</label>
+                                <div class="form-floating mt-3">
+                                    <input type="text" class="form-control bg-light text-muted" id="address"
+                                        v-model="address" placeholder="Address" readonly
+                                        style="height: 48px; cursor: not-allowed;" />
+                                    <label for="address" class="fw-semibold">Address</label>
                                 </div>
-                                <div class="d-grid mb-3 ">
-                                    <button type="button" class="btn btn-outline-primary" @click="VisibleMap = true">
+
+                                <div class="d-grid mb-3">
+                                    <button type="button" class="btn btn-outline-primary fw-semibold"
+                                        @click="VisibleMap = true" style="gap: 0.5rem;">
                                         📍 Select address
                                     </button>
                                 </div>
+
                                 <span class="mb-3 text-danger " v-if="errors.address">
                                     <i class="fa-solid fa-circle-exclamation"></i>
                                     {{ errors.address[0] }}
                                 </span>
-                                <div class="form-floating mb-3 mt-3">
-                                    <textarea class="form-control" id="description" placeholder="Description"
-                                        style="height: 120px;" v-model="description"></textarea>
-                                    <label for="description">Description</label>
+                                <div class="form-floating mt-3">
+                                    <textarea class="form-control bg-light text-muted" id="description"
+                                        v-model="description" placeholder="Description"
+                                        style="height: 120px; cursor: not-allowed; resize: vertical; font-size: 1rem; padding: 1rem;"></textarea>
+                                    <label for="description" class="fw-semibold">Description</label>
                                 </div>
+
                                 <span class="mb-3 text-danger" v-if="errors.description">
                                     <i class="fa-solid fa-circle-exclamation"></i>{{ errors.description[0]
                                     }}</span>
@@ -211,43 +226,53 @@
                             <!-- Middle Column -->
                             <div class="col">
                                 <div class="form-floating mb-3 mt-3">
-                                    <input type="email" class="form-control" id="contact_email"
-                                        placeholder="Contact Email" v-model="contact_email">
-                                    <label for="contact_email">Contact Email</label>
+                                    <input type="email" class="form-control border-primary shadow-sm" id="contact_email"
+                                        placeholder="Contact Email" v-model="contact_email"
+                                        style="height: 48px; font-size: 1rem;" />
+                                    <label for="contact_email" class="fw-semibold text-primary">Contact Email</label>
                                 </div>
+
                                 <span class="mb-3 text-danger mt-3" v-if="errors.contact_email"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
                                             errors.contact_email[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
-                                    <input type="tel" class="form-control" id="contact_phone"
-                                        placeholder="Contact Phone" v-model="contact_phone">
-                                    <label for="contact_phone">Contact Phone</label>
+                                    <input type="tel" class="form-control border-primary shadow-sm" id="contact_phone"
+                                        placeholder="Contact Phone" v-model="contact_phone"
+                                        style="height: 48px; font-size: 1rem;" />
+                                    <label for="contact_phone" class="fw-semibold text-primary">Contact Phone</label>
                                 </div>
+
                                 <span class="text-danger mb-3" v-if="errors.contact_phone"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
                                             errors.contact_phone[0] }}</span>
 
                                 <div class="form-floating mb-3 mt-3">
-                                    <input type="text" class="form-control" id="building_type"
-                                        placeholder="Enter Building Type" v-model="building_type">
-                                    <label for="building_type">Building Type</label>
+                                    <input type="text" class="form-control border-primary shadow-sm" id="building_type"
+                                        placeholder="Enter Building Type" v-model="building_type"
+                                        style="height: 48px; font-size: 1rem;" />
+                                    <label for="building_type" class="fw-semibold text-primary">Building Type</label>
                                 </div>
+
                                 <span class="text-danger mb-3" v-if="errors.building_type"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
                                             errors.building_type[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
-                                    <select class="form-select" id="availability" v-model="availability">
+                                    <select class="form-select border-primary shadow-sm" id="availability"
+                                        v-model="availability" style="height: 48px; font-size: 1rem;">
                                         <option disabled value="">Select Availability</option>
                                         <option value="Available">Available</option>
                                         <option value="Not Available">Not Available</option>
                                     </select>
-                                    <label for="availability">Select Availability</label>
+                                    <label for="availability" class="fw-semibold text-primary">Select
+                                        Availability</label>
                                 </div>
+
                                 <span class="text-danger mb-3" v-if="errors.availability">
                                     <i class="fa-solid fa-circle-exclamation"></i> {{
                                         errors.availability[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
-                                    <select class="form-select" id="occupancy_type" v-model="occupancy_type">
+                                    <select class="form-select border-primary shadow-sm" id="occupancy_type"
+                                        v-model="occupancy_type" style="height: 48px; font-size: 1rem;">
                                         <option disabled value="">Select Occupancy Type</option>
                                         <option value="Male only">Male only</option>
                                         <option value="Female only">Female only</option>
@@ -255,8 +280,9 @@
                                             separate floors)</option>
                                         <option value="Mixed (Unspecified)">Mixed (Unspecified)</option>
                                     </select>
-                                    <label for="occupancy_type">Occupancy Type</label>
+                                    <label for="occupancy_type" class="fw-semibold text-primary">Occupancy Type</label>
                                 </div>
+
                                 <span class="text-danger mb-3" v-if="errors.occupancy_type"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
                                             errors.occupancy_type[0] }}</span>
@@ -394,58 +420,83 @@
                     <!-- Modal Body -->
                     <form @submit.prevent="updateDorm">
                         <div class="modal-body bg-white">
-                            <div class="p-3 d-flex align-items-center  flex-wrap">
-                                <img :src="getAssetPath('images/Logo/logo.png')" alt="Company Logo" width="50" class="">
-                                <span class="fw-bold fs-5 logo-text me-3">DormHub</span>
+                            <div
+                                class="p-3 d-flex align-items-center flex-wrap gap-3 shadow-sm rounded-4 bg-light border mb-3">
+                                <!-- Logo + Name -->
+                                <div class="d-flex align-items-center me-4">
+                                    <img :src="getAssetPath('images/Logo/logo.png')" alt="Company Logo" width="50"
+                                        class="me-2 rounded-circle border">
+                                    <span class="fw-bold fs-5 logo-text text-primary">DormHub</span>
+                                </div>
 
-                                <span class="text-muted small">
-                                    📍 Click <strong>Select address</strong> to locate your dormitory.
-                                </span>
-
-                                <span class="text-muted small">
-                                    ✅ Ensure all required fields are filled before submitting.
-                                </span>
+                                <!-- Instructions -->
+                                <div class="d-flex flex-column small text-muted">
+                                    <div class="mb-1">
+                                        📍 Click <strong class="text-dark">Select address</strong> to locate your
+                                        dormitory.
+                                    </div>
+                                    <div>
+                                        ✅ Ensure all required fields are filled before submitting.
+                                    </div>
+                                </div>
                             </div>
+
 
                             <div class="row g-3">
                                 <!-- Left Column -->
                                 <div class="col-md-4">
                                     <div class="form-floating mb-2">
-                                        <input type="text" class="form-control" id="dormName"
-                                            v-model="editDormData.dormName" placeholder="Dorm Name">
-                                        <label for="dormName">Dorm Name</label>
-                                        <span class="text-danger small" v-if="errors.editDormData?.dormName">
+                                        <input type="text" class="form-control  rounded-4 border-primary shadow-sm"
+                                            id="dormName" v-model="editDormData.dormName" placeholder="Dorm Name">
+                                        <label for="dormName" class="text-primary">Dorm Name</label>
+                                        <span class="text-danger small d-flex align-items-center mt-1"
+                                            v-if="errors.editDormData?.dormName">
+                                            <i class="fa-solid fa-circle-exclamation me-1"></i>
                                             {{ errors.editDormData.dormName[0] }}
                                         </span>
                                     </div>
 
-                                    <div class="form-floating mb-2">
-                                        <input type="text" class="form-control" id="address"
-                                            v-model="editDormData.address" placeholder="Address">
-                                        <label for="address">Address</label>
-                                        <span class="text-danger small" v-if="errors.editDormData?.address">
+                                    <div class="form-floating mb-2 position-relative">
+                                        <input type="text" class="form-control  rounded-4 border-primary shadow-sm"
+                                            id="address" v-model="editDormData.address" placeholder="Address" readonly>
+                                        <label for="address" class="text-primary">Address</label>
+
+                                        <!-- Error message with icon -->
+                                        <span class="text-danger small d-flex align-items-center mt-1"
+                                            v-if="errors.editDormData?.address">
+                                            <i class="fa-solid fa-circle-exclamation me-1"></i>
                                             {{ errors.editDormData.address[0] }}
                                         </span>
                                     </div>
-                                    <button type="button" class="btn btn-outline-primary w-100"
+                                    <button type="button" class="btn mb-2 btn-outline-primary w-100"
                                         @click="UpdateVisibleMap = true">
                                         📍 Select Address
                                     </button>
 
-                                    <div class="form-floating mb-2">
-                                        <textarea class="form-control" id="description"
-                                            v-model="editDormData.description" placeholder="Description"
-                                            style="height: 120px;"></textarea>
-                                        <label for="description">Description</label>
-                                        <span class="text-danger small" v-if="errors.editDormData?.description">
+                                    <div class="form-floating mb-2 position-relative">
+                                        <!-- Description Icon -->
+
+
+                                        <textarea class="form-control  rounded-4 border-primary shadow-sm"
+                                            id="description" v-model="editDormData.description"
+                                            placeholder="Description" style="height: 120px;"></textarea>
+                                        <label for="description" class="text-primary">Description</label>
+
+                                        <!-- Error Message with Icon -->
+                                        <span class="text-danger small d-flex align-items-center mt-1"
+                                            v-if="errors.editDormData?.description">
+                                            <i class="fa-solid fa-circle-exclamation me-1"></i>
                                             {{ errors.editDormData.description[0] }}
                                         </span>
                                     </div>
 
-                                    <div class="form-floating mb-2">
-                                        <input type="text" class="form-control" id="Optional"
-                                            v-model="editDormData.newAmenities" placeholder="Optional Add Amenities">
-                                        <label for="Optional">(Optional) Add Amenities</label>
+                                    <!-- Optional Amenities Field -->
+                                    <div class="form-floating mb-2 position-relative">
+                                        <!-- Amenities Icon -->
+                                        <input type="text" class="form-control rounded-4 border-secondary shadow-sm"
+                                            id="Optional" v-model="editDormData.newAmenities"
+                                            placeholder="Optional Add Amenities">
+                                        <label for="Optional" class="text-secondary">(Optional) Add Amenities</label>
                                     </div>
                                     <span class="text-danger small" v-if="errors.editDormData?.newAmenities">
                                         {{ errors.editDormData.newAmenities[0] }}
@@ -460,96 +511,151 @@
 
                                     </div>
 
-                                    <div class="border rounded p-2">
-                                        <div class="row fw-bold border-bottom py-2 text-center">
-                                            <div class="col">Amenity</div>
-                                            <div class="col-3">Actions</div>
+                                    <div class="border rounded-4 p-2 shadow-sm bg-light">
+                                        <!-- Table Header -->
+                                        <div class="row fw-bold border-bottom py-2 text-center text-primary">
+                                            <div class="col">
+                                                <i class="fa-solid fa-list me-1"></i> Amenity
+                                            </div>
+                                            <div class="col-3">
+                                                <i class="fa-solid fa-gears me-1"></i> Actions
+                                            </div>
                                         </div>
 
+                                        <!-- Amenities List -->
                                         <div v-for="amenity in editDormData.amenities"
                                             :key="amenity.pivot ? amenity.pivot.id : amenity.id"
-                                            class="row align-items-center py-2 border-bottom text-center">
+                                            class="row align-items-center py-2 border-bottom text-center bg-white rounded-3 my-1 shadow-sm">
+
+                                            <!-- Amenity Name -->
                                             <div class="col">
-                                                <input type="text" readonly class="form-control text-center"
+                                                <input type="text" readonly
+                                                    class="form-control text-center border-0 bg-transparent fw-semibold text-secondary"
                                                     v-model="amenity.aminityName" placeholder="Amenity name" />
                                             </div>
+
+                                            <!-- Actions -->
                                             <div class="col-3 d-flex justify-content-center gap-2">
-                                                <button class="btn btn-sm btn-outline-danger"
+                                                <button
+                                                    class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
                                                     @click.prevent="deleteAmenity(amenity.pivot.id)">
-                                                    Delete
+                                                    <i class="fa-solid fa-trash"></i>
                                                 </button>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
                                 <!-- Middle Column -->
                                 <div class="col-md-4">
-                                    <div class="form-floating mb-2">
-                                        <input type="email" class="form-control" id="contact_email"
-                                            v-model="editDormData.contactEmail" placeholder="Contact Email">
-                                        <label for="contact_email">Contact Email</label>
-                                        <span class="text-danger small" v-if="errors.editDormData?.contactEmail">
+                                    <div class="form-floating mb-2 position-relative">
+                                        <!-- Email Icon -->
+
+
+                                        <input type="email" class="form-control rounded-4 border-primary shadow-sm"
+                                            id="contact_email" v-model="editDormData.contactEmail"
+                                            placeholder="Contact Email">
+                                        <label for="contact_email" class="text-primary">Contact Email</label>
+
+                                        <!-- Error message with icon -->
+                                        <span class="text-danger small d-flex align-items-center mt-1"
+                                            v-if="errors.editDormData?.contactEmail">
+                                            <i class="fa-solid fa-circle-exclamation me-1"></i>
                                             {{ errors.editDormData.contactEmail[0] }}
                                         </span>
                                     </div>
 
+                                    <!-- Contact Phone -->
+                                    <div class="form-floating mb-2 position-relative">
+                                        <!-- Phone Icon -->
 
-                                    <div class="form-floating mb-2">
-                                        <input type="tel" class="form-control" id="contact_phone"
-                                            v-model="editDormData.contactPhone" placeholder="Contact Phone">
-                                        <label for="contact_phone">Contact Phone</label>
-                                        <span class="text-danger small" v-if="errors.editDormData?.contactPhone">
+
+                                        <input type="tel" class="form-control  rounded-4 border-primary shadow-sm"
+                                            id="contact_phone" v-model="editDormData.contactPhone"
+                                            placeholder="Contact Phone">
+                                        <label for="contact_phone" class="text-primary">Contact Phone</label>
+
+                                        <!-- Error message with icon -->
+                                        <span class="text-danger small d-flex align-items-center mt-1"
+                                            v-if="errors.editDormData?.contactPhone">
+                                            <i class="fa-solid fa-circle-exclamation me-1"></i>
                                             {{ errors.editDormData.contactPhone[0] }}
                                         </span>
                                     </div>
-                                    <div class="form-floating mb-3 mt-3">
-                                        <input type="text" class="form-control" id="building_type"
-                                            placeholder="Enter Building Type" v-model="editDormData.buildingType">
-                                        <label for="building_type">Building Type</label>
+                                    <div class="form-floating mb-2 position-relative">
+                                        <!-- Building Icon -->
+
+                                        <input type="text" class="form-control  rounded-4 border-primary shadow-sm"
+                                            id="building_type" placeholder="Enter Building Type"
+                                            v-model="editDormData.buildingType">
+                                        <label for="building_type" class="text-primary">Building Type</label>
+
+                                        <!-- Error message with icon -->
+                                        <span class="text-danger small d-flex align-items-center mt-1"
+                                            v-if="errors.editDormData?.buildingType">
+                                            <i class="fa-solid fa-circle-exclamation me-1"></i>
+                                            {{ errors.editDormData.buildingType[0] }}
+                                        </span>
                                     </div>
-                                    <span class="text-danger mb-3" v-if="errors.editDormData?.buildingType">{{
-                                        errors.editDormData.buildingType[0] }}</span>
-                                    <div class="form-floating mb-3 mt-3">
-                                        <select class="form-select" id="availability"
-                                            v-model="editDormData.availability">
+                                    <div class="form-floating mb-2 position-relative">
+                                        <!-- Availability Icon -->
+
+
+                                        <select class="form-select  rounded-4 border-primary shadow-sm"
+                                            id="availability" v-model="editDormData.availability">
                                             <option disabled value="">Select Availability</option>
                                             <option value="Available">Available</option>
                                             <option value="Not Available">Not Available</option>
                                         </select>
-                                        <label for="availability">Select Availability</label>
+                                        <label for="availability" class="text-primary">Select Availability</label>
+
+                                        <!-- Error Message with Icon -->
+                                        <span class="text-danger small d-flex align-items-center mt-1"
+                                            v-if="errors.editDormData?.availability">
+                                            <i class="fa-solid fa-circle-exclamation me-1"></i>
+                                            {{ errors.editDormData.availability[0] }}
+                                        </span>
                                     </div>
-                                    <span class="text-danger mb-3" v-if="errors.editDormData?.availability">{{
-                                        errors.editDormData.availability[0] }}</span>
-                                    <div class="form-floating mb-3 mt-3">
-                                        <select class="form-select" id="occupancy_type"
-                                            v-model="editDormData.occupancyType">
+
+                                    <!-- Occupancy Type Field -->
+                                    <div class="form-floating mb-2 position-relative">
+                                        <select class="form-select  rounded-4 border-primary shadow-sm"
+                                            id="occupancy_type" v-model="editDormData.occupancyType">
                                             <option disabled value="">Select Occupancy Type</option>
                                             <option value="Male only">Male only</option>
                                             <option value="Female only">Female only</option>
                                             <option value="Mixed (Male & Female – separate floors)">Mixed (Male & Female
-                                                –
-                                                separate floors)</option>
+                                                – separate floors)</option>
                                             <option value="Mixed (Unspecified)">Mixed (Unspecified)</option>
                                         </select>
-                                        <label for="occupancy_type">Occupancy Type</label>
+                                        <label for="occupancy_type" class="text-primary">Occupancy Type</label>
                                     </div>
                                     <span class="text-danger mb-3" v-if="errors.editDormData?.occupancyType">{{
                                         errors.editDormData.occupancyType[0] }}</span>
-                                    <div class="mt-2"><span>Number of Rooms</span>
-                                        <div class="form-floating mb-2">
-                                            <div class="mb-3 mt-3 d-flex align-items-center gap-2">
+                                    <div class="mt-3 mb-3">
+                                        <label class="fw-bold mb-2 text-primary text-center">
+                                            <i class="fa-solid fa-door-closed me-1"></i> Number of Rooms
+                                        </label>
 
-                                                <button type="button" class="btn btn-outline-danger"
-                                                    @click="updatedecreamnentRooms()"><span
-                                                        class="fw-bold">-</span></button>
-                                                <input type="text" class="form-control w-100 text-center"
-                                                    id="total_rooms" placeholder="0" v-model="editDormData.totalRooms"
-                                                    readonly>
-                                                <button type="button" class="btn btn-outline-success"
-                                                    @click="updateincreamentRooms()"><span
-                                                        class="fw-bold">+</span></button>
-                                            </div>
+                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                            <!-- Decrease Button -->
+                                            <button type="button"
+                                                class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center"
+                                                style="width: 40px; height: 40px;" @click="updatedecreamnentRooms()">
+                                                <i class="fa-solid fa-minus"></i>
+                                            </button>
+
+                                            <!-- Room Count Input -->
+                                            <input type="text"
+                                                class="form-control text-center fw-bold rounded-4 border-primary shadow-sm"
+                                                id="total_rooms" placeholder="0" v-model="editDormData.totalRooms"
+                                                readonly style="max-width: 300px;">
+
+                                            <!-- Increase Button -->
+                                            <button type="button"
+                                                class="btn btn-outline-success rounded-circle d-flex align-items-center justify-content-center"
+                                                style="width: 40px; height: 40px;" @click="updateincreamentRooms()">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="mb-2">
@@ -567,37 +673,49 @@
                                 </div>
                                 <!-- Right Column -->
                                 <div class="col-md-4">
-                                    <div class="form-floating mb-2">
-                                        <input type="text" class="form-control" id="Optional" v-model="newrules"
+                                    <div class="form-floating mb-2 position-relative">
+                                        <input type="text" class="form-control rounded-4 border-secondary shadow-sm"
+                                            id="Optional" v-model="newrules"
                                             placeholder="Optional Add Rules and Policies">
-                                        <label for="Optional">(Optional) Add Rules and Policies</label>
+                                        <label for="Optional" class="text-secondary">(Optional) Add Rules and
+                                            Policies</label>
                                     </div>
                                     <button class="btn btn-outline-primary w-100" type="button" @click="addNewRule()"><i
                                             class="fas fa-plus me-2"></i>Add Rule</button>
-                                    <span class="text-danger small" v-if="errors.newrules">
+                                    <span class="text-danger small d-flex align-items-center mt-1"
+                                        v-if="errors.newrules">
+                                        <i class="fa-solid fa-circle-exclamation me-1"></i>
                                         {{ errors.newrules[0] }}
                                     </span>
-                                    <div class="border rounded p-2">
-                                        <div class="row fw-bold border-bottom py-2 text-center">
-                                            <div class="col">Rules and policies</div>
-                                            <div class="col-3">Actions</div>
+                                    <div class="border rounded-4 p-3 shadow-sm bg-light">
+                                        <!-- Header -->
+                                        <div class="row fw-bold border-bottom py-2 text-center bg-white rounded-top">
+                                            <div class="col">
+                                                <i class="fa-solid fa-scroll me-2"></i>Rules and Policies
+                                            </div>
+                                            <div class="col-3">
+                                                Actions
+                                            </div>
                                         </div>
 
+                                        <!-- List -->
                                         <div v-for="rule in editDormData.rules_and_policy"
                                             :key="rule.pivot ? rule.pivot.id : rule.id"
-                                            class="row align-items-center py-2 border-bottom text-center">
+                                            class="row align-items-center py-2 border-bottom text-center bg-white rounded mb-2 shadow-sm">
                                             <div class="col">
-                                                <input type="text" readonly class="form-control text-center"
+                                                <input type="text" readonly
+                                                    class="form-control text-center bg-light border-0 fw-semibold text-secondary"
                                                     v-model="rule.rulesName" placeholder="Rule name" />
                                             </div>
                                             <div class="col-3 d-flex justify-content-center gap-2">
-                                                <button class="btn btn-sm btn-outline-danger" type="button"
+                                                <button
+                                                    class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+                                                    type="button"
                                                     @click.prevent="deleteRulesAndPolicies(rule.pivot.id)">
-                                                    Delete
+                                                    <i class="fa-solid fa-trash"></i>
                                                 </button>
                                             </div>
                                         </div>
-
                                     </div>
 
 
@@ -624,24 +742,21 @@
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Dorm Location</h5>
+                        <h5 class="modal-title">Update Dorm Location</h5>
                         <button type="button" class="btn-close" @click="UpdateVisibleMap = false"
                             aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div id="map" style="height: 400px; width: 100%; border-radius: 8px;"></div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="UpdateVisibleMap = false">Back to
-                            Inputs</button>
-                    </div>
+
                 </div>
             </div>
         </div>
         <!-- Display Data Modal -->
         <div v-if="VisibleDisplayDataModal" class="modal fade show d-block w-100" tabindex="-1"
             style="background-color: rgba(0,0,0,0.5);" @click.self="VisibleDisplayDataModal = false">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg rounded-4">
                     <!-- Modal Header -->
                     <div class="modal-header b text-dark rounded-top-4">
@@ -652,112 +767,133 @@
 
                     <!-- Modal Body -->
                     <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding: 1.5rem;">
-
-                        <!-- Images Section -->
-                        <div class="row mb-4 g-3">
-                            <div class="col-12 col-md-4" v-if="selectedDorm?.images?.mainImage">
-                                <div class="image-wrapper">
-                                    <img :src="selectedDorm.images.mainImage"
-                                        class="img-fluid rounded shadow-sm uniform-image" alt="Main Image">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4" v-if="selectedDorm?.images?.secondaryImage">
-                                <div class="image-wrapper">
-                                    <img :src="selectedDorm.images.secondaryImage"
-                                        class="img-fluid rounded shadow-sm uniform-image" alt="Secondary Image">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4" v-if="selectedDorm?.images?.thirdImage">
-                                <div class="image-wrapper">
-                                    <img :src="selectedDorm.images.thirdImage"
-                                        class="img-fluid rounded shadow-sm uniform-image" alt="Third Image">
-                                </div>
-                            </div>
+                        <div class="mb-3 text-center">
+                            <img :src="currentMainImage" class="img-fluid rounded shadow-sm"
+                                style="max-height: 300px; object-fit: cover; width: auto;" alt="Main Image">
                         </div>
 
+                        <!-- Images Section -->
+                        <div class="d-flex gap-3 justify-content-center">
+                            <img v-if="selectedDorm?.images?.mainImage" :src="selectedDorm.images.mainImage"
+                                class="img-thumbnail shadow-sm"
+                                style="width: 120px; height: 80px; object-fit: cover; cursor: pointer;"
+                                @click="changeMainImage(selectedDorm.images.mainImage)" alt="Thumbnail 1">
 
+                            <img v-if="selectedDorm?.images?.secondaryImage" :src="selectedDorm.images.secondaryImage"
+                                class="img-thumbnail shadow-sm"
+                                style="width: 120px; height: 80px; object-fit: cover; cursor: pointer;"
+                                @click="changeMainImage(selectedDorm.images.secondaryImage)" alt="Thumbnail 2">
+
+                            <img v-if="selectedDorm?.images?.thirdImage" :src="selectedDorm.images.thirdImage"
+                                class="img-thumbnail shadow-sm"
+                                style="width: 120px; height: 80px; object-fit: cover; cursor: pointer;"
+                                @click="changeMainImage(selectedDorm.images.thirdImage)" alt="Thumbnail 3">
+                        </div>
                         <!-- Dorm Info Section -->
-                        <div class="row g-4">
+                        <div class="row g-4 mt-3">
+
                             <!-- Left Column -->
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Dorm Name:</label>
-                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.dormName }}
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Address:</label>
-                                    <div class="p-2 border rounded bg-light text-break"
-                                        style="max-height: 100px; overflow-y: auto;">
-                                        {{ selectedDorm?.address }}
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Contact Email:</label>
-                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactEmail
-                                    }}</div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Description:</label>
-                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.description }}
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Amenities:</label>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <span v-for="amenity in selectedDorm?.amenities" :key="amenity.id"
-                                            class="badge bg-primary text-white px-3 py-2 shadow-sm"
-                                            style="font-size: 0.9rem;">
-                                            {{ amenity.aminityName }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Rules and Policy:</label>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <span v-for="rule in selectedDorm?.rules_and_policy" :key="rule.id"
-                                            class="badge bg-primary text-white px-3 py-2 shadow-sm"
-                                            style="font-size: 0.9rem;">
-                                            {{ rule.rulesName }}
-                                        </span>
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-1">Dorm Name</h6>
+                                        <p class="mb-0 text-secondary">{{ selectedDorm?.dormName }}</p>
                                     </div>
                                 </div>
 
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-1">Address</h6>
+                                        <p class="mb-0 text-secondary" style="max-height: 100px; overflow-y: auto;">
+                                            {{ selectedDorm?.address }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-1">Contact Email</h6>
+                                        <p class="mb-0 text-secondary">{{ selectedDorm?.contactEmail }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-1">Description</h6>
+                                        <p class="mb-0 text-secondary">{{ selectedDorm?.description }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-2">Amenities</h6>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span v-for="amenity in selectedDorm?.amenities" :key="amenity.id"
+                                                class="badge rounded-pill bg-gradient px-3 py-2 shadow-sm"
+                                                style="background:black; font-size: 0.85rem;">
+                                                {{ amenity.aminityName }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-2">Rules & Policies</h6>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span v-for="rule in selectedDorm?.rules_and_policy" :key="rule.id"
+                                                class="badge rounded-pill bg-gradient px-3 py-2 shadow-sm"
+                                                style="background: black; font-size: 0.85rem;">
+                                                {{ rule.rulesName }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Right Column -->
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Contact Phone:</label>
-                                    <div class="p-2 border rounded bg-light text-break">{{ selectedDorm?.contactPhone
-                                    }}</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Total Rooms:</label>
-                                    <div class="p-2 border rounded bg-light">{{ selectedDorm?.totalRooms }}</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Registration Date:</label>
-                                    <div class="p-2 border rounded bg-light">{{ formatDate(selectedDorm?.created_at) }}
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-1">Contact Phone</h6>
+                                        <p class="mb-0 text-secondary">{{ selectedDorm?.contactPhone }}</p>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Occupancy Type:</label>
-                                    <div class="p-2 border rounded bg-light text-break"
-                                        style="max-height: 120px; overflow-y: auto;">
-                                        {{ selectedDorm?.occupancyType }}
+
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-1">Total Rooms</h6>
+                                        <p class="mb-0 text-secondary fw-semibold">{{ selectedDorm?.totalRooms }}</p>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Building type:</label>
-                                    <div class="p-2 border rounded bg-light text-break"
-                                        style="max-height: 120px; overflow-y: auto;">
-                                        {{ selectedDorm?.buildingType }}
+
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-1">Registration Date</h6>
+                                        <p class="mb-0 text-secondary">{{ formatDate(selectedDorm?.created_at) }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-1">Occupancy Type</h6>
+                                        <p class="mb-0 text-secondary" style="max-height: 120px; overflow-y: auto;">
+                                            {{ selectedDorm?.occupancyType }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body rounded-4" style="border:2px solid #4edce2;">
+                                        <h6 class="fw-bold text-primary mb-1">Building Type</h6>
+                                        <p class="mb-0 text-secondary" style="max-height: 120px; overflow-y: auto;">
+                                            {{ selectedDorm?.buildingType }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
-                        </div> <!-- end row -->
+                        </div>
+                        <!-- end row -->
                     </div> <!-- end modal-body -->
                 </div>
             </div>
@@ -1126,7 +1262,7 @@ export default {
             currntamenitiesId: null,
             editDormData: {
                 dorm_id: null,
-                dormName: '',
+                dormName: "",
                 address: "",
                 description: "",
                 totalRooms: "",
@@ -1161,6 +1297,7 @@ export default {
             newAmenity: '',
             newrules: "",
             notifications: [],
+            currentMainImage: null,
 
 
         };
@@ -1280,7 +1417,6 @@ export default {
         },
         //view Dorm data
         async viewDorm(dormId) {
-            alert('sadas', dormId);
             this.$refs.loader.loading = true;
             try {
                 const response = await axios.get(`/view-dorm/${dormId}`, {
@@ -1297,6 +1433,8 @@ export default {
                 }
             } catch (error) {
                 console.error("Error fetching dorm details:", error);
+            } finally {
+                this.$refs.loader.loading = false;
             }
         },
         //end view doorm
@@ -1323,6 +1461,9 @@ export default {
             this.currentStep = 0;
 
 
+        },
+        changeMainImage(imageUrl) {
+            this.currentMainImage = imageUrl;
         },
         //end fill data
         //redirect rooms page
@@ -1988,17 +2129,17 @@ export default {
             // Hide spinner
 
             const formData = new FormData();
-            formData.append('dorm_name', this.editDormData.dormName);
+            formData.append('dormName', this.editDormData.dormName);
             formData.append('address', this.editDormData.address);
             formData.append('description', this.editDormData.description);
             formData.append('latitude', this.editDormData.latitude);
             formData.append('longitude', this.editDormData.longitude);
-            formData.append('total_rooms', this.editDormData.totalRooms);
-            formData.append('contact_email', this.editDormData.contactEmail);
-            formData.append('contact_phone', this.editDormData.contactPhone);
+            formData.append('totalRooms', this.editDormData.totalRooms);
+            formData.append('contactEmail', this.editDormData.contactEmail);
+            formData.append('contactPhone', this.editDormData.contactPhone);
             formData.append('availability', this.editDormData.availability);
-            formData.append('occupancy_type', this.editDormData.occupancyType);
-            formData.append('building_type', this.editDormData.buildingType);
+            formData.append('occupancyType', this.editDormData.occupancyType);
+            formData.append('buildingType', this.editDormData.buildingType);
             try {
                 const confirmed = await this.$refs.modal.show({
                     title: 'Update Dorm',

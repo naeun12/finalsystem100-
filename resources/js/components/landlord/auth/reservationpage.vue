@@ -2,8 +2,8 @@
     <Loader ref="loader" />
     <NotificationList ref="toastRef" />
 
-    <div class="p-4 mt-4">
-        <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden">
+    <div class="p-4 mt-2">
+        <div style="border:2px solid #4edce2;" class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden">
             <span class="input-group-text bg-white border-0">
                 <i class="bi bi-search text-primary"></i>
             </span>
@@ -14,8 +14,8 @@
             <!-- Dorm No Dropdown -->
             <div class="mb-2 d-flex align-items-center gap-2">
                 <div class="w-100">
-
-                    <select id="dormSelect" class="form-select form-select-lg shadow-sm" @change="filterDorms"
+                    <select id="dormSelect" style="border:2px solid #4edce2;"
+                        class="form-select form-select-sm rounded-3  shadow-sm" @change="filterDorms"
                         v-model="selectedDormId">
                         <option value="" disabled> Select Dorm</option>
                         <option value="all"> All dorms</option>
@@ -23,15 +23,14 @@
                             {{ dorm.dormName }} (ID: {{ dorm.dormID }})
                         </option>
                     </select>
-
-
                 </div>
             </div>
             <!-- Room No Dropdown -->
             <div class="mb-2 d-flex align-items-center gap-2">
                 <div class="w-100">
 
-                    <select id="dormSelect" class="form-select form-select-lg shadow-sm" v-model="selectedroomNumber"
+                    <select id="dormSelect" style="border:2px solid #4edce2;"
+                        class="form-select form-select-sm rounded-3 shadow-sm" v-model="selectedroomNumber"
                         @change="filterroomNumber">
                         <option value="" disabled>Select Room Number</option>
                         <option value="all">All rooms</option>
@@ -45,8 +44,9 @@
             <div class="mb-2 d-flex align-items-center gap-2">
                 <div class="w-100">
 
-                    <select id="dormSelect" class="form-select form-select-lg shadow-sm"
-                        @change="filterApplicationStatus" v-model="selectedapplicationStatus">
+                    <select id="dormSelect" style="border:2px solid #4edce2;"
+                        class="form-select form-select-sm rounded-3 shadow-sm" @change="filterApplicationStatus"
+                        v-model="selectedapplicationStatus">
                         <option value="" disabled> Select Application Status</option>
                         <option value="all"> All Application Status</option>
                         <option value="pending"> Pending</option>
@@ -64,10 +64,10 @@
             </div>
         </div>
 
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3" style="">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 rounded-3 g-4" style="">
             <div class="col" v-for="reservation in reservations" :key="reservation.reservationID">
                 <div class="card shadow-sm rounded-4 border-0 h-100">
-                    <div class="card-body p-4" style="border:2px solid #4edce2;">
+                    <div class="card-body p-4 rounded-4" style="border:2px solid #4edce2;">
                         <!-- Header -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h5 class="fw-bold text-primary mb-0">Reservation #{{ reservation.reservationID }}</h5>
@@ -190,7 +190,17 @@
                                 }}</p>
                             </div>
                         </div>
-
+                        <div class="mb-2 mt-2">
+                            <select class="form-select" v-model="status">
+                                <option value="" disabled selected>Select Action</option>
+                                <option value="pending">Pending - Awaiting Confirmation</option>
+                                <option value="confirmed">Confirmed - Tenant To Pay</option>
+                                <option value="approved">Approved - Reservation Approved</option>
+                                <option value="cancelled">Cancelled - User Initiated</option>
+                                <option value="paid">Paid - Payment Completed</option>
+                                <option value="rejected">Rejected - User Initiated</option>
+                            </select>
+                        </div>
                         <!-- Additional Notes -->
                         <!-- Current Occupant Info -->
                         <div class="mt-2">
@@ -224,20 +234,19 @@
 
 
                                 </div>
-                                <label><strong>📅 Current Tenant End of Lease:</strong></label>
-                                <div class="d-flex gap-2">
-                                    <input type="date" class="form-control form-control-sm"
-                                        v-model="selectedReservation.room.current_tenant.moveOutDate" readonly />
-                                </div>
+
+                                <label><strong>📅 Current Tenant End of Lease: </strong> {{
+                                    selectedReservation.room.current_tenant.moveOutDate }}</label>
+
 
                             </div>
 
                         </div>
                         <ReservationStatusAlert :status="selectedReservation.status" role="landlord" class="mt-4" />
                         <div v-if="selectedReservation.status === 'paid' || selectedReservation.status === 'approved'">
-                            <label class="mb-2"> <strong>📅 Reservation Start of Lease:</strong></label>
-                            <input type="text" class="form-control form-control-sm"
-                                v-model="selectedReservation.moveInDate" readonly />
+                            <label class="mb-2"> <strong>📅 Reservation Start of Lease:</strong>{{
+                                selectedReservation.moveInDate }}</label>
+
                             <p class="text-success fw-bold mt-3" v-if="selectedReservation.status === 'paid'">
                                 ✅ Reservation has been paid. You can now accept or reject this reservation.
                             </p>
@@ -255,28 +264,9 @@
                             💬 Message Tenant
                         </button>
                         <div class="d-flex gap-2">
-                            <div
-                                v-if="selectedReservation.status === 'confirmed' || selectedReservation.status === 'pending'">
-                                <button :disabled="selectedReservation.status === 'confirmed'"
-                                    class="btn btn-outline-success"
-                                    @click="handleReservationAction('confirmed', selectedReservation)">
-                                    ✅ Accept Reservation
-                                </button>
-                            </div>
-                            <div
-                                v-if="selectedReservation.status === 'paid' || selectedReservation.status === 'approved'">
-                                <button :disabled="selectedReservation.status === 'approved'"
-                                    class="btn btn-outline-success"
-                                    @click="handleReservationAction('approved', selectedReservation)">
-                                    ✅ Confirmed Reservation
-                                </button>
-                            </div>
-                            <div v-if="['pending', 'paid'].includes(selectedReservation.status)">
-                                <button
-                                    :disabled="['approved', 'confirmed', 'rejected', 'cancelled', 'expired'].includes(selectedReservation.status)"
-                                    class="btn btn-outline-danger"
-                                    @click="handleReservationAction('rejected', selectedReservation)">
-                                    ❌ Reject Reservation
+                            <div>
+                                <button class="btn btn-outline-success" @click="acceptReservation(selectedReservation)">
+                                    ✅ Update Reservation
                                 </button>
                             </div>
                         </div>
@@ -543,10 +533,7 @@ export default {
 
             }
         },
-        handleReservationAction(newStatus, reservation) {
-            this.status = newStatus;
-            this.acceptReservation(reservation);
-        },
+
         async acceptReservation(selectedReservation) {
             const formData = new FormData();
             formData.append('reservationID', selectedReservation.reservationID);
@@ -555,6 +542,7 @@ export default {
             formData.append('firstname', selectedReservation.firstname);
             formData.append('lastname', selectedReservation.lastname);
             formData.append('dorm', selectedReservation.room?.dorm?.dormName);
+            formData.append('landlordID', this.landlord_id);
             formData.append('status', this.status);
 
             this.$refs.loader.loading = true;
@@ -565,7 +553,8 @@ export default {
                     this.$refs.toast.showToast(response.data.message, 'success');
                     this.VisibleModalApproval = false; // Close modal
 
-                    this.reservationList(); // Refresh table
+                    this.reservationList();
+                    this.status = '';
                 } else {
                     this.$refs.toast.showToast(response.data.message || 'Failed to accept.', 'danger');
                 }

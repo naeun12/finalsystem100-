@@ -18,11 +18,21 @@ class selectionRoomController extends Controller
 {
     public function SelectionRoom($dormitoryID,$tenantID)
     {
+                $sessionTenant_id = session('tenant_id');
+         $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenantID)
+            ->where('isRead', false)
+            ->count();
 return view('tenant.auth.bookingProcess.roomSelection', [
     'title' => 'Room Selection',
     'cssPath' => asset('css/tenantpage/auth/roomselect.css'),
     'dormitory_id' => $dormitoryID,
-    'tenant_id' => $tenantID
+    'tenant_id' => $tenantID,
+    'notifications' => $notifications,
+             'unread_count' => $unreadCount,
 ]);
     }
     public function availableRooms($dormitoryID)

@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\landlord\landlordAccountModel;
 use App\Models\landlord\roomModel;
-
+use App\Models\notificationModel;
+use App\Models\reviewandratingModel;
 use App\Models\landlord\dormModel; 
 use App\Models\tenant\tenantModel; 
 
@@ -18,7 +19,13 @@ class homepageController extends Controller
     {
         
         $sessionTenant_id = session('tenant_id');
-    
+        $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenant_id)
+            ->where('isRead', false)
+            ->count();
         if (!$sessionTenant_id) {
             return redirect()->route('tenant-login')->with('error', 'Please log in as a landlord.');
         }
@@ -32,7 +39,9 @@ class homepageController extends Controller
             return redirect()->route('tenant-login')->with('error', 'Landlord not found.');
         }
         return view('tenant.auth.homepage',['title' => 'Room Details  - Dormhub',
-        'tenant_id',$tenant,'cssPath' => asset('css/tenantpage/auth/home.css')]);
+        'tenant_id',$tenant,'cssPath' => asset('css/tenantpage/auth/home.css')
+        ,'notifications' => $notifications,
+             'unread_count' => $unreadCount,]);
 
     }
     public function dormLapuLapu()
@@ -58,5 +67,24 @@ public function dormMandaeu()
             ->get()
     );
 }
+public function topRatedDorms()
+{
+  $dorms = dormModel::with('images')       // eager load images
+    ->withAvg('reviews', 'rating')          // calculate average rating
+    ->withCount('reviews')                  // count reviews
+    ->orderByDesc('reviews_avg_rating')     // top-rated first
+    ->take(5)                               // get top 5
+    ->get()
+    ->map(function($dorm) {
+        return [
+            'fkdormID' => $dorm->dormID,
+            'dorm'     => $dorm,
+            'avg_rating'=> $dorm->reviews_avg_rating ? floatval($dorm->reviews_avg_rating) : 0,
+        ];
+    });
+
+    return response()->json($dorms);
+}
+
 
 }

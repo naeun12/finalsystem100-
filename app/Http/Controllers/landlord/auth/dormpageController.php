@@ -388,7 +388,7 @@ class dormpageController extends Controller
         try
         {
             $validated = $request->validate([
-                'dorm_name' => [
+                'dormName' => [
                         'required',
                         'string',
                         'max:255',
@@ -398,19 +398,33 @@ class dormpageController extends Controller
                 'description' => 'required|string|max:1000',
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
-                'total_rooms' => 'required|integer|min:1',
-                'contact_email' => 'required|email|max:255',
-                'contact_phone' => 'required|string|min:11|max:11|regex:/^\+?[0-9]{7,11}$/',
+                'totalRooms' => 'required|integer|min:1',
+                'contactEmail' => 'required|email|max:255',
+                'contactPhone' => 'required|string|min:11|max:11|regex:/^\+?[0-9]{7,11}$/',
                 'availability' => 'required|string',
-                'occupancy_type' => 'required|string',
-                'building_type' => 'required|string',
+                'occupancyType' => 'required|string',
+                'buildingType' => 'required|string',
             ],
             [
-                'contact_phone.max' => 'The contact phone number must not exceed 11 characters.',
-                'contact_phone.regex' => 'The contact phone number must contain only numbers and can start with +.',
-                'total_rooms.min' => 'The total rooms must be at least 1.',
-                'total_rooms.integer' => 'The total rooms must be a number.',
-                'description.max' => 'The description must not exceed 1000 characters.',
+                'dormName.required' => 'Please enter the dormitory name.',
+                'dormName.unique' => 'This dormitory name is already taken.',
+                'dormName.max' => 'The dormitory name must not exceed 255 characters.',
+                'availability.required' => 'Please enter the Availability.',
+                'occupancyType.required' => 'Please enter the Occupancy type name.',
+                'buildingType.required' => 'Please enter the Building type.',
+                'address.required' => 'Please enter the address.',
+                'address.max' => 'The address must not exceed 255 characters.',
+            
+                'totalRooms.required' => 'Please enter the total number of rooms.',
+                'totalRooms.integer' => 'Total rooms must be a number.',
+                'totalRooms.min' => 'There must be at least 1 room.',
+            
+                'contactEmail.required' => 'Please enter a contact email.',
+                'contactEmail.email' => 'Please enter a valid email address.',
+                'contactEmail.max' => 'The contact email must not exceed 255 characters.',
+            
+                'contactPhone.required' => 'Please enter a contact phone number.',
+                'contactPhone.max' => 'The contact phone number must not exceed 11 characters.',
             ]);
             $landlordId = session('landlord_id');
             $dorm = dormModel::where('dormID', $id)->where('fklandlordID', $landlordId)->first();

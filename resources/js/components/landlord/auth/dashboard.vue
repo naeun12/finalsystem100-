@@ -300,9 +300,8 @@ export default
                 try {
                     this.$refs.loader.loading = true;
 
-                    const response = await axios.get(`get/landlord/${this.landlord_id}`, {
-                        params: { date: this.newDate }
-                    });
+                    const response = await axios.get(`/get/landlord/${this.landlord_id}`);
+
                     this.landlord = response.data.landlord;
                     await Promise.all([
                         this.getTotalTenants(),

@@ -29,6 +29,7 @@ class dormModel extends Model
         'longitude',
         'description',
         'contactEmail',
+        'views',
         'contactPhone',
         'availability',
         'occupancyType',
@@ -82,6 +83,11 @@ public function landlord()
 {
     return $this->belongsTo(landlordModel::class, 'fklandlordID', 'landlordID');
 }
+public function reviews()
+{
+    return $this->hasMany(\App\Models\reviewandratingModel::class, 'fkdormID', 'dormID');
+}
+
 }
 
 

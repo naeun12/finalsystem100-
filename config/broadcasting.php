@@ -19,10 +19,6 @@ return [
 
 
 
-'guards' => [
-    'web',
-    'landlord', // <-- Dapat naa ni
-],
 
 
         'ably' => [

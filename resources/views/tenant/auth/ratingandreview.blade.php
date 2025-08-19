@@ -1,8 +1,8 @@
 @include('tenant.auth.partials.navigation')
 <!-- Hero Section with Full-Width Carousel -->
 <section class="hero-section py-0">
-    <div id="RoomDetails" data-dorm-id="{{ $dormitory_id }}" data-tenant-id="{{ $tenant_id }}">
-        <tenants-auth-RoomDetails></tenants-auth-RoomDetails>
+    <div id="reviewandrating" data-dorm-id="{{ $dormitory_id }}" data-tenant-id="{{ $tenant_id }}">
+        <tenants-auth-reviewandrating></tenants-auth-reviewandrating>
     </div>
 </section>
 <!-- HTML -->

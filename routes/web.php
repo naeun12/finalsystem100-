@@ -11,10 +11,13 @@ use App\Http\Controllers\landlord\auth\landlordaccountprocessController;
 use App\Http\Controllers\landlord\auth\dashboardController;
 use App\Http\Controllers\landlord\auth\dormpageController;
 use App\Http\Controllers\landlord\auth\roompageController;
-// use App\Http\Controllers\landlard\auth\TenantController;
+use App\Http\Controllers\landlord\auth\notificationslandlordController;
 use App\Http\Controllers\landlord\auth\bookingpageController;
 use App\Http\Controllers\landlord\auth\messagelandlordController;
 use App\Http\Controllers\landlord\auth\NotificationController;
+use App\Http\Controllers\landlord\auth\paymentlandlordController;
+
+
 use App\Http\Controllers\landlord\auth\reservationController;
 use App\Http\Controllers\landlord\auth\alltenantsController;
 use App\Http\Controllers\tenant\auth\dormitoriesmapcontroller;
@@ -27,6 +30,7 @@ use App\Http\Controllers\tenant\auth\nav\booking\mybookingdetailsController;
 use App\Http\Controllers\tenant\auth\nav\nextpayment\nextpaymentController;
 use App\Http\Controllers\tenant\auth\nav\myroom\myroomsController;
 use App\Http\Controllers\tenant\auth\nav\reservations\myreservationController;
+use App\Http\Controllers\tenant\auth\reviewandfeedbackController;
 use App\Models\tenant\messageModel;
 use App\Events\NewNotificationEvent;
 
@@ -69,7 +73,7 @@ Route::post('/RegisterLandlord', [landlordaccountprocessController::class, 'Regi
 //landlord auth
 
 Route::middleware([LandlordAuth::class])->group(function () {
-    Route::match(['get', 'post'], '/landlordDashboard/{landlordId}', [dashboardController::class, 'landlordDashboard'])->name('landlordDashboard');
+    Route::match(['get', 'post'], '/landlordDashboard/{landlordId}', [dashboardController::class, 'landlordDashboard'])->name('landlord.dashboard');
     Route::match(['get', 'post'], '/landlordDormManagement/{landlordId}', [dormpageController::class, 'DormManagement'])->name('landlordDormManagement');
     Route::match(['get', 'post'], '/input-text', [dormpageController::class, 'inputFieldDorm'])->name('input-text');
     Route::match(['get', 'post'], '/upload-main-image', [dormpageController::class, 'uploadmainImage'])->name('upload-main-image');
@@ -87,7 +91,7 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::match(['get', 'post'], '/NotificationPage', [NotificationController::class, 'NotificationPage'])->name('NotificationPage');
 
     //functions for getting data dashboard 
-    Route::get('/landlordDashboard/get/landlord/{landlord_id}', [dashboardController::class, 'getLandlord']);
+    Route::get('/get/landlord/{landlord_id}', [dashboardController::class, 'getLandlord']);
     Route::get('/get/total-tenants/{landlord_id}', [dashboardController::class, 'getTotalTenants']);
     Route::get('/get/available-beds/{landlord_id}', [dashboardController::class, 'availableBeds']);
     Route::get('/get/reservation-list/{landlord_id}', [dashboardController::class, 'getReservationList']);
@@ -153,20 +157,35 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/tenants-view/{id}', [alltenantsController::class, 'ViewTenant']);
     Route::put('/tenants-update/{id}', [alltenantsController::class, 'updateTenantInformation']);
     Route::get('get-dorms/{landlordId}', [alltenantsController::class, 'getDorms']);
-
+    Route::get('get/roomtype',[alltenantsController::class,'getRoomTypes']);
+    Route::get('get/rooms',[alltenantsController::class,'getRooms']);
+    Route::get('get/roomsdetails',[alltenantsController::class,'getRoomsDetails']);
+    Route::put('/tenant/room/update/{roomID}',[alltenantsController::class,'roomUpdate']);
+    Route::get('/tenants/search', [AllTenantsController::class, 'searchTenants']);
+    Route::get('/tenants/filter-by-dorm', [AllTenantsController::class, 'filterByDorm']);
     //functions for messaging landlord 
     Route::get('/api/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'getConversations']);
     Route::get('/api/select/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'selecttenantToMessage']);
     Route::get('/api/get/landlord/messages/{conversation_id}', [messagelandlordController::class, 'getMessages']);
     Route::post('/api/landlord/messages', [messagelandlordController::class, 'sendMessage']);
+    //functions for notfications landlord
+    Route::get('/notifications/lanlodrd/{landlord_id}', [notificationslandlordController::class, 'notificationsLandlord'])->name('notifications.landlord');
+    Route::get('/get/notifications/landlord/{landlord_id}', [notificationslandlordController::class, 'getLandlordNotificationsList']);
+    Route::post('/mark/read/landlord/{landlord_id}', [notificationslandlordController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read', [notificationslandlordController::class, 'markAllAsRead']);
+    Route::post('/clear/notifications', [notificationslandlordController::class, 'clearAll']);
+    //functions for payment landlord 
+     Route::get('/paymentLandlord/{landlord_id}', [paymentlandlordController::class, 'paymentLandlordindex'])->name('payment.landlord');
+
+
+
 
 });
 //tenant auth
 //tenant account process
 Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/homepage/{tenant_id}', [homepageController::class, 'homepage'])->name('homepage');
-    Route::get('/tenant/dorms/lapu-lapu', [homepageController::class, 'dormLapuLapu']);
-    Route::get('/tenant/dorms/mandaue', [homepageController::class, 'dormMandaeu']);  
+   
     Route::get('/room-details/{dormitory_id}/{tenant_id}', [dormdetailscontroller::class, 'roomDetails'])->name('room.details');
     Route::get('/room-selection/{dormitoryID}/{tenantID}', [selectionRoomController::class, 'SelectionRoom'])->name('room.selection');
     Route::get('/available-room/{dormitoryID}', [selectionRoomController::class, 'availableRooms'])->name('available.room');
@@ -180,27 +199,34 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/get-room-details/{roomID}', [bookroomController::class, 'getRoom'])->name('get.room.details');
     Route::post('/book-room',[bookroomController::class,'bookingaRoom']);
 
-    
+    //homepage
+    Route::get('/tenant/dorms/lapu-lapu', [homepageController::class, 'dormLapuLapu']);
+    Route::get('/tenant/dorms/mandaue', [homepageController::class, 'dormMandaeu']);  
+    Route::get('/api/top-rated-dorms', [homepageController::class, 'topRatedDorms']);  
+
     Route::post('/tenant-information', [dormdetailscontroller::class, 'tenantInformation'])->name('tenant.information');
     Route::post('/tenant-idPicture', [dormdetailscontroller::class, 'uploadTenantId'])->name('tenant.idPicture');
-
+    Route::get('/dorms/{id}/review-stats', [dormdetailscontroller::class, 'reviewStats']);
     Route::get('/dorm-details', [dormdetailscontroller::class, 'ViewDorms'])->name('dorm.details');
+    Route::get('/get/dorm/askai/{id}', [dormdetailscontroller::class, 'getdormAskAI']);
+    Route::post('/send/ai', [dormdetailscontroller::class, 'askAI']);
+
+    
     //map dormitories page
     Route::get('/dorm-map{tenant_id}', [dormitoriesmapcontroller::class, 'dormitoriesMap'])->name('dorm.map');
     Route::get('/nearby-dorms', [dormitoriesmapcontroller::class, 'getNearbyByCoordinates']);
-    
-
-
     // dormitories page
     Route::get('/dormitories{tenant_id}', [dormitories::class, 'dormitoriesListing'])->name('dormitories');
     Route::get('/list-dorms', [dormitories::class, 'Listdorms']);
     Route::post('/search-locations', [dormitories::class, 'searchLocations']);
     Route::post('/pricerecommendations', [dormitories::class, 'priceRecommendations']);
     Route::post('/gender-recommendations', [dormitories::class, 'genderRecommendations']);
-    Route::post('/api/search', [dormitories::class, 'searchWithPrice']);
-    Route::post('/recommendations/gender-location', [dormitories::class, 'genderLocationRecommendations']);
-    Route::get('/dormitories/filter', [dormitories::class, 'filtergenderpriceDormitories']);
-    Route::post('/filterpricegender-dormitories', [dormitories::class, 'filterpriceGenderDormitories']);
+    Route::post('/ai/question/reccomendations', [dormitories::class, 'getQuestionRecommendations']);
+    Route::get('/most/watched/dorm/{id}', [dormitories::class, 'mostWatchedDorm']);
+//review and rating page
+    Route::get('/rating/reviews/{dormitory_id}/{tenant_id}', [reviewandfeedbackController::class, 'reviewandrating'])->name('review.rating');
+    Route::get('/fetch/reviewsandrating/{dormitory_id}', [reviewandfeedbackController::class, 'fetchreviewandrating']);
+
 
     //tenant message
    // In your routes
@@ -227,7 +253,13 @@ Route::middleware([TenantAuth::class])->group(function () {
  // view My Rooms
     Route::get('/view/myrooms/{tenant_id}', [myroomsController::class, 'myroomsIndex'])->name('next.myrooms');
     Route::get('/tenant/room-list/{tenant_id}', [myroomsController::class, 'myroomsList']);
+    Route::get('/tenant/{id}/receipt', [myroomsController::class, 'generateReceipt']);
+    Route::post('/extend-rent', [myroomsController::class, 'extendRent']);
+    Route::post('/reviewandrating', [myroomsController::class, 'ReviewAndRating']);
+    Route::post('/send/issue/', [myroomsController::class, 'sendIssue']);
 
+
+    
     //reservations view
     Route::get('/view/reservation/{tenant_id}', [myreservationController::class, 'viewReservation'])->name('view.reservation');
     Route::get('/tenant/my-reservation/{tenant_id}', [myreservationController::class, 'myReservationList']);
@@ -235,23 +267,10 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/tenant/cancel/reservation/{reservationID}', [myreservationController::class, 'cancelReservation']);
     Route::post('/tenant/pay/reservation/{reservationID}', [myreservationController::class, 'paymentReservation']);
 });
-Route::get('/test-broadcast', function () {
-    // Create a notification record in the DB
-    $notif = notificationModel::create([
-        'senderID' => 'afbb0302-8210-4ced-8cf0-81df2d7ebb8e',
-        'senderType' => 'tenant',
-        'receiverID' => 'be33805a-5424-4ee9-b4b3-9a7bb5db1deb',
-        'receiverType' => 'landlord',
-        'title' => 'New Reservation Request',
-        'message' => 'A tenant has reserved Room #100.',
-        'isRead' => false,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-
-    // Pass the model instance to the event (no more error)
-    broadcast(new NewNotificationEvent($notif));
+Route::get('/test-auth', function () {
+    return auth('landlord')->check() ? 'Authenticated as landlord' : 'NOT authenticated';
 });
+
 
 
 

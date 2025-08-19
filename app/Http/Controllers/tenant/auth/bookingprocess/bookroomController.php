@@ -13,7 +13,17 @@ class bookroomController extends Controller
 {
     public function bookRoomPage($roomId,$tenantID)
     {
-        return view('tenant.auth.bookingProcess.roomBooking',['title'=>'Room Selection','cssPath'=>'','roomId' =>$roomId,'tenant_id'=>$tenantID]);
+                    $sessionTenant_id = session('tenant_id');
+
+         $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenantID)
+            ->where('isRead', false)
+            ->count();
+        return view('tenant.auth.bookingProcess.roomBooking',['title'=>'Room Selection','cssPath'=>'','roomId' =>$roomId,'tenant_id'=>$tenantID,'notifications' => $notifications,
+             'unread_count' => $unreadCount,]);
     }
     public function getRoom($roomID)
     {

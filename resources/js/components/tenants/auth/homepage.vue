@@ -1,4 +1,6 @@
 <template>
+    <NotificationList ref="toastRef" />
+
     <!-- Top Navigation -->
     <div class="bg-white m-3 py-3 px-2 text-center shadow-sm border-custom rounded-4">
         <ul class="nav justify-content-center gap-3 flex-wrap">
@@ -65,73 +67,78 @@
 
     <!-- Custom Masonry Layout -->
     <!-- Section Header -->
-    <div class="p-4 rounded shadow-sm text-center mb-4" style="border: 1px solid #4edce2; border-radius: 20px;">
-        <h2 class="h5 fw-bold text-info">Top Rated Dormitories</h2>
+    <div class="p-4 rounded shadow-sm text-center mb-4 bg-light border-info">
+        <h2 class="h4 fw-bold text-info">Top Rated Dormitories</h2>
+        <p class="text-muted">Check out the best dorms in your area</p>
     </div>
 
-    <!-- Custom Masonry Grid Layout -->
     <div class="m-2 py-4">
         <div class="row g-4">
             <!-- Large Left Card -->
-            <div class="col-md-6">
-                <div class="card h-100 dorm-card text-white bg-dark border-0">
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h5 class="card-title">Sunshine Dormitory</h5>
-                            <p class="card-text">Mandaue City</p>
-                            <p class="card-text">⭐ 4.8</p>
-                        </div>
-                        <div class="text-end">
-                            <a href="#" class="btn btn-outline-light">View Details</a>
-                        </div>
+            <div class="col-md-6" v-if="topDorms.length > 0">
+                <div class="card h-100 dorm-card text-white border-0 overflow-hidden shadow-lg"
+                    style="border-radius: 20px; cursor: pointer; position: relative; height: 400px;">
+                    <!-- Full background image -->
+                    <div :style="{
+                        backgroundImage: `url(${topDorms[0].dorm.images?.mainImage || '/default-image.jpg'})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        height: '100%',
+                        width: '100%',
+                        borderRadius: '20px',
+                        filter: 'brightness(0.7)'
+                    }"></div>
+
+                    <!-- Text overlay -->
+                    <div style="position: absolute; bottom: 20px; left: 20px; z-index: 10;">
+                        <h4 class="fw-bold">{{ topDorms[0].dorm.dormName }}</h4>
+                        <p class="mb-1">{{ topDorms[0].dorm.address }}</p>
+                        <p class="mb-1">⭐ {{ Number(topDorms[0].avg_rating).toFixed(1) }}</p>
+                        <a :href="`/dorm/${topDorms[0].fkdormID}`" class="btn btn-outline-light btn-sm">View Details</a>
                     </div>
                 </div>
             </div>
 
             <!-- Right Column -->
             <div class="col-md-6">
-                <!-- Top Right Wide Card -->
-                <div class="card mb-4 dorm-card text-white bg-dark border-0">
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h5 class="card-title">Palm Grove Dorm</h5>
-                            <p class="card-text">Lapu-Lapu City</p>
-                            <p class="card-text">⭐ 4.6</p>
-                        </div>
-                        <div class="text-end">
-                            <a href="#" class="btn btn-outline-light">View Details</a>
-                        </div>
+                <div class="card mb-4 dorm-card text-white border-0 overflow-hidden shadow" v-if="topDorms.length > 1"
+                    style="border-radius: 20px; height: 190px; position: relative;">
+                    <div :style="{
+                        backgroundImage: `url(${topDorms[1].dorm.images?.mainImage || '/default-image.jpg'})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        height: '100%',
+                        width: '100%',
+                        borderRadius: '20px',
+                        filter: 'brightness(0.7)'
+                    }"></div>
+                    <div style="position: absolute; bottom: 10px; left: 15px; z-index: 10;">
+                        <h5 class="fw-bold mb-1">{{ topDorms[1].dorm.dormName }}</h5>
+                        <p class="mb-1">{{ topDorms[1].dorm.address }}</p>
+                        <p class="mb-0">⭐ {{ Number(topDorms[1].avg_rating).toFixed(1) }}</p>
+                        <a :href="`/dorm/${topDorms[1].fkdormID}`" class="btn btn-outline-light btn-sm mt-1">View</a>
                     </div>
                 </div>
 
                 <!-- Two Smaller Cards -->
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="card dorm-card text-white bg-dark border-0">
-                            <div class="card-body d-flex flex-column justify-content-between">
-                                <div>
-                                    <h5 class="card-title">Cityside Stay</h5>
-                                    <p class="card-text">Mandaue</p>
-                                    <p class="card-text">⭐ 4.5</p>
-                                </div>
-                                <div class="text-end">
-                                    <a href="#" class="btn btn-outline-light">View Details</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card dorm-card text-white bg-dark border-0">
-                            <div class="card-body d-flex flex-column justify-content-between">
-                                <div>
-                                    <h5 class="card-title">Lapu Cozy Dorm</h5>
-                                    <p class="card-text">Lapu-Lapu</p>
-                                    <p class="card-text">⭐ 4.7</p>
-                                </div>
-                                <div class="text-end">
-                                    <a href="#" class="btn btn-outline-light">View Details</a>
-                                </div>
+                <div class="row g-3">
+                    <div class="col-md-6" v-for="(dorm, index) in topDorms.slice(2, 4)" :key="dorm.fkdormID">
+                        <div class="card dorm-card text-white border-0 overflow-hidden shadow-sm"
+                            style="border-radius: 15px; height: 140px; position: relative;">
+                            <div :style="{
+                                backgroundImage: `url(${dorm.dorm.images?.mainImage || '/default-image.jpg'})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                height: '100%',
+                                width: '100%',
+                                borderRadius: '15px',
+                                filter: 'brightness(0.7)'
+                            }"></div>
+                            <div style="position: absolute; bottom: 10px; left: 10px; z-index: 10;">
+                                <h6 class="fw-bold mb-0">{{ dorm.dorm.dormName }}</h6>
+                                <p class="mb-0 text-truncate">{{ dorm.dorm.address }}</p>
+                                <p class="mb-0">⭐ {{ Number(dorm.avg_rating).toFixed(1) }}</p>
+                                <a :href="`/dorm/${dorm.fkdormID}`" class="btn btn-outline-light btn-sm mt-1">View</a>
                             </div>
                         </div>
                     </div>
@@ -141,18 +148,48 @@
     </div>
 
 
+
 </template>
 <script>
 import axios from 'axios';
+import Loader from '@/components/loader.vue';
+import NotificationList from '@/components/notifications.vue';
+
 export default {
+    components: {
+        Loader,
+        NotificationList,
+    },
     data() {
         return {
             rooms: [],
             tenant_id: '',
+            notifications: [],
+            receiverID: '',
+            topDorms: []
+
 
         };
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.tenant_id;
+            Echo.private(`notifications.${this.tenant_id}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
 
         viewDorms(dormitoryId) {
             this.tenant_id = window.tenant_id;
@@ -311,7 +348,20 @@ export default {
                 .catch(error => {
                     console.error('Error fetching Mandaue dorms:', error);
                 });
+        },
+        async fetchTopRatedDorms() {
+            try {
+                const response = await axios.get('/api/top-rated-dorms');
+                // Convert avg_rating to number
+                this.topDorms = response.data.map(dorm => ({
+                    ...dorm,
+                    avg_rating: Number(dorm.avg_rating)
+                }));
+            } catch (error) {
+                console.error(error);
+            }
         }
+
 
 
     },
@@ -326,7 +376,8 @@ export default {
         // Attach initMap function globally
         window.initMap = this.initMap;
         this.tenant_id = window.tenant_id;
-        console.log("Tenant ID:", this.tenant_id);
+        this.subscribeToNotifications();
+        this.fetchTopRatedDorms();
 
     },
 }

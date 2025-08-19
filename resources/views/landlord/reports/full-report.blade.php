@@ -3,45 +3,60 @@
 
 <head>
     <title>Landlord Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            font-size: 12px;
+            font-size: 13px;
             color: #333;
-            padding: 20px;
+            padding: 30px;
             background-color: #fff;
         }
 
-        h2,
-        h4 {
+        h2 {
             color: #2c3e50;
             margin-bottom: 5px;
+            font-size: 22px;
         }
 
         p {
             margin-top: 0;
-            font-size: 11px;
+            font-size: 12px;
+            color: #666;
         }
 
-        hr {
+        .income-box {
+            background-color: #f0f8ff;
+            border: 1px solid #cce7ff;
+            border-left: 5px solid #3498db;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
             margin: 20px 0;
-            border: none;
-            border-top: 1px solid #ccc;
+        }
+
+        .section-title {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 6px 12px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 25px;
+            margin-bottom: 8px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 11px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+            margin-top: 8px;
+            font-size: 12px;
         }
 
         th,
         td {
-            border: 1px solid #ccc;
-            padding: 8px;
+            border: 1px solid #e0e0e0;
+            padding: 8px 10px;
             text-align: left;
         }
 
@@ -52,25 +67,7 @@
         }
 
         tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .section-title {
-            background-color: #ecf0f1;
-            padding: 6px 10px;
-            border-left: 4px solid #3498db;
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-
-        .income-box {
-            background-color: #dff9fb;
-            padding: 10px;
-            border-left: 5px solid #22a6b3;
-            font-weight: bold;
-            font-size: 13px;
-            border-radius: 4px;
-            margin-bottom: 10px;
+            background-color: #fafafa;
         }
     </style>
 </head>
@@ -80,10 +77,10 @@
     <p>Date Generated: {{ now()->format('F d, Y - h:i A') }}</p>
 
     <div class="income-box">
-        <h4>Total Income: PHP{{ number_format($totalIncome, 2) }}</h4>
+        Total Income: PHP {{ number_format($totalIncome, 2) }}
     </div>
 
-    <div class="section-title"> Bookings</div>
+    <div class="section-title">Bookings</div>
     <table>
         <thead>
             <tr>
@@ -107,7 +104,7 @@
         </tbody>
     </table>
 
-    <div class="section-title"> Reservations</div>
+    <div class="section-title">Reservations</div>
     <table>
         <thead>
             <tr>

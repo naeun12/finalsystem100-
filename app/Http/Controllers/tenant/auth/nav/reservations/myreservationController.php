@@ -14,7 +14,13 @@ class myreservationController extends Controller
     public function viewReservation($tenant_id)
         {
             $sessionTenant_id = session('tenant_id');
-        
+         $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenant_id)
+            ->where('isRead', false)
+            ->count();
             if (!$sessionTenant_id) {
                 return redirect()->route('tenant-login')->with('error', 'Please log in as a landlord.');
             }
@@ -30,7 +36,9 @@ class myreservationController extends Controller
             $title = 'Tenant room Details - Dormhub';
             return view('tenant.auth.nav.reservations.reservation',['title' => 'Reservations',
             'tenant_id' => $tenant_id,
-            'cssPath' => asset('css/tenantpage/auth/roomdetails.css')]);
+            'cssPath' => asset('css/tenantpage/auth/roomdetails.css'),
+            'notifications' => $notifications,
+             'unread_count' => $unreadCount,]);
         }
         public function myReservationList($tenant_id)
         {

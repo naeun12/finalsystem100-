@@ -11,11 +11,22 @@ use App\Models\landlord\roomModel;
 use App\Models\landlord\landlordModel;
 use App\Models\tenant\tenantModel;
 use App\Models\conversationModel;
+use App\Models\notificationModel;
+
 
 class tenantmessageController extends Controller
 {
   public function tenantMessageIndex($tenant_id)
 {
+            $sessionTenant_id = session('tenant_id');
+
+     $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenant_id)
+            ->where('isRead', false)
+            ->count();
     $conversations = conversationModel::where('initiatorID', $tenant_id)
         ->where('initiatorRole', 'tenant')
         ->get();
@@ -36,6 +47,7 @@ class tenantmessageController extends Controller
             'receiver_profile'  => $landlord->profilePicUrl ?? 'default-profile.png',
             'last_message'      => $lastMessage->message ?? '',
             'sent_at'           => $lastMessage->sentAt ?? null,
+            
         ];
     })->sortByDesc('sent_at')->values();
 
@@ -45,12 +57,20 @@ class tenantmessageController extends Controller
         'demo'       => '',
         'tenant_id'  => $tenant_id,
         'history'    => $history,
+        'notifications' => $notifications,
+        'unread_count' => $unreadCount,
     ]);
 }
       public function landlordtenantmessageIndex(Request $request, $tenant_id)
     {
         $landlord_id = $request->input('landlord_id');
-    
+     $notifications = notificationModel::where('receiverID', $tenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenant_id)
+            ->where('isRead', false)
+            ->count();
         if (!$landlord_id) {
             return back()->with('error', 'Landlord ID is missing.');
         }
@@ -86,6 +106,8 @@ class tenantmessageController extends Controller
             'messages' => $messages,
             'demo' => $landlord_id,
             'conversation_id' => $conversation->id,
+            'notifications' => $notifications,
+        'unread_count' => $unreadCount,
         ]);
     }
     
@@ -161,6 +183,19 @@ class tenantmessageController extends Controller
     $message->sentAt = now();
     $message->isRead = 0;
     $message->save();
+    broadcast(new MessageSent($message))->toOthers();
+        $notifications = notificationModel::create([
+        'senderID'     => $message->senderID,
+        'senderType'   => 'tenant',
+        'receiverID'   => $message->receiverID,
+        'receiverType' => 'landlord',
+        'title'        => 'Tenant Message',
+        'message'      => "A tenant has sent you a message.",
+        'isRead'       => false,
+        'readAt'       => null,
+        ]);
+                broadcast(new \App\Events\NewNotificationEvent($notifications));
+
 
 
     return response()->json([

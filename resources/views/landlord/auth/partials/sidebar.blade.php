@@ -6,9 +6,9 @@
     </a>
     <ul class="list-group list-group-flush py-3">
         <li class="list-group-item">
-            <a href="{{ route('landlordDashboard', ['landlordId' => session('landlord_id')]) }}"
+            <a href="{{ route('landlord.dashboard', ['landlordId' => session('landlord_id')]) }}"
                 class="text-decoration-none d-flex align-items-center gap-2 px-2 py-1 rounded hover-effect
-                    {{ request()->routeIs('landlordDashboard') ? 'active-item' : 'text-dark' }}">
+                    {{ request()->routeIs('landlord.dashboard') ? 'active-item' : 'text-dark' }}">
                 <i class="bi bi-speedometer2 fs-5 text-primary"></i>
                 Dashboard
             </a>
@@ -84,21 +84,23 @@
         </li>
 
         <li class="list-group-item">
-            <a href="{{ route('NotificationPage') }}"
+            <a href="{{ route('notifications.landlord', ['landlord_id' => session('landlord_id')]) }}"
                 class="text-decoration-none d-flex align-items-center gap-2 px-2 py-1 rounded hover-effect
-                    {{ request()->routeIs('NotificationPage') ? 'active-item' : 'text-dark' }}">
-                <i class="bi bi-bell-fill text-danger fs-5"></i>
+            {{ request()->routeIs('notifications.landlord') ? 'active-item' : 'text-dark' }}">
+                <i class="bi bi-bell-fill text-warning fs-5"></i>
                 Notifications
             </a>
         </li>
 
         <li class="list-group-item">
-            <a href="{{ route('NotificationPage') }}"
-                class="text-decoration-none d-flex align-items-center gap-2 px-2 py-1 rounded hover-effect text-dark">
-                <i class="bi bi-credit-card text-primary fs-5"></i>
-                Account Verification Payment Required
+            <a href="{{ route('payment.landlord', ['landlord_id' => session('landlord_id')]) }}"
+                class="text-decoration-none d-flex align-items-center gap-2 px-2 py-1 rounded hover-effect
+        {{ request()->routeIs('payment.landlord') ? 'active-item' : 'text-dark' }}">
+                <i class="bi bi-credit-card-fill text-primary fs-5"></i>
+                Payment Account Verification
             </a>
         </li>
+
     </ul>
 </div>
 

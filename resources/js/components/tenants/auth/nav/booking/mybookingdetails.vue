@@ -2,6 +2,8 @@
     <Loader ref="loader" />
     <Toastcomponents ref="toast" />
     <Modalconfirmation ref="modal" />
+    <NotificationList ref="toastRef" />
+
     <div class="container-fluid  p-3">
         <div class="row shadow rounded overflow-hidden " style="border: 3px solid #4edce2;">
             <!-- Left Section -->

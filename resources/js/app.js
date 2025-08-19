@@ -13,7 +13,7 @@ import tenantpage from './components/landlord/auth/tenantpage.vue';
 import BookingManagement from './components/landlord/auth/bookingpage.vue';
 import MessagingCenter from './components/landlord/auth/messagingCenter.vue';
 import ReviewandFeedback from './components/landlord/auth/ReviewandFeedback.vue';
-import Notification from './components/landlord/auth/Notification.vue';
+import notificationsLandlord from './components/landlord/auth/notificationslandlord.vue';
 import homepage from './components/tenants/auth/homepage.vue';
 import tenant from './components/tenants/tenantLogin.vue';
 import RoomDetails from './components/tenants/auth/roomdetails.vue';
@@ -28,6 +28,11 @@ import reservationPage from './components/landlord/auth/reservationpage.vue';
 import nextPayment from './components/tenants/auth/nav/nextpayment/nextpaymentdue.vue';
 import myRooms from './components/tenants/auth/nav/rooms/myrooms.vue';
 import myReservation from './components/tenants/auth/nav/reservation/reservation.vue';
+import paymentLandlord from './components/landlord/auth/paymentlandlord.vue';
+import reviewandrating from './components/tenants/auth/reviewandrating.vue';
+
+
+
 import AOS from 'aos';
 import 'aos/dist/aos.css'
 AOS.init();
@@ -156,6 +161,22 @@ const myReservationController = document.querySelector('#myReservation');
 if (myReservationController) {
     createApp(myReservation).mount('#myReservation');
 }
+const notificationsLandlordController = document.querySelector('#notificationsLandlord');
+
+if (notificationsLandlordController) {
+    createApp(notificationsLandlord).mount('#notificationsLandlord');
+}
+const paymentlandlordController = document.querySelector('#paymentLandlord');
+
+if (paymentlandlordController) {
+    createApp(paymentLandlord).mount('#paymentLandlord');
+}
+const reviewandratingController = document.querySelector('#reviewandrating');
+
+if (reviewandratingController) {
+    createApp(reviewandrating).mount('#reviewandrating');
+}
+
 
 
 

@@ -9,19 +9,26 @@ use App\Models\conversationModel;
 use App\Models\tenant\tenantModel;
 use App\Events\MessageSent;
 use App\Models\landlord\landlordModel;
- 
+ use App\Models\notificationModel;
+
 
 
 class messagelandlordController extends Controller
 {
    public function landlordmessageIndex($landlord_id)
 {
+    $sessionLandlordId = session('landlord_id');
+     $notifications = notificationModel::where('receiverID', $sessionLandlordId)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+    $unreadCount = notificationModel::where('receiverID', $landlord_id)
+            ->where('isRead', false)
+            ->count();
     $conversations = conversationModel::where('initiatorID', $landlord_id)
         ->where('initiatorRole', 'landlord')
         ->get();
-
     $history = $conversations->map(function ($convo) {
-        // Extract tenant ID from topic (e.g., tenant_{id}_landlord_{id})
         preg_match('/tenant_([a-z0-9\-]+)/', $convo->topic, $matches);
         $tenant_id = $matches[1] ?? null;
 
@@ -45,6 +52,8 @@ class messagelandlordController extends Controller
         'headerName'   => 'Message',
         'landlord_id'  => $landlord_id,
         'history'      => $history,
+         'notifications' => $notifications,
+        'unread_count' => $unreadCount
     ]);
 }
 public function selecttenantToMessage(Request $request, $landlord_id)
@@ -54,6 +63,13 @@ public function selecttenantToMessage(Request $request, $landlord_id)
     if (!$landlord_id || !$tenant_id) {
         return back()->with('error', 'Landlord or Tenant ID is missing.');
     }
+    $notifications = notificationModel::where('receiverID', $landlord_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+             $unreadCount = notificationModel::where('receiverID', $landlord_id)
+            ->where('isRead', false)
+            ->count();
 
     $landlord = landlordModel::find($landlord_id);
     $tenant = tenantModel::find($tenant_id);
@@ -90,6 +106,8 @@ public function selecttenantToMessage(Request $request, $landlord_id)
         'headerName'   => 'Message',
         'landlord_id'  => $landlord_id,
         'history'      => $history,
+        'notifications' => $notifications,
+        'unread_count' => $unreadCount
     ]);
 }
 
@@ -167,6 +185,7 @@ public function sendMessage(Request $request)
     $message->sentAt = now();
     $message->isRead = 0;
     $message->save();
+    broadcast(new MessageSent($message))->toOthers();
 
 
     return response()->json([

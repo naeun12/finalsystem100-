@@ -1,6 +1,8 @@
 <template>
     <Loader ref="loader" />
     <Toastcomponents ref="toast" />
+    <NotificationList ref="toastRef" />
+
     <div class=" mt-5 mb-2">
         <h1 class="text-center fs-3 fw-semibold text-primary">Explore Dorm Locations in Lapu-Lapu and Mandaue</h1>
         <p class="text-center text-muted">Find the best places to stay near your location</p>
@@ -120,12 +122,13 @@
 import axios from 'axios'
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
+import NotificationList from '@/components/notifications.vue';
+
 export default {
     components: {
         Toastcomponents,
         Loader,
-
-
+        NotificationList,
     },
     data() {
         return {
@@ -138,9 +141,9 @@ export default {
             selectedPriceRange: '',
             selectedGenderType: '',
             isPrice: false,
-
-
-
+            notifications: [],
+            receiverID: '',
+            tenant_id: '',
         }
     },
     name: "DormMap",
@@ -160,8 +163,31 @@ export default {
             this.initMap();
 
         }
+        this.tenant_id = window.tenant_id;
+
+        this.subscribeToNotifications();
+
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.tenant_id;
+            Echo.private(`notifications.${this.tenant_id}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
+
         viewDormsDetails(dormitoryId) {
             this.tenant_id = window.tenant_id;
             window.location.href = `/room-details/${dormitoryId}/${this.tenant_id}`;

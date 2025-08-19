@@ -1,18 +1,109 @@
 <template>
     <Loader ref="loader" />
+    <NotificationList ref="toastRef" />
 
     <div class="container-fluid py-4 bg-light min-vh-100 d-flex flex-column flex-lg-row gap-4">
-        <!-- Main dorm listing area -->
-        <div class="flex-grow-1">
+        <!-- AI Question Sidebar -->
+        <aside class="ai-aside bg-white p-4 shadow-lg rounded-4 mx-auto" style="max-width: 500px; flex-shrink: 0;">
+            <div class="container text-center">
+                <h4 class="mb-4 fw-bold text-primary">💬 Ask AI about Dorms</h4>
+
+                <div class="input-group input-group-lg mb-4 shadow-sm rounded-pill overflow-hidden border">
+                    <input v-model="question" type="text" class="form-control border-0"
+                        placeholder="Type your question here..." @keyup.enter="aiQuestion" aria-label="Ask AI" />
+                    <button @click="aiQuestion" class="btn btn-primary px-4 rounded-pill">
+                        Ask
+                    </button>
+                </div>
+
+                <!-- AI Response -->
+                <div class="card border-0 shadow-sm mb-4 ai-response">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-start mb-3 fw-semibold">AI Response</h5>
+                        <p class="mb-0 text-muted text-start" style="white-space: pre-wrap;">
+                            {{ chatresponse }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Dorm Recommendations -->
+                <h5 class="card-title text-start mb-3 fw-semibold">Dorm Recommendations</h5>
+                <div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                    <div v-if="dorms.length > 0" class="row g-3">
+                        <div class="row g-3 justify-content-center">
+                            <div v-for="(dorm, idx) in dorms" :key="idx" class="col-12">
+                                <div class="card dorm-card mb-4 shadow-sm rounded-4 overflow-hidden">
+                                    <img :src="dorm.mainImage" alt="Dorm Image" class="card-img-top"
+                                        style="height: 180px; object-fit: cover;" />
+                                    <div class="card-body p-3">
+                                        <h5 class="card-title fw-bold mb-2">{{ dorm.name }}</h5>
+                                        <p class="mb-1 text-muted">
+                                            <i class="fas fa-user text-primary me-2"></i>{{ dorm.occupancyType }}
+                                        </p>
+                                        <p class="mb-2 text-muted">
+                                            <i class="fas fa-map-marker-alt text-primary me-2"></i>{{ dorm.location }}
+                                        </p>
+                                        <div v-if="dorm.features.length" class="mb-2">
+                                            <strong>Features:</strong>
+                                            <span v-for="(feature, fidx) in dorm.features" :key="fidx"
+                                                class="badge bg-info text-dark me-1">
+                                                {{ feature }}
+                                            </span>
+                                        </div>
+                                        <a href="#" class="btn btn-primary w-100 rounded-pill mt-3">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p v-else class="text-muted mb-0">No dorms found.</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-grow-1" style="overflow-x: hidden;">
             <div class="container-fluid mt-3">
-                <h2 class="mb-4 text-primary fw-semibold text-center">Find Your Ideal Dorm in Mandaue and Lapu-Lapu City
+                <h2 class="mb-4 text-primary fw-semibold text-center">
+                    Find Your Ideal Dorm in Mandaue and Lapu-Lapu City
                 </h2>
             </div>
-            <div class="text-primary">
-                Top Rated Dormitories
-            </div>
 
-            <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden">
+            <!-- Most Watched Dorms Horizontal Scroll -->
+            <section class="text-primary mb-4">
+                <h5 class="mb-3 fw-bold">Most Watched Dormitories</h5>
+                <div style="overflow-x: auto; white-space: nowrap; padding-bottom: 1rem;"
+                    class="shadow-sm rounded-4 bg-white p-3">
+                    <div class="d-flex flex-row gap-3" style="width: max-content;">
+                        <div class="card shadow-sm rounded-4" v-for="(dorm, index) in mostwatchdorm" :key="index"
+                            style="width: 18rem; flex-shrink: 0;">
+                            <img :src="dorm?.images?.mainImage ||
+                                dorm?.mainImage ||
+                                'https://via.placeholder.com/286x180'
+                                " class="card-img-top rounded-top" :alt="dorm.dormName"
+                                style="height: 180px; object-fit: cover;" />
+                            <div class="card-body d-flex flex-column justify-content-between" style="height: 180px;">
+                                <h5 class="card-title text-primary fw-bold">{{ dorm.dormName }}</h5>
+                                <p class="card-text text-truncate" style="max-height: 3rem;">
+                                    <i class="bi bi-geo-alt-fill text-secondary me-1"></i>
+                                    {{ dorm.address || 'No description available.' }}
+                                </p>
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-eye-fill text-warning me-1"></i>
+                                    Most Watched: <strong>{{ dorm.views }}</strong>
+                                </p>
+                                <button class="btn btn-outline-primary mt-auto rounded-pill"
+                                    @click="viewDormsDetails(dorm.dormID)">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search Bar -->
+            <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden border">
                 <span class="input-group-text bg-white border-0">
                     <i class="bi bi-search text-primary"></i>
                 </span>
@@ -20,8 +111,8 @@
                     aria-label="Search Locations" v-model="searchQuery" @input="debouncedSearch" />
             </div>
 
+            <!-- Filters -->
             <div class="row mb-4">
-                <!-- Price Range Dropdown -->
                 <div class="col-md-6 col-lg-4 mb-2">
                     <select class="form-select shadow-sm" v-model="selectedPriceRange"
                         @change="dropdownPriceRecommendations">
@@ -34,7 +125,6 @@
                     </select>
                 </div>
 
-                <!-- Occupancy Type Dropdown -->
                 <div class="col-md-6 col-lg-4 mb-2">
                     <select class="form-select shadow-sm" v-model="selectedOccupancyType"
                         @change="dropdownGenderRecommdations">
@@ -47,15 +137,13 @@
                 </div>
             </div>
 
-
+            <!-- Dorm Listings Grid: stays fully responsive and contained -->
             <div class="row g-4">
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3" v-for="(dorm, dormID) in dormitories" :key="dormID">
                     <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden d-flex flex-column">
                         <div class="image-wrapper">
-                            <img :src="dorm?.images?.mainImage ||
-                                dorm?.mainImage ||
-                                'https://placehold.co/300x200?text=No+Image'
-                                " class="card-img-top" :alt="dorm.dormName" />
+                            <img :src="dorm?.images?.mainImage || dorm?.mainImage" class="card-img-top"
+                                :alt="dorm.dormName" style="object-fit: cover; height: 180px;" />
                         </div>
                         <div class="card-body d-flex flex-column justify-content-between flex-grow-1">
                             <div>
@@ -68,125 +156,15 @@
                                 </p>
                             </div>
                             <div class="mt-4 d-flex justify-content-center">
-                                <button class="btn rounded-pill px-4 w-100" @click="viewDormsDetails(dorm.dormID)">View
-                                    Details</button>
+                                <button class="btn rounded-pill px-4 w-100" @click="viewDormsDetails(dorm.dormID)">
+                                    View Details
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
-
-        <!-- Sidebar: recommendations only show if there are any -->
-        <aside class="sidebar bg-white shadow-sm p-3 rounded position-relative w-100 w-lg-25 mt-4 mt-lg-0"
-            v-if="showRecommendations" style="max-width: 350px;">
-            <!-- Close button -->
-            <div class="mb-5">
-                <button @click="hiderecommendations" class="btn btn-sm btn-light mb-3 position-absolute top-0 end-0 m-2"
-                    aria-label="Close">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            <div v-if="recommendloading"
-                class="d-flex flex-column justify-content-center align-items-center text-center"
-                style="position: absolute; inset: 0; background-color: rgba(255,255,255,0.8); z-index: 10; border-radius: 0.5rem;">
-
-                <section class="dots-container ">
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                </section>
-                <p class="text-black">Fetching recommendations, please wait...</p>
-            </div>
-
-            <h5 class="text-primary fw-semibold mb-4 text-center">
-                <i class="bi bi-star-fill me-2"></i>
-                {{ recommend }}
-            </h5>
-            <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden" v-if="!isGenderBased">
-                <span class="input-group-text bg-white border-0">
-                    <i class="bi bi-search text-primary"></i>
-                </span>
-                <input type="text" class="form-control border-0 shadow-none" placeholder="Search Locations"
-                    aria-label="Search Locations" v-model="searchPriceLocations" @input="debouncedpriceSearch" />
-            </div>
-            <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden" v-if="isGenderBased">
-                <span class="input-group-text bg-white border-0">
-                    <i class="bi bi-search text-primary"></i>
-                </span>
-                <input type="text" class="form-control border-0 shadow-none" placeholder="Search Location"
-                    aria-label="Search Locations" v-model="searchGenderLocations" @input="debouncedgenderSearch" />
-            </div>
-
-            <div class="col-md-6 col-lg-4 mb-2 w-75">
-
-                <select class="form-select shadow-sm " v-if="!isGenderBased" v-model="priceFilterOccupancyType"
-                    @change="priceDropdownOccupancyType">
-                    <option disabled value="">Select Occupancy Type</option>
-                    <option value="all">All Types</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="mixed (male & female – separate floors)">Mixed</option>
-
-                </select>
-            </div>
-            <div class="col-md-6 col-lg-4 mb-2 w-100" v-if="isGenderBased">
-                <select class="form-select shadow-sm" v-model="genderSelectedPriceRange"
-                    @change="genderDropdownpriceRange">
-                    <option disabled value="">Select Price Range (based on rooms)</option>
-                    <option value="all">All Prices</option>
-                    <option value="0-100">₱0 - ₱100</option>
-                    <option value="101-200">₱101 - ₱200</option>
-                    <option value="201-300">₱201 - ₱300</option>
-                    <option value="301+">₱301 and above</option>
-                </select>
-            </div>
-            <div v-if="!recommendloading && recommendations.length === 0" class="text-center text-muted my-4">
-                <i class="bi bi-emoji-frown fs-4"></i>
-                <p class="mt-2 mb-0">No results found for your search.</p>
-                <small>Try another location or price range.</small>
-            </div>
-            <div v-for="(dorm, index) in recommendations" :key="'ai-' + index" class="mb-3">
-                <div class="card shadow-sm">
-
-                    <div class="card-body p-3">
-                        <div class="image-wrapper">
-                            <img :src="dorm?.images?.mainImage ||
-                                dorm?.mainImage ||
-                                'https://placehold.co/300x200?text=No+Image'
-                                " class="card-img-top" :alt="dorm.dormName" />
-                        </div>
-                        <h6 class="mb-2">
-                            <i class="bi bi-building me-2 text-primary"></i>{{ dorm.dormName }}
-                        </h6>
-                        <p class="mb-1 small text-muted">
-                            <i class="bi bi-geo-alt-fill me-1"></i>{{ dorm.address }}
-                        </p>
-                        <p v-if="!isGenderBased || visiblecard" class="mb-1 small">
-                            <strong>₱{{ dorm.price }}</strong>
-                            <span class="mx-2">|</span>
-                            <i class="bi bi-door-open me-1"></i>{{ dorm.roomType }}
-                        </p>
-                        <p v-if="isGenderBased || visiblecard" class="mb-1 small">
-                            <i class="bi bi-people-fill me-1"></i>Occupancy Type: {{ dorm.occupancyType }}
-                        </p>
-                        <button class="btn mt-3 w-75 mx-auto d-block" @click="viewDormsDetails(dorm.dormID)" style="
-                            height: 50px;">View Details</button>
-                    </div>
-                    <div v-if="!recommendloading && recommendations.length === 0" class="text-center text-muted my-4">
-                        <i class="bi bi-emoji-frown fs-4"></i>
-                        <p class="mt-2 mb-0">No results found for your search.</p>
-                        <small>Try another location or price range.</small>
-                    </div>
-
-                </div>
-            </div>
-        </aside>
-
-
     </div>
 </template>
 
@@ -195,10 +173,13 @@ import axios from 'axios';
 import _ from 'lodash';
 import debounce from 'lodash/debounce';
 import Loader from '@/components/loader.vue';
+import NotificationList from '@/components/notifications.vue';
 
 export default {
     components: {
         Loader,
+        NotificationList,
+
     },
     name: 'ProductGrid',
     data() {
@@ -210,19 +191,38 @@ export default {
             selectedOccupancyType: '',
             recommendations: [],
             recommendloading: false,
-            showRecommendations: false,
             isGenderBased: false,
-            searchlocations: '',
-            searchPriceLocations: '',
-            searchGenderLocations: '',
-            priceFilterOccupancyType: '',
-            genderSelectedPriceRange: '',
-            visiblecard: false,
             recommend: '',
+            dorms: [],
+            question: '',
+            chatresponse: '',
+            mostwatchdorm: [],
+            tenant_id: '',
+            notifications: [],
+            receiverID: '',
+
 
         };
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.tenant_id;
+            Echo.private(`notifications.${this.tenant_id}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
         async dormListingfetch() {
             try {
                 this.$refs.loader.loading = true;
@@ -287,17 +287,6 @@ export default {
         },
         async dropdownPriceRecommendations() {
             this.recommendloading = true;
-            if (this.$refs.loader) {
-                this.showRecommendations = true;
-            }
-            if (!this.showRecommendations) {
-                // First time loading
-                if (this.$refs.loader) {
-                }
-            } else {
-                // Already showing recos – refresh/reload only
-                this.recommendloading = true;
-            }
             const [min, max] = this.getPriceRange(this.selectedPriceRange);
             try {
                 const response = await fetch('/pricerecommendations', {
@@ -315,17 +304,10 @@ export default {
 
                 const result = await response.json();
                 if (result.status === 'success') {
-                    this.showRecommendations = true;
-                    this.recommendloading = false;
                     this.recommendations = result.data;
-                    this.filteredDorms = this.recommendations;
-                    this.isGenderBased = false;
-                    this.recommend = 'Recommended dorms based on your selected room price range';
-                    this.selectedOccupancyType = '';
-                    console.log(this.recommendations);
+                    this.dormitories = this.recommendations;
                 } else {
                     this.recommendloading = false;
-
 
                 }
 
@@ -336,7 +318,6 @@ export default {
 
             }
         },
-
         getPriceRange(range) {
             switch (range) {
                 case '0-100': return [0, 100];
@@ -348,18 +329,6 @@ export default {
         },
         async dropdownGenderRecommdations() {
             try {
-                this.recommendloading = true;
-                if (this.$refs.loader) {
-                    this.showRecommendations = true;
-                }
-                if (!this.showRecommendations) {
-                    // First time loading
-                    if (this.$refs.loader) {
-                    }
-                } else {
-                    // Already showing recos – refresh/reload only
-                    this.recommendloading = true;
-                }
 
                 const response = await fetch('gender-recommendations', {
                     method: 'POST',
@@ -375,231 +344,54 @@ export default {
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    this.recommendations = result.recommendations;
-                    this.showRecommendations = true;
-                    this.isGenderBased = true; // set this to true for gender
-                    this.recommend = 'Recommended dorms based on your selected occupancy preference';
-                    this.selectedPriceRange = '';
-                    this.recommendloading = false;
+                    this.dormitories = result.recommendations;
                     this.genderSelectedPriceRange = '';
 
                 }
             }
             catch (error) {
-                this.recommendloading = false;
                 this.$refs.loader.loading = false;
             }
         },
-        async recommendationsPriceSearchLocations() {
+        async aiQuestion() {
             try {
-                this.recommendloading = true;
-                if (!this.searchPriceLocations.trim()) {
+                this.$refs.loader.loading = true;
 
-                    await this.dropdownPriceRecommendations();  // re-fetch all dorms
-                    return;
-                }
-
-                const priceRange = this.selectedPriceRange || 'all';
-                let min_price = 0, max_price = 999999;
-
-                if (priceRange !== 'all') {
-                    if (priceRange.includes('+')) {
-                        min_price = parseInt(priceRange.replace('+', '')) || 0;
-                        max_price = 999999;
-                    } else {
-                        const [min, max] = priceRange.split('-');
-                        min_price = parseInt(min) || 0;
-                        max_price = parseInt(max) || 999999;
-                    }
-                }
-
-                const response = await fetch('/api/search', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    body: JSON.stringify({
-                        keyword: this.searchPriceLocations,
-                        min_price,
-                        max_price
-                    }),
+                const response = await axios.post('ai/question/reccomendations', {
+                    question: this.question
                 });
-
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    this.recommendations = result.recommendations;
-
-                }
+                this.chatresponse = response.data.message;
+                // this.dorms = response.data.result;
+                console.log(this.chatresponse);
             } catch (error) {
-                console.error('Search error:', error);
-            } finally {
-                this.recommendloading = false;
+                console.error('Error sending AI question:', error);
+            }
+            finally {
+                this.$refs.loader.loading = false;
             }
         },
-        async recommendationsGenderLocations() {
+        async mostWatchDorm() {
             try {
-                this.recommendloading = true;
-                if (!this.searchPriceLocations.trim()) {
-
-                    await this.dropdownPriceRecommendations();  // re-fetch all dorms
-                    return;
-                }
-
-                const priceRange = this.selectedPriceRange || 'all';
-                let min_price = 0, max_price = 999999;
-
-                if (priceRange !== 'all') {
-                    if (priceRange.includes('+')) {
-                        min_price = parseInt(priceRange.replace('+', '')) || 0;
-                        max_price = 999999;
-                    } else {
-                        const [min, max] = priceRange.split('-');
-                        min_price = parseInt(min) || 0;
-                        max_price = parseInt(max) || 999999;
-                    }
-                }
-
-                const response = await fetch('/api/search', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    body: JSON.stringify({
-                        keyword: this.searchPriceLocations,
-                        min_price,
-                        max_price
-                    }),
-                });
-
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    this.recommendations = result.recommendations;
-
-
-
-                }
+                this.tenant_id = window.tenant_id;  // siguro naa ni sa global js
+                const response = await axios.get(`/most/watched/dorm/${this.tenant_id}`);
+                this.mostwatchdorm = response.data.dorm;
+                // I-update imong UI with this.mostwatchdorm
+                console.log('Most watched dorm:', this.mostwatchdorm);
             } catch (error) {
-                console.error('Search error:', error);
-            } finally {
-                this.recommendloading = false;
+                console.error('Error fetching most watched dorm:', error);
             }
-        },
-        async genderLocationSearch() {
-            if (!this.searchGenderLocations.trim()) {
-
-                await this.genderDropdownpriceRange();  // re-fetch all dorms
-                return;
-            }
-
-            try {
-                const response = await fetch('/recommendations/gender-location', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        occupancy_type: this.selectedOccupancyType,
-                        location: this.searchGenderLocations
-                    })
-                });
-
-                const result = await response.json();
-                if (result.status === 'success') {
-                    this.recommendations = result.recommendations;
-
-
-                } else {
-                    this.recommendations = [];
-                }
-            } catch (error) {
-                console.error('Gender + Location search failed:', error);
-            }
-        },
-        priceDropdownOccupancyType() {
-            this.recommendloading = true;
-            if (this.$refs.loader) {
-                this.showRecommendations = true;
-            }
-            if (!this.showRecommendations) {
-                // First time loading
-                if (this.$refs.loader) {
-                }
-            } else {
-                // Already showing recos – refresh/reload only
-                this.recommendloading = true;
-            }
-            axios.get('/dormitories/filter', {
-                params: {
-                    price_range: this.selectedPriceRange,
-                    occupancy_type: this.priceFilterOccupancyType.toLowerCase()
-                }
-            })
-                .then(response => {
-                    // Assuming backend returns: { status: 'success', recommendations: [...] }
-                    this.recommendations = response.data.recommendations || [];
-                    this.recommendloading = false;
-                    this.searchPriceLocations = '';
-                })
-                .catch(error => {
-                    console.error('Error fetching filtered dormitories:', error);
-                    this.recommendloading = false; // Add this line
-
-                });
-        },
-        async genderDropdownpriceRange() {
-            this.recommendloading = true;
-            if (this.$refs.loader) {
-                this.showRecommendations = true;
-            }
-            if (!this.showRecommendations) {
-                // First time loading
-                if (this.$refs.loader) {
-                }
-            } else {
-                // Already showing recos – refresh/reload only
-                this.recommendloading = true;
-            }
-            axios.post('/filterpricegender-dormitories', {
-                occupancy_type: this.selectedOccupancyType,
-                price_range: this.genderSelectedPriceRange,
-            })
-                .then(response => {
-                    this.recommendations = response.data.recommendations;
-                    this.visiblecard = true;
-                    this.recommendloading = false; // Add this line
-                    this.searchGenderLocations = '';
-
-                })
-                .catch(error => {
-                    console.error("Error fetching filtered dorms:", error);
-                    this.recommendloading = false; // Add this line
-
-                });
-        },
-        hiderecommendations() {
-            this.showRecommendations = false;
-            this.genderSelectedPriceRange = '';
-            this.filteredDorms = [];
-            this.isGenderBased = false;
-            this.selectedOccupancyType = '';
-            this.searchGenderLocations = '';
-            this.searchPriceLocations = '';
-
-
         }
+
+
     },
     created() {
         this.debouncedSearch = debounce(this.searchLocations, 500);
-        this.debouncedpriceSearch = debounce(this.recommendationsPriceSearchLocations, 500);
-        this.debouncedgenderSearch = debounce(this.genderLocationSearch, 500);
     },
     mounted() {
         this.dormListingfetch();
+        this.mostWatchDorm();
+        this.tenant_id = window.tenant_id;
+        this.subscribeToNotifications();
     },
 };
 
@@ -607,6 +399,10 @@ export default {
 </script>
 
 <style scoped>
+body {
+    width: 100%;
+}
+
 .card:hover {
     transform: scale(1.02);
     transition: transform 0.3s ease;
@@ -689,8 +485,37 @@ export default {
     }
 }
 
-/* Default desktop styles */
+/* General Styles */
+.ai-aside {
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+    max-width: 300px;
+    width: 100%;
+}
 
+.input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    width: 100%;
+}
 
-/* Responsive styles for tablets and below */
+.form-control {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
 </style>

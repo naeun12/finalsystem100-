@@ -1,6 +1,8 @@
 <template>
     <Loader ref="loader" />
     <Toastcomponents ref="toast" />
+    <NotificationList ref="toastRef" />
+
     <div class="container-fluid py-4">
         <div class="container-fluid mt-3">
             <h2
@@ -60,17 +62,14 @@
                             <p class="mb-0 fw-semibold text-dark d-flex align-items-center">
                                 <i class="bi bi-info-circle-fill me-1 text-primary"></i>
                                 Reservation Status
-
                                 <StatusBadge :status="reservation.status" />
-
                             </p>
-
                         </div>
                     </div>
                 </div>
                 <div class="col-md-1 d-flex align-items-center justify-content-center bg-white rounded-end">
                     <button @click="showReservationModal(reservation)"
-                        class="btn  btn-sm rounded-3 w-100 m-2 p-1 fw-semibold d-flex align-items-center justify-content-center gap-1">
+                        class="custom-btn  btn-sm rounded-3 w-100 m-2 p-1 fw-semibold d-flex align-items-center justify-content-center gap-1">
                         <i class="bi bi-eye"></i> View
                     </button>
 
@@ -79,7 +78,7 @@
             </div>
         </div>
         <div class="text-center mt-3" v-if="reservations.length > 3">
-            <button class="btn" @click="toggleView">
+            <button class="custom-btn" @click="toggleView">
                 {{ showAll ? 'Show Less' : 'See More' }}
             </button>
         </div>
@@ -293,6 +292,8 @@ import Toastcomponents from '@/components/Toastcomponents.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
 import StatusBadge from '@/components/statusmap.vue';
 import ReservationStatusAlert from '@/components/ReservationStatusAlert.vue';
+import NotificationList from '@/components/notifications.vue';
+
 export default {
     components: {
         Toastcomponents,
@@ -300,6 +301,7 @@ export default {
         Modalconfirmation,
         StatusBadge,
         ReservationStatusAlert,
+        NotificationList,
     },
     data() {
         return {
@@ -326,11 +328,32 @@ export default {
             isPaymentImage: true,
             payment_type: '',
             moveInDateLocal: '',
-            moveOutDateLocal: ''
+            moveOutDateLocal: '',
+            notifications: [],
+            receiverID: '',
 
         };
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.tenantid;
+            Echo.private(`notifications.${this.tenantid}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
+
         viewReservation(reservation) {
             window.location.href = `/view/reservation/details/${this.tenantid}/${reservation.reservationID}`;
         },
@@ -534,6 +557,8 @@ export default {
         const el = document.getElementById('myReservation');
         this.tenantid = el.getAttribute('tenant_id')?.trim();
         this.myreservation();
+        this.subscribeToNotifications();
+
 
 
 

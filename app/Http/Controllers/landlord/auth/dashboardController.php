@@ -44,7 +44,7 @@ class dashboardController extends Controller
         return view ('landlord.auth.dashboard', ['title' => 'Landlord - Dashboard',
         'headerName' => 'Dashboard',
         'color' =>'primary'
-        ,'landlord_id'=> $landlord,
+        ,'landlord_id'=> $landlord_id,
         'notifications' => $notifications,
         'unread_count' => $unreadCount
     ]);
@@ -228,28 +228,35 @@ public function getBookingProfits(Request $request, $landlord_id)
     ]);
 }
 
- public function generateFullReport($landlordID)
-    {
-        // 1. Get Reservations
-        $reservations = reservationModel::with(['room.dorm'])->whereHas('room', function ($query) use ($landlordID) {
-            $query->where('fklandlordID', $landlordID);
-        })->get();
+public function generateFullReport($landlordID)
+{
+    // Fetch reservations with related dorm info
+    $reservations = reservationModel::with(['room.dorm'])
+        ->whereHas('room', fn($query) => $query->where('fklandlordID', $landlordID))
+        ->get();
 
-        // 2. Get Bookings
-        $bookings = bookingModel::with(['room.dorm'])->whereHas('room', function ($query) use ($landlordID) {
-            $query->where('fklandlordID', $landlordID);
-        })->get();
+    // Fetch bookings with related dorm info
+    $bookings = bookingModel::with(['room.dorm'])
+        ->whereHas('room', fn($query) => $query->where('fklandlordID', $landlordID))
+        ->get();
 
-        // 3. Compute Total Income (sum from bookings)
-        $totalIncome = $bookings->sum(function ($booking) {
-            return $booking->room->price ?? 0;
-        });
+    // Calculate total income from all bookings
+    $totalIncome = $bookings->sum(fn($booking) => $booking->room->price ?? 0);
 
-        // 4. Generate PDF
-        $pdf = PDF::loadView('landlord.reports.full-report', compact('reservations', 'bookings', 'totalIncome'));
+    // Prepare report data array for PDF
+    $reportData = [
+        'reservations' => $reservations,
+        'bookings'     => $bookings,
+        'totalIncome'  => $totalIncome,
+        'landlordID'   => $landlordID,
+        'reportDate'   => now()->format('F d, Y h:i A'),
+    ];
 
-return $pdf->stream('landlord-full-report.pdf');
-    }
+    // Generate and stream PDF
+    $pdf = PDF::loadView('landlord.reports.full-report', $reportData);
+    return $pdf->stream("landlord-full-report-{$landlordID}.pdf");
+}
+
 
 
 

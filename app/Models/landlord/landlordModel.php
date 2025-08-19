@@ -5,6 +5,8 @@ use Laravel\Sanctum\HasApiTokens;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\notificationModel; // ✅ Import the correct model
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class landlordModel extends Authenticatable
@@ -39,14 +41,24 @@ class landlordModel extends Authenticatable
         'password', // hide your password field properly
         'remember_token',
     ];
-    public function sentNotifications()
-{
-    return $this->morphMany(Notification::class, 'sender');
-}
+//     public function sentNotifications()
+// {
+//     return $this->morphMany(Notification::class, 'sender');
+// }
 
-public function receivedNotifications()
-{
-    return $this->morphMany(Notification::class, 'receiver');
-}
+// public function receivedNotifications()
+// {
+//     return $this->morphMany(Notification::class, 'receiver');
+// }
+  public function sentNotifications()
+    {
+        return $this->morphMany(notificationModel::class, 'sender', 'senderType', 'senderID');
+    }
+
+    public function receivedNotifications()
+    {
+        return $this->morphMany(notificationModel::class, 'receiver', 'receiverType', 'receiverID');
+    }
+
 
 }

@@ -27,7 +27,7 @@ class conversationModel extends Model
      */
     public function messages()
 {
-    return $this->hasMany(messageModel::class, 'conversation_id');
+    return $this->hasMany(messageModel::class, 'conversationID');
 }
 
 }

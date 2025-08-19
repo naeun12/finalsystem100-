@@ -7,13 +7,20 @@ use Illuminate\Http\Request;
 use App\Models\landlord\bookingModel;
 use App\Models\landlord\roomModel;
 use App\Models\tenant\tenantModel;
+use App\Models\notificationModel;
 
 class mybookingController extends Controller
 {
     public function viewBooking($tenant_id)
         {
             $sessionTenant_id = session('tenant_id');
-        
+         $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenant_id)
+            ->where('isRead', false)
+            ->count();
             if (!$sessionTenant_id) {
                 return redirect()->route('tenant-login')->with('error', 'Please log in as a landlord.');
             }
@@ -29,7 +36,9 @@ class mybookingController extends Controller
             $title = 'Tenant room Details - Dormhub';
             return view('tenant.auth.nav.bookings.bookingdormitory',['title' => 'Room Details',
             'tenant_id' => $tenant_id,
-            'cssPath' => asset('css/tenantpage/auth/roomdetails.css')]);
+            'cssPath' => asset('css/tenantpage/auth/roomdetails.css'),
+               'notifications' => $notifications,
+             'unread_count' => $unreadCount,]);
         }
        public function mybookingList($tenant_id)
         {

@@ -9,13 +9,21 @@ use App\Models\landlord\tenantscreeningModel;
 use Illuminate\Support\Facades\Http;
 use App\Models\landlord\roomModel;
 use App\Models\tenant\tenantModel;
+use App\Models\notificationModel;
+use App\Models\reviewandratingModel;
 
 class dormdetailscontroller extends Controller
 {
     public function roomDetails($dormitory_id,$tenant_id)
         {
             $sessionTenant_id = session('tenant_id');
-        
+             $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenant_id)
+            ->where('isRead', false)
+            ->count();
             if (!$sessionTenant_id) {
                 return redirect()->route('tenant-login')->with('error', 'Please log in as a landlord.');
             }
@@ -23,6 +31,10 @@ class dormdetailscontroller extends Controller
             if ($tenant_id !== $sessionTenant_id) {
                 return redirect()->route('tenant-login')->with('error', 'Unauthorized access.');
             }
+                $dorm = dormModel::find($dormitory_id);
+
+                $dorm->increment('views');
+
         
             $tenant = tenantModel::find($tenant_id);
             if (!$tenant) {
@@ -33,7 +45,9 @@ class dormdetailscontroller extends Controller
             'dormitory_id' => $dormitory_id,
             'tenant_id' => $tenant_id,
             'tenant' => $tenant,
-            'cssPath' => asset('css/tenantpage/auth/roomdetails.css')]);
+            'cssPath' => asset('css/tenantpage/auth/roomdetails.css'),
+        'notifications' => $notifications,
+             'unread_count' => $unreadCount,]);
         }
         public function ViewDorms(Request $request)
         {
@@ -144,6 +158,66 @@ class dormdetailscontroller extends Controller
             }
             
         }
-       
-    
+        public function reviewStats($dormID)
+        {
+            $query = reviewandratingModel::where('fkdormID',$dormID);
+            $total = $query->count();
+            $averageRating = $query->avg('rating');
+            $percentage = $averageRating ? round(($averageRating / 5) * 100, 2) : 0;
+             return response()->json([
+        'total_reviewers' => $total,
+        'average_percentage' => $percentage
+            ]);
+
+        }
+        public function getdormAskAI($id)
+        {
+            $dorm = dormModel::with(['amenities', 'rulesAndPolicy', 'images', 'rooms', 'landlord'])
+                    ->find($id);
+                     if (!$dorm) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dormitory not found'
+            ], 404);
+        }
+             return response()->json([
+            'status' => 'success',
+            'data' => $dorm
+        ], 200);
+        }
+     public function askAI(Request $request)
+{
+    $dormId   = $request->input('dormID');
+    $question = $request->input('question');
+
+    $response = Http::post("http://127.0.0.1:5000/ask-ai/$dormId", [
+        'question' => $question
+    ]);
+
+    if ($response->successful()) {
+        $result = $response->json();
+
+        // AI answer from Flask
+        $answerText = $result['answer'] ?? 'No answer found';
+        $dormData   = $result['dorm'] ?? null;
+        $roomsData  = $result['rooms'] ?? [];
+        $imagesData = $result['images'] ?? null;
+
+        return response()->json([
+            'success' => true,
+            'answer'  => $answerText,
+            'dorm'    => $dormData,
+            'rooms'   => $roomsData,
+            'images'  => $imagesData,
+        ]);
     }
+
+    return response()->json([
+        'success' => false,
+        'message' => 'AI request failed'
+    ]);
+}
+
+
+
+}

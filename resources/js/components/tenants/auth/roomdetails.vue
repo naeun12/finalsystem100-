@@ -1,6 +1,7 @@
 <template>
     <Loader ref="loader" />
     <Toastcomponents ref="toast" />
+    <NotificationList ref="toastRef" />
 
     <div class=" m-5 my-4" v-if="dorm">
         <!-- Header -->
@@ -9,11 +10,21 @@
                 <h2 class="fw-bold text-primary mb-1">{{ this.landlordname }}</h2>
                 <p class="text-muted mb-0"><i class="bi bi-clock"></i> Posted {{ formatDate(dorm.dorm.created_at) }}</p>
             </div>
-            <div class="col-12 col-md-4 text-md-end text-start mt-3 mt-md-0">
-                <button class="btn  px-4 rounded-pill shadow-sm" @click="messagePage">
-                    <i class="bi bi-chat-dots me-2"></i> Message
+            <div
+                class="col-12 col-md-4 text-md-end text-start mt-3 mt-md-0 d-flex gap-3 justify-content-md-end justify-content-start">
+                <!-- Ask AI Button -->
+                <button class="btn btn-primary px-4 py-2 rounded-pill shadow-sm d-flex align-items-center"
+                    @click="askAI">
+                    <i class="bi bi-robot fs-5 me-2"></i> Smart Guide
+                </button>
+
+                <!-- Message Button -->
+                <button class="btn btn-outline-success px-4 py-2 rounded-pill shadow-sm d-flex align-items-center"
+                    @click="messagePage">
+                    <i class="bi bi-envelope-fill fs-5 me-2"></i> Message
                 </button>
             </div>
+
         </div>
 
 
@@ -54,14 +65,34 @@
                     </div>
                 </div>
 
-                <div class="bg-light rounded p-3 shadow-sm">
-                    <h5 class="fw-bold mb-3">
-                        <i class="bi bi-door-open me-2 text-primary"></i>Feedback and Review
+                <div class=" bg-light rounded p-3 shadow-sm  p-2">
+                    <h5 class="fw-bold ">
+                        <i class="bi bi-door-open me-2"></i>Rating and Review
                     </h5>
+
                     <div class="text-muted" style="white-space: pre-line;">
-                        {{ dorm.dorm.room_features }}
+                        <div class="">
+                            <!-- Stars -->
+                            <div class="text-warning mb-1" style="font-size: 1.8rem;">
+                                <i v-for="n in 5" :key="n" :class="getStarClass(n)"></i>
+                                <span class="ms-2 fw-bold text-dark" style="font-size: 1.2rem;">
+                                    {{ averagePercentage }}%
+                                </span>
+                            </div>
+
+                            <p class="mb-1" style="font-size: 1.1rem;">
+                                <i class="bi bi-people-fill text-secondary me-2"></i>
+                                <strong>Total Reviews:</strong> {{ totalReviewers }}
+                            </p>
+                        </div>
                     </div>
+                    <button class="btn btn-outline-primary btn-sm" @click="clickRatingandReview()">
+                        Rating and Review
+                    </button>
+
                 </div>
+
+
             </div>
 
             <!-- Rules and Contact -->
@@ -169,25 +200,28 @@
 
                     </div>
                     <h5 class="fw-bold mt-4 mb-3"><i class="bi bi-cash-coin me-2"></i>Room Pricing</h5>
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle text-center">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Room Type</th>
-                                    <th>Monthly Rate (PHP)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-if="rooms.length === 0">
-                                    <td colspan="3">No rooms available</td>
-                                </tr>
-                                <tr v-for="room in rooms" :key="room.roomID">
-                                    <td>{{ room.roomType }}</td>
-                                    <td>₱{{ room.price.toLocaleString() }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="card shadow-sm mb-4 p-3" style="max-height: 400px; max-width: 100%; overflow-y: auto;">
+                        <div class="d-flex align-items-center mb-3">
+                            <h5 class="mb-0 fw-bold">Room Types & Monthly Rates</h5>
+                            <i class="bi bi-building ms-2 fs-4 text-primary"></i>
+                        </div>
+
+                        <div v-if="rooms.length === 0" class="text-muted fst-italic">
+                            No rooms available
+                        </div>
+
+                        <div v-else class="row g-3">
+                            <div v-for="room in rooms" :key="room.roomID" class="col-md-6 col-lg-4">
+                                <div class="card h-100 border-primary shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-semibold">{{ room.roomType }}</h6>
+                                        <p class="card-text fs-5 text-success">₱{{ room.price.toLocaleString() }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
 
@@ -263,7 +297,7 @@
                     <!-- Gender -->
                     <div class="mb-3 px-4">
                         <label for="sex" class="form-label fw-semibold">
-                            <i class="bi bi-gender-ambiguous me-2 text-primary"></i>Gender
+                            <i class="bi bi-gender-ambiguous me-2 text-primary"></i>Sex
                         </label>
                         <select id="sex" v-model="sex" class="form-select shadow-sm" style="border: 2px solid #4edce2;">
                             <option value="" disabled>Select</option>
@@ -278,7 +312,8 @@
                     <!-- Move-in/out Dates -->
 
                     <div class="px-4">
-                        <button type="button" @click="submitTenantInformation" class="btn w-100 fw-bold">Submit</button>
+                        <button type="button" @click="submitTenantInformation"
+                            class="custom-btn w-100 fw-bold">Submit</button>
                     </div>
                     <div v-if="VisibleImagePostModal" class="modal fade show d-block w-100" tabindex="-1"
                         style="background-color: rgba(0,0,0,0.5);">
@@ -290,7 +325,8 @@
                                     <button type="button" class="btn-close" @click="closeImageModal"></button>
                                 </div>
                                 <!-- Upload Container -->
-                                <div class="container border border-secondary rounded-3  p-4 mb-3 text-center"
+                                <div v-if="isImage"
+                                    class="container border border-secondary rounded-3  p-4 mb-3 text-center"
                                     style="cursor: pointer;" @click="triggeridPictureImage">
                                     <!-- Hidden File Input -->
                                     <input ref="idPicturesInput" class="d-none" type="file" accept="image/*"
@@ -319,7 +355,7 @@
 
                                 </div>
                                 <div class="d-flex justify-content-center align-items-center">
-                                    <button type="button" class="btn mb-3 w-50" @click="tenantIdpicture">
+                                    <button type="button" class="custom-btn mb-3 w-50" @click="tenantIdpicture">
                                         Select a room
                                     </button>
                                 </div>
@@ -332,10 +368,49 @@
 
             </div>
         </div>
-
-        <!--image process-->
-
     </div>
+    <div v-if="askAIModal" class="modal fade show d-block w-100" tabindex="-1"
+        style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content shadow-lg rounded-4 overflow-hidden">
+
+                <!-- Header -->
+                <div class="modal-header bg-gradient text-white">
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="bi bi-robot fs-4 me-2"></i> Smart Guide for {{ selectedDormAI.dormName }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-black" @click="askAIModal = false"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="aiQuestion" class="form-label fw-semibold">Your Question</label>
+                        <textarea id="aiQuestion" v-model="aiQuestion" class="form-control rounded-3 shadow-sm" rows="4"
+                            placeholder="Type your question about dormitory..."></textarea>
+                    </div>
+                    <div v-if="aiResponse" class="alert alert-light border shadow-sm rounded-3">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-cpu me-2 text-primary"></i> AI Response</h6>
+                        <p class="mb-0">{{ aiResponse }}</p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" @click="askAIModal = false">
+                        <i class="bi bi-x-circle me-2"></i> Close
+                    </button>
+                    <button type="button" class="btn btn-primary rounded-pill shadow-sm" @click="sendToAI">
+                        <i class="bi bi-send-fill me-2"></i> Ask AI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
     <Modalconfirmation ref="modal" />
 
 
@@ -346,15 +421,19 @@ import axios from 'axios';
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
+import NotificationList from '@/components/notifications.vue';
 import { nextTick } from 'vue';
 export default {
     components: {
         Toastcomponents,
         Loader,
+        NotificationList,
         Modalconfirmation
     },
     data() {
         return {
+            notifications: [],
+            receiverID: '',
             landlordname: [],
             landlordImage: null,
             tenant_id: '',
@@ -400,6 +479,13 @@ export default {
             PaymentPictureFile: '',
             amenitiesShowMore: false,
             rulesAndPolicyShowMore: false,
+            isImage: true,
+            totalReviewers: 0,
+            averagePercentage: 0,
+            askAIModal: false,
+            aiQuestion: '',
+            aiResponse: '',
+            selectedDormAI: [],
         };
     },
     mounted() {
@@ -410,13 +496,33 @@ export default {
                 this.tenant_id = element.dataset.tenantId;
                 this.displayDorms();
                 this.dormLocation();
+                this.subscribeToNotifications();
+                this.fetchStats();
+
             } else {
                 console.error("RoomDetails element not found!");
             }
         });
     },
-
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.tenant_id;
+            Echo.private(`notifications.${this.tenant_id}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
         changeMainImage(imgSrc) {
             this.mainImage = imgSrc;
         },
@@ -563,7 +669,7 @@ export default {
             this.VisibleImagePostModal = false;
             this.idPicturePreview = '';
             this.idPictureFile = '';
-
+            this.isImage = true;
         },
 
         handleidPictre(event) {
@@ -574,6 +680,7 @@ export default {
                 }
 
                 this.idPictureFile = file;
+                this.isImage = false;
                 this.idPicturePreview = URL.createObjectURL(file);
             }
         },
@@ -582,6 +689,7 @@ export default {
             if (this.$refs.idPicturesInput) {
                 this.$refs.idPicturesInput.click();
             }
+
         },
 
         removeidPicture() {
@@ -589,6 +697,7 @@ export default {
                 URL.revokeObjectURL(this.idPicturePreview);
             }
             this.idPicturePreview = null;
+            this.isImage = true;
             // Add null check for safety
             if (this.$refs.idPicturePreview) {
                 this.$refs.idPicturePreview.value = ''; // Reset file input
@@ -632,7 +741,6 @@ export default {
                 }
             });
         },
-
         dormLocation() {
 
             if (!window.google || !window.google.maps) {
@@ -649,7 +757,82 @@ export default {
 
             }
 
+        },
+        async fetchStats() {
+            try {
+                const res = await axios.get(`/dorms/${this.dormitory_id}/review-stats`);
+                this.totalReviewers = res.data.total_reviewers;
+                this.averagePercentage = res.data.average_percentage;
+            } catch (err) {
+                console.error(err);
+            }
+        },
+        getStarClass(starNumber) {
+            const rating = this.averagePercentage / 20; // convert % to 5-star scale
+            if (starNumber <= Math.floor(rating)) {
+                return "bi bi-star-fill";
+            } else if (starNumber - rating <= 0.5) {
+                return "bi bi-star-half";
+            } else {
+                return "bi bi-star";
+            }
+        },
+        clickRatingandReview() {
+            window.location.href = `/rating/reviews/${this.dormitory_id}/${this.tenant_id}`;
+
+        },
+        async askAI() {
+            try {
+                this.$refs.loader.loading = true;
+
+                const res = await axios.get(`/get/dorm/askai/${this.dormitory_id}`)
+                if (res.data.status === 'success') {
+                    this.askAIModal = true;
+                    this.selectedDormAI = res.data.data;
+                    this.$refs.loader.loading = false;
+
+                    console.log(this.selectedDormAI);
+                }
+
+            } catch (error) {
+
+            }
+            finally {
+
+            }
+        },
+        async sendToAI() {
+            this.$refs.loader.loading = true;
+
+            if (this.aiQuestion.trim() === "") {
+                this.$refs.loader.loading = false;
+
+                this.aiResponse = "⚠️ Please enter a question before asking AI.";
+            } else {
+                try {
+                    const formdata = new FormData();
+                    formdata.append('question', this.aiQuestion);
+                    formdata.append('dormID', this.dormitory_id);
+
+                    const res = await axios.post('/send/ai', formdata);
+
+                    if (res.data.success) {   // ✅ 'success' instead of 'status'
+                        this.aiResponse = res.data.answer;
+                    } else {
+                        this.aiResponse = "⚠️ AI could not process your request.";
+                    }
+                } catch (error) {
+                    console.error(error);
+                    this.aiResponse = "❌ Something went wrong while contacting AI.";
+                }
+                finally {
+                    this.$refs.loader.loading = false;
+
+                }
+            }
         }
+
+
 
     },
     watch: {

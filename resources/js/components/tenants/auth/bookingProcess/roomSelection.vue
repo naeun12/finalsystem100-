@@ -15,16 +15,16 @@
             </button>
         </div>
         <div class="d-flex justify-content-start my-3 p-2 gap-3">
-            <select class="form-select w-auto" id="roomFilter" v-model="selectPriceRange"
-                @change="filterByPriceRange($event)">
+            <select class="form-select w-auto" id="roomFilter" style="border:1px solid #4edce2 "
+                v-model="selectPriceRange" @change="filterByPriceRange($event)">
                 <option value="" disabled>Select Price Range</option>
                 <option value="all">All Price</option>
                 <option value="0-100">0-100</option>
                 <option value="101-300">101-300</option>
                 <option value="301-99999">300+</option>
             </select>
-            <select class="form-select w-auto" id="genderFilter" v-model="selectedGender"
-                @change="filterByGender($event)">
+            <select class="form-select w-auto" id="genderFilter" style="border:1px solid #4edce2 "
+                v-model="selectedGender" @change="filterByGender($event)">
                 <option value="" disabled>Select Gender Preferences</option>
                 <option value="all">All Gender</option>
                 <option value="Male Only">Male</option>
@@ -33,73 +33,73 @@
 
 
         </div>
-        <div class="card flex-md-row shadow-lg rounded-4 overflow-hidden p-3 m-2" style="height: 220px;"
-            v-for="(room, index) in visibleRooms" :key="room.room_id">
-            <!-- Image Section -->
-            <div class="dorm-image" style="width: 35%; min-width: 200px;">
-                <img :src="room.roomImages" :alt="`Image of ${room.dorm?.dorm_name || 'Dorm'}`"
-                    style="width: 100%; height: 100%; object-fit: cover;" />
-            </div>
+        <div class="card shadow-lg rounded-4 overflow-hidden p-3 m-2" v-for="(room, index) in visibleRooms"
+            :key="room.room_id">
+            <div class="row g-3 align-items-center">
 
-            <!-- Details Section -->
-            <div class="p-3 d-flex flex-column justify-content-between w-100">
-                <!-- Title -->
-                <div class="text-black px-3 py-1">
-                    <h5 class="mb-0 fw-semibold">
-                        <i class="bi bi-house-door-fill me-2 text-primary"></i>{{
-                            room.listingType || 'Available Dorm' }}
-                    </h5>
+                <!-- Image Section -->
+                <div class="col-12 col-md-4" style="min-width: 200px;">
+                    <img :src="room.roomImages" :alt="`Image of ${room.dorm?.dorm_name || 'Dorm'}`"
+                        class="img-fluid rounded" style="object-fit: cover; width: 100%; height: 180px;" />
                 </div>
 
-                <!-- Tags -->
-                <div class="d-flex flex-wrap gap-2 mt-2">
-                    <span class="badge bg-light border text-dark">
-                        <i class="bi bi-aspect-ratio me-1 text-secondary"></i>
-                        {{ room.areaSqm || 'N/A' }} sqm
-                    </span>
-                    <span class="badge bg-light border text-dark">
-                        <i class="bi bi-gender-ambiguous me-1 text-secondary"></i>
-                        {{ room.genderPreference || 'N/A' }}
-                    </span>
-                    <span class="badge bg-light border text-dark">
-                        <i class="bi bi-lamp-fill me-1 text-secondary"></i> {{
-                            room.furnishing_status || 'N/A' }}
-                    </span>
-                </div>
+                <!-- Details Section -->
+                <div class="col-12 col-md-8 d-flex flex-column justify-content-between">
 
-                <!-- Price -->
-                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                    <span class="fw-bold text-success fs-5">
-                        <i class="bi bi-cash-coin me-1"></i> ₱{{
-                            Number(room.price).toLocaleString() || 'N/A' }} / Head
-                    </span>
-                </div>
+                    <!-- Title -->
+                    <div class="text-black px-2 py-1">
+                        <h5 class="mb-0 fw-semibold">
+                            <i class="bi bi-house-door-fill me-2 text-primary"></i>
+                            {{ room.listingType || 'Available Dorm' }}
+                        </h5>
+                    </div>
 
+                    <!-- Tags -->
+                    <div class="d-flex flex-wrap gap-2 mt-2 px-2">
+                        <span class="badge bg-light border text-dark">
+                            <i class="bi bi-aspect-ratio me-1 text-secondary"></i>
+                            {{ room.areaSqm || 'N/A' }} sqm
+                        </span>
+                        <span class="badge bg-light border text-dark">
+                            <i class="bi bi-gender-ambiguous me-1 text-secondary"></i>
+                            {{ room.genderPreference || 'N/A' }}
+                        </span>
+                        <span class="badge bg-light border text-dark">
+                            <i class="bi bi-lamp-fill me-1 text-secondary"></i>
+                            {{ room.furnishing_status || 'N/A' }}
+                        </span>
+                    </div>
 
-                <!-- Action Buttons -->
-                <div class="d-flex justify-content-between align-items-center mt-3 mb-2 flex-wrap">
-                    <a @click="openRoomDetails(room.roomID)"
-                        class="text-primary text-decoration-none px-4 py-2 fw-semibold" style="cursor: pointer;">
-                        <i class="bi bi-eye me-1"></i>View Details
-                    </a>
-                    <div class="d-flex gap-2 mt-2 mt-md-0">
-                        <div v-if="chooseStatus === 'Occupied'">
-                            <button type="button" class="button-costumize btn-sm px-3"
-                                @click="openReservationModal(room)">
+                    <!-- Price -->
+                    <div class="d-flex justify-content-between align-items-center mt-3 px-2 flex-wrap">
+                        <span class="fw-bold text-success fs-5">
+                            <i class="bi bi-cash-coin me-1"></i> ₱{{ Number(room.price).toLocaleString() || 'N/A' }} /
+                            Head
+                        </span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center mt-3 mb-2 px-2 flex-wrap">
+                        <a @click="openRoomDetails(room.roomID)"
+                            class="text-primary text-decoration-none px-3 py-2 fw-semibold" style="cursor: pointer;">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </a>
+                        <div class="d-flex gap-2 mt-2 mt-md-0">
+                            <button v-if="chooseStatus === 'Occupied'" type="button"
+                                class="btn btn-outline-primary btn-sm px-3" @click="openReservationModal(room)">
                                 <i class="bi bi-calendar-check me-1"></i>Reserve this room
                             </button>
-                        </div>
-                        <div v-if="chooseStatus === 'Available'">
-                            <button type="button" class="button-costumize btn-sm px-3" @click="bookRoom(room)">
+                            <button v-if="chooseStatus === 'Available'" type="button"
+                                class="btn btn-primary btn-sm px-3" @click="bookRoom(room)">
                                 <i class="bi bi-calendar-check me-1"></i>Book
                             </button>
                         </div>
-
-
                     </div>
+
                 </div>
             </div>
         </div>
+
         <div class="d-flex justify-content-center mb-3 mt-3" v-if="rooms.length > 3">
             <a href="#" @click.prevent="toggleShowMore">
                 {{ showAll ? 'Show Less' : 'Show More' }}
@@ -295,13 +295,16 @@ import axios from 'axios'
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
+import NotificationList from '@/components/notifications.vue';
+
 import { toHandlers } from 'vue';
 import { parse } from 'vue/compiler-sfc';
 export default {
     components: {
         Toastcomponents,
         Loader,
-        Modalconfirmation
+        Modalconfirmation,
+        NotificationList,
     },
     data() {
         return {
@@ -329,14 +332,33 @@ export default {
             sex: '',
             roomNu: '',
             roomType: '',
-
             price: '',
             idPicturePreview: '',
             imageUrl: null,
-            selectedRoomId: ''
+            selectedRoomId: '',
+            notifications: [],
+            receiverID: '',
         }
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.tenant_id;
+            Echo.private(`notifications.${this.tenant_id}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
         getInformationData() {
             const data = {
                 firstname: this.firstname,
@@ -555,12 +577,13 @@ export default {
             this.sex = parsed.sex;
             this.idPicturePreview = parsed.idPicturePreview;
             this.imageUrl = parsed.imageUrl;
-
         }
         const element = document.getElementById('roomSelection');
         this.dormitory_id = element.dataset.dormId;
         this.tenant_id = element.dataset.tenantId;
         this.availableRooms();
+        this.subscribeToNotifications();
+
     },
     computed: {
         visibleRooms() {

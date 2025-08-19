@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-
+use App\Models\notificationModel;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 
 use Illuminate\Support\Facades\Http;
@@ -20,7 +22,13 @@ class dormitories extends Controller
     public function dormitoriesListing($tenant_id)
     {
         $sessionTenant_id = session('tenant_id');
-    
+         $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenant_id)
+            ->where('isRead', false)
+            ->count();
         if (!$sessionTenant_id) {
             return redirect()->route('tenant-login')->with('error', 'Please log in as a landlord.');
         }
@@ -34,7 +42,10 @@ class dormitories extends Controller
             return redirect()->route('tenant-login')->with('error', 'Landlord not found.');
         }
         return view('tenant.auth.dormitories',['title' => 'Dormitories  - Dormhub',
-        'tenant_id',$tenant,'cssPath' => asset('css/tenantpage/auth/dormitorymap.css')]);
+        'tenant_id',$tenant,'cssPath' => asset('css/tenantpage/auth/dormitorymap.css')
+        ,'notifications' => $notifications,
+             'unread_count' => $unreadCount,
+    ]);
 
     }
     public function Listdorms()
@@ -183,225 +194,80 @@ class dormitories extends Controller
             ], 500);
         }
     }
-
-    public function searchWithPrice(Request $request)
-{
-    try {
-        $keyword = strtolower(trim($request->input('keyword', '')));
-        $keywordNormalized = $this->normalize($keyword);
-        $minPrice = floatval($request->input('min_price', 0));
-        $maxPrice = floatval($request->input('max_price', 999999));
-
-        // Query using Eloquent relationships
-        $results = roomModel::with(['dorm', 'dorm.images']) // eager load
-            ->whereNotNull('price')
-            ->whereRaw('LOWER(availability) = ?', ['available'])
-            ->get()
-            ->map(function ($room) {
-                return (object) [
-                    'dormName'   => $room->dorm->dormName ?? null,
-                    'address'    => $room->dorm->address ?? null,
-                    'price'      => $room->price,
-                    'roomType'   => $room->roomType,
-                    'mainImage'  => optional($room->dorm->images)->mainImage,
-                ];
-            });
-
-        // Filter by price range and keyword match
-        $filtered = $results->filter(function ($item) use ($keywordNormalized, $minPrice, $maxPrice) {
-            $price = floatval($item->price);
-            $addressNormalized = $this->normalize($item->address);
-
-            return $price >= $minPrice * 0.8 && $price <= $maxPrice * 1.2 &&
-                (strpos($addressNormalized, $keywordNormalized) !== false ||
-                 $this->matchesSynonym($keywordNormalized, $addressNormalized));
-        });
-
-        return response()->json([
-            'status' => 'success',
-            'recommendations' => $filtered->values()
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Laravel error: ' . $e->getMessage()
-        ], 500);
-    }
-}
-
-
-    public function genderLocationRecommendations(Request $request)
+    public function mostWatchedDorm($id)
     {
-        try {
-            $validated = $request->validate([
-                'occupancy_type' => 'required|string',
-                'location' => 'required|string',
-            ]);
-
-            $gender = strtolower(trim($validated['occupancy_type']));
-            $keyword = strtolower(trim($validated['location']));
-            $keywordNormalized = $this->normalize($keyword);
-
-            $dorms = DB::table('dorms as d')
-                ->leftJoin('dormimages as i', 'i.fkdormID', '=', 'd.dormID')
-                ->select('d.*', 'i.mainImage')
-                ->get();
-
-            $results = $dorms->filter(function ($dorm) use ($gender, $keywordNormalized) {
-                $dormGender = strtolower(trim($dorm->occupancyType));
-                $addressNormalized = $this->normalize($dorm->address);
-                $locationMatch = strpos($addressNormalized, $keywordNormalized) !== false ||
-                                 $this->matchesSynonym($keywordNormalized, $addressNormalized);
-
-                return $locationMatch && (
-                    ($gender == 'male' && $dormGender == 'male only') ||
-                    ($gender == 'female' && $dormGender == 'female only') ||
-                    ($gender == 'mixed' && strpos($dormGender, 'mixed') !== false) ||
-                    ($gender == 'all')
-                );
-            });
-
+        $dorm = dormModel::with('images')->orderBy('views', 'desc')->get();
             return response()->json([
-                'status' => 'success',
-                'recommendations' => $results->values()
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Laravel Gender+Location API Error: " . $e->getMessage());
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Laravel error',
-                'details' => $e->getMessage(),
-            ], 500);
-        }
+            'message' => 'Most watched dorm retrieved successfully.',
+            'dorm' => $dorm
+    ]);
     }
-    public function filtergenderpriceDormitories(Request $request)
+    public function searchDormsWithFilters(array $filters)
 {
-    try {
-        $priceRange = urldecode($request->input('price_range'));
-        $occupancyType = strtolower(trim($request->input('occupancy_type')));
+    $query = dormModel::query();
 
-        Log::info('Price Range: ' . $priceRange);
-        Log::info('Occupancy Type: ' . $occupancyType);
-
-        $query = DB::table('dorms as d')
-        ->join('rooms as r', 'd.dormID', '=', 'r.fkdormID') // Gamiton nato ang INNER JOIN para ang dorms nga walay rooms dili maapil
-        ->leftJoin('dormimages as i', 'i.fkdormID', '=', 'd.dormID')
-            ->select('d.*', 'i.mainImage', 'r.price', 'r.roomType')
-            ->distinct();
-
-        // Apply occupancy type filter
-        if ($occupancyType && $occupancyType !== 'all') {
-            $query->where(function($q) use ($occupancyType) {
-                if ($occupancyType === 'male') {
-                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['male only'])
-                      ->orWhereRaw("LOWER(d.occupancyType) = ?", ['male']);
-                } elseif ($occupancyType === 'female') {
-                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['female only'])
-                      ->orWhereRaw("LOWER(d.occupancyType) = ?", ['female']);
-                } elseif ($occupancyType === 'mixed (male & female – separate floors)') {
-                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['mixed (male & female – separate floors)']);
-                } else {
-                    $q->whereRaw("LOWER(d.occupancyType) = ?", [$occupancyType]);
-                }
-            });
-        }
-
-        // Apply price range filter but allow NULLs (so dorms with no room still show)
-        if ($priceRange && $priceRange !== 'all') {
-            $query->where(function($q) use ($priceRange) {
-                if ($priceRange === '301+') {
-                    $q->where('r.price', '>=', 301)
-                      ->orWhereNull('r.price');
-                } elseif (strpos($priceRange, '-') !== false) {
-                    [$min, $max] = explode('-', $priceRange);
-                    $q->whereBetween('r.price', [(int)$min, (int)$max])
-                      ->orWhereNull('r.price');
-                }
-            });
-        }
-
-        $dormitories = $query->get();
-
-        return response()->json([
-            'status' => 'success',
-            'recommendations' => $dormitories,
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('Error in filtergenderpriceDormitories: ' . $e->getMessage());
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Internal server error',
-            'error' => $e->getMessage(),
-        ], 500);
+    if (!empty($filters['location'])) {
+        $query->where('address', 'like', '%' . $filters['location'] . '%');
     }
+
+    // You can join rooms table and filter by room type or price
+    if (!empty($filters['type']) || !empty($filters['max_price'])) {
+        $query->whereHas('rooms', function ($q) use ($filters) {
+            if (!empty($filters['type'])) {
+                $q->where('roomType', $filters['type']);
+            }
+            if (!empty($filters['max_price'])) {
+                $q->where('price', '<=', $filters['max_price']);
+            }
+        });
+    }
+
+    $dorms = $query->with('rooms')->get();
+
+    return $dorms;
 }
-public function filterpriceGenderDormitories(Request $request)
+public function getQuestionRecommendations(Request $request)
 {
-    try {
-        $occupancyType = strtolower(trim($request->input('occupancy_type')));
-        $priceRange = urldecode($request->input('price_range'));
+    $question = $request->input('question');
 
-        Log::info('Occupancy Type: ' . $occupancyType);
-        Log::info('Price Range: ' . $priceRange);
+    // Call Flask API to get filters & AI message
+    $response = Http::post('http://127.0.0.1:5000/api/ask', [
+        'question' => $question,
+    ]);
 
-        $query = DB::table('dorms as d')
-            ->join('rooms as r', 'd.dormID', '=', 'r.fkdormID') // Only dorms with rooms
-            ->leftJoin('dormimages as i', 'i.fkdormID', '=', 'd.dormID')
-            ->select('d.*', 'i.mainImage', 'r.price', 'r.roomType')
-            ->distinct();
+    \Log::info('Raw Flask response: ' . $response->body());
 
-        // Filter by occupancy type
-        if ($occupancyType && $occupancyType !== 'all') {
-            $query->where(function($q) use ($occupancyType) {
-                if ($occupancyType === 'male') {
-                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['male only'])
-                      ->orWhereRaw("LOWER(d.occupancyType) = ?", ['male']);
-                } elseif ($occupancyType === 'female') {
-                    $q->whereRaw("LOWER(d.occupancyType) = ?", ['female only'])
-                      ->orWhereRaw("LOWER(d.occupancyType) = ?", ['female']);
-                } elseif ($occupancyType === 'mixed') {
-                    $q->whereRaw("LOWER(d.occupancyType) LIKE ?", ['mixed%']);
-                } else {
-                    $q->whereRaw("LOWER(d.occupancyType) = ?", [$occupancyType]);
-                }
-            });
-        }
+    $data = $response->json()['answer'] ?? null;
 
-        // Filter by price
-        if ($priceRange && $priceRange !== 'all') {
-            $query->where(function($q) use ($priceRange) {
-                if ($priceRange === '301+') {
-                    $q->where('r.price', '>=', 301)
-                      ->orWhereNull('r.price');
-                } elseif (strpos($priceRange, '-') !== false) {
-                    [$min, $max] = explode('-', $priceRange);
-                    $q->whereBetween('r.price', [(int)$min, (int)$max])
-                      ->orWhereNull('r.price');
-                }
-            });
-        }
-
-        $dormitories = $query->get();
-
+    if (!$data) {
         return response()->json([
-            'status' => 'success',
-            'recommendations' => $dormitories,
+            'message' => 'Walay tubag nakuha',
+            'result' => []
         ]);
-    } catch (\Exception $e) {
-        Log::error('Error in filterpriceGenderDormitories: ' . $e->getMessage());
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Internal server error',
-            'error' => $e->getMessage(),
-        ], 500);
     }
+
+    // Extract AI message & filters (assuming filters are parsed in AI or sent separately)
+    $aiMessage = $data['message'] ?? 'Walay tubag nakuha';
+
+    // Example: parse filters from AI message or use separate endpoint to extract filters
+    // For demonstration, let's assume the AI sends filters in the response (you'll need to adapt Flask code)
+    $filters = $data['filters'] ?? [];  // <-- implement sa Flask nga mo-send ni siya
+
+    $dorms = $this->searchDormsWithFilters($filters);
+
+    return response()->json([
+        'message' => $aiMessage,
+        'result' => $dorms
+    ]);
 }
 
-    
-    
 
 
+
+
+ 
+
+
+
+   
 }

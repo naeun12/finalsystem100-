@@ -11,12 +11,19 @@ use App\Models\tenant\bookingpaymentModel;
 use App\Models\tenant\tenantModel;
 use App\Models\notificationModel;
 use Carbon\Carbon;
+
 class mybookingdetailsController extends Controller
 {
     public function viewBookingDetails($tenant_id,$booking_id)
         {
             $sessionTenant_id = session('tenant_id');
-        
+             $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenant_id)
+            ->where('isRead', false)
+            ->count();
             if (!$sessionTenant_id) {
                 return redirect()->route('tenant-login')->with('error', 'Please log in as a landlord.');
             }
@@ -33,7 +40,10 @@ class mybookingdetailsController extends Controller
             return view('tenant.auth.nav.bookings.mybookingdetails',['title' => 'Tenant - Booking Details',
             'tenant_id' => $tenant_id,
             'booking_id' => $booking_id,
-            'cssPath' => asset('css/tenantpage/auth/roomdetails.css')]);
+            'cssPath' => asset('css/tenantpage/auth/roomdetails.css'),
+             'notifications' => $notifications,
+             'unread_count' => $unreadCount,
+        ]);
         }
         public function bookingDetails($booking_id)
         {

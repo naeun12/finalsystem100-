@@ -1,11 +1,12 @@
 <template>
+    <NotificationList ref="toastRef" />
+
     <div class="container-fluid vh-150 d-flex flex-column bg-light">
         <div class="row flex-grow-1 h-100 overflow-hidden">
             <!-- Sidebar -->
             <div class="col-md-3 bg-white border-end shadow-sm d-flex flex-column">
                 <div class="p-3">
                     <h5 class="fw-bold text-primary mb-3">Conversations</h5>
-                    <input type="text" class="form-control form-control-sm mb-3" placeholder="Search Conversation" />
                     <div class="list-group bg-transparent overflow-auto" style="max-height: 80vh;">
                         <a v-for="convo in conversations" :key="convo.conversation_id" href="#"
                             class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2 px-3 shadow-sm rounded mb-2 transition"
@@ -90,11 +91,13 @@ export default {
             pollInterval: null,
             activeConversationID: null,
             messages: [],
+            newMessage: '',
             message: '',
             tenantID: '',
             currentUserID: '',
+            echoChannel: null,
+
             currentUserRole: '',
-            activeConversationID: null,
             activeLandlord: {
                 firstname: '',
                 lastname: '',
@@ -108,9 +111,14 @@ export default {
             axios.get(`/api/tenant/conversations/${this.tenantID}`)
                 .then(res => {
                     this.conversations = res.data;
+                    this.subscribeToConversations();
+                    if (!this.activeConversationID && this.conversations.length > 0) {
+                        this.selectConversation(this.conversations[0]);
+                    }
                 }).catch(err => {
                     console.error("Failed to fetch conversations:", err);
                 });
+
         },
         selectConversation(convo) {
             this.activeConversationID = convo.conversation_id;
@@ -119,28 +127,43 @@ export default {
                 lastname: convo.receiver_name.split(' ')[1] || '',
                 profilePicUrl: convo.receiver_profile || 'default-profile.png'
             };
-
             this.fetchMessages(convo.conversation_id);
-            // if (this.messagePollInterval) {
-            //     clearInterval(this.messagePollInterval);
-            // }
 
-            // START polling for messages every 2s
-            // this.messagePollInterval = setInterval(() => {
-            //     this.fetchMessages(this.activeConversationID);
-            // }, 2000);
         },
         fetchMessages(conversationID) {
             axios.get(`/api/get/tenant/messages/${conversationID}`)
                 .then(res => {
                     this.messages = res.data;
-                    this.scrollToBottom(); // 👈 auto scroll here
+
+                    this.scrollToBottom();
 
                 }).catch(err => {
                     console.error("Failed to fetch messages:", err);
                 });
         },
+        subscribeToConversations() {
+            this.conversations.forEach(convo => {
+                const channelName = `chat.${convo.conversation_id}`;
 
+                window.Echo.private(channelName)
+                    .subscribed(() => {
+                    })
+                    .listen('.message.sent', (e) => {
+
+                        // Check if this message is for the currently active conversation
+                        if (this.activeConversationID == e.message.conversationID) {
+                            this.messages.push(e.message);
+                            this.scrollToBottom();
+                        } else {
+                            // Optional: update unread badge or notification
+                            console.log(`🔔 New message in another conversation: ${e.message.conversationID}`);
+                        }
+                    })
+                    .error((err) => {
+                        console.error(`❌ Subscription error for ${channelName}:`, err);
+                    });
+            });
+        },
         pushMessage() {
             const trimmedMessage = this.message.trim();
 
@@ -196,12 +219,7 @@ export default {
         this.currentUserID = this.tenantID;
         this.currentUserRole = 'tenant';
     },
-    // beforeUnmount() {
-    //     clearInterval(this.pollInterval);
-    //     if (this.messagePollInterval) {
-    //         clearInterval(this.messagePollInterval);
-    //     }
-    // }
+
 
 };
 

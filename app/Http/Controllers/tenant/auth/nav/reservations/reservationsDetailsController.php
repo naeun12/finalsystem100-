@@ -26,6 +26,8 @@ class reservationsDetailsController extends Controller
             $title = 'Tenant room Details - Dormhub';
             return view('tenant.auth.nav.reservations.reservation',['title' => 'Reservations',
             'tenant_id' => $tenant_id,
-            'cssPath' => asset('css/tenantpage/auth/roomdetails.css')]);
+            'cssPath' => asset('css/tenantpage/auth/roomdetails.css'),
+        'notifications' => $notifications,
+             'unread_count' => $unreadCount,]);
         }
 }

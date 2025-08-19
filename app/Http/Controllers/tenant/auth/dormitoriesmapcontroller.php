@@ -9,6 +9,8 @@ use App\Models\landlord\roomModel;
 use App\Models\landlord\dormModel; 
 use App\Models\tenant\tenantModel; 
 use Illuminate\Support\Facades\DB;
+use App\Models\notificationModel;
+
 
 
 class dormitoriesmapcontroller extends Controller
@@ -16,7 +18,13 @@ class dormitoriesmapcontroller extends Controller
     public function dormitoriesMap($tenant_id)
     {
         $sessionTenant_id = session('tenant_id');
-    
+         $notifications = notificationModel::where('receiverID', $sessionTenant_id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $unreadCount = notificationModel::where('receiverID', $tenant_id)
+            ->where('isRead', false)
+            ->count();
         if (!$sessionTenant_id) {
             return redirect()->route('tenant-login')->with('error', 'Please log in as a landlord.');
         }
@@ -30,7 +38,10 @@ class dormitoriesmapcontroller extends Controller
             return redirect()->route('tenant-login')->with('error', 'Landlord not found.');
         }
         return view('tenant.auth.dormitorieslocation',['title' => 'Dormitories Map  - Dormhub',
-        'tenant_id',$tenant,'cssPath' => asset('css/tenantpage/auth/dormitorymap.css')]);
+        'tenant_id',$tenant,'cssPath' => asset('css/tenantpage/auth/dormitorymap.css')
+        ,'notifications' => $notifications,
+             'unread_count' => $unreadCount,
+    ]);
 
     }
     public function getNearbyByCoordinates(Request $request)

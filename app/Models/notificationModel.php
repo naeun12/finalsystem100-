@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\tenant\tenantModel;
+use App\Models\landlord\landlordModel;
 
 class notificationModel extends Model
 {
@@ -35,5 +37,6 @@ class notificationModel extends Model
     {
         return $this->morphTo(__FUNCTION__, 'receiverType', 'receiverID');
     }
+
 
 }

@@ -1,16 +1,14 @@
 <template>
     <Loader ref="loader" />
+    <NotificationList ref="toastRef" />
 
     <div class="container-fluid py-4">
         <div class="container-fluid mt-3">
             <h2 class="mb-4 text-primary fw-semibold text-center">My Bookings</h2>
         </div>
-
-
-
         <div class="d-flex justify-content-end">
-            <button class="custom-btn  px-4 py-2 mb-3 rounded-pill fw-semibold">
-                💸 View Payment
+            <button @click="viewPayments" class="custom-btn  px-4 py-2 mb-3 rounded-pill fw-semibold">
+                💸 View Payments
             </button>
         </div>
 
@@ -93,6 +91,8 @@ import axios from 'axios';
 import Loader from '@/components/loader.vue';
 import BookingStatus from '@/components/BookingStatusAlert.vue';
 import statusMap from '@/components/statusmap.vue';
+import NotificationList from '@/components/notifications.vue';
+
 export default {
     components: {
         Loader,
@@ -106,9 +106,34 @@ export default {
             showAll: false, // default is false
             showCount: 3,   // show 3 items by default
             viewBookingModal: false,
+            notifications: [],
+            receiverID: '',
+            notifications: [],
+            receiverID: '',
         };
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.tenantid;
+            Echo.private(`notifications.${this.tenantid}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
+        viewPayments() {
+            window.location.href = `/view/payment/${this.tenantid}`;
+        },
         viewBooking(booking) {
             window.location.href = `/view/booking/details/${this.tenantid}/${booking.bookingID}`;
         },
@@ -139,6 +164,8 @@ export default {
         const el = document.getElementById('viewBooking');
         this.tenantid = el.getAttribute('tenant_id')?.trim();
         this.myBookingList();
+        this.subscribeToNotifications();
+
 
 
 

@@ -25,6 +25,7 @@ class approvetenantsModel extends Model
         'gender',
         'moveInDate',
         'moveOutDate',
+        'notify-extend',
         'paymentType',
         'paymentImage',
         'studentpictureId'
@@ -33,6 +34,11 @@ class approvetenantsModel extends Model
     {
         return $this->belongsTo(roomModel::class, 'fkroomID', 'roomID');
     }
+    public function payments()
+{
+    return $this->hasMany(approvepaymentModel::class, 'fkapprovedID', 'approvedID');
+}
+
 
   
 

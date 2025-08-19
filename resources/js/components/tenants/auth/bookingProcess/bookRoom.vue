@@ -4,7 +4,7 @@
     <Loader ref="loader" />
 
     <div class="container py-3">
-        <h2 class="fw-bold text-center mb-4 p-2 bg-light text-dark border border-2 rounded">
+        <h2 class="fw-bold text-center mb-4 p-2 bg-light text-dark  -2 rounded" style="border:1px solid #4edce2">
             ✨ Book Your Room Now
         </h2>
         <div class="row mb-1">
@@ -13,7 +13,7 @@
                     <label class="form-label fw-bold">
                         <i class="bi bi-person-fill text-primary me-2"></i>Firstname:
                     </label>
-                    <div class="p-2 border rounded bg-light text-break">
+                    <div class="p-2  rounded bg-light text-break" style="border:1px solid #4edce2">
                         {{ firstname || 'N/A' }}
                     </div>
                 </div>
@@ -24,7 +24,7 @@
                     <label class="form-label fw-bold">
                         <i class="bi bi-person-badge-fill text-primary me-2"></i>Lastname:
                     </label>
-                    <div class="p-2 border rounded bg-light text-break">
+                    <div class="p-2  rounded bg-light text-break" style="border:1px solid #4edce2">
                         {{ lastname || 'N/A' }}
                     </div>
                 </div>
@@ -35,7 +35,7 @@
             <label class="form-label fw-bold">
                 <i class="bi bi-telephone-fill text-primary me-2"></i>Contact Number:
             </label>
-            <div class="p-2 border rounded bg-light text-break">
+            <div class="p-2  rounded bg-light text-break" style="border:1px solid #4edce2">
                 {{ contactInfo || 'N/A' }}
             </div>
         </div>
@@ -45,7 +45,7 @@
             <label class="form-label fw-bold">
                 <i class="bi bi-envelope-fill text-primary me-2"></i>Contact Email:
             </label>
-            <div class="p-2 border rounded bg-light text-break">
+            <div class="p-2  rounded bg-light text-break" style="border:1px solid #4edce2">
                 {{ email || 'N/A' }}
             </div>
         </div>
@@ -53,7 +53,7 @@
             <label class="form-label fw-bold">
                 <i class="bi bi-hash text-primary me-2"></i>Room Number:
             </label>
-            <div class="p-2 border rounded bg-light text-break">
+            <div class="p-2  rounded bg-light text-break" style="border:1px solid #4edce2">
                 {{ roomsDetail?.roomNumber || 'N/A' }}
             </div>
         </div>
@@ -61,7 +61,7 @@
             <label class="form-label fw-bold">
                 <i class="bi bi-door-open-fill text-primary me-2"></i>Room Type:
             </label>
-            <div class="p-2 border rounded bg-light text-break">
+            <div class="p-2  rounded bg-light text-break" style="border:1px solid #4edce2">
                 {{ roomsDetail?.roomType || 'N/A' }}
             </div>
         </div>
@@ -69,7 +69,7 @@
             <label class="form-label fw-bold">
                 <i class="bi bi-cash-coin text-primary me-2"></i>Price:
             </label>
-            <div class="p-2 border rounded bg-light text-break">
+            <div class="p-2  rounded bg-light text-break" style="border:1px solid #4edce2">
                 ₱{{ Number(roomsDetail?.price).toLocaleString() || '0.00' }}
             </div>
         </div>
@@ -79,9 +79,10 @@
                 <label for="move_in_date" class="form-label fw-semibold">
                     <i class="bi bi-calendar-event me-2 text-primary"></i>Move-in Date
                 </label>
-                <input type="date" class="form-control shadow-sm" v-model="moveInDate" @change="setMoveOutDate"
-                    id="move_in_date" />
-                <span v-if="errors.moveInDate" class="error text-danger small mt-1 d-block">
+                <input type="date" style="border:1px solid #4edce2" class="form-control shadow-sm" v-model="moveInDate"
+                    @change="setMoveOutDate" id="move_in_date" />
+                <span v-if="errors.moveInDate" style="border:1px solid #4edce2"
+                    class="error text-danger small mt-1 d-block">
                     <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.moveInDate[0] }}
                 </span>
             </div>
@@ -96,7 +97,7 @@
             </div>
         </div>
         <!-- Submit Button -->
-        <button type="submit" class="btn  w-100 py-2 fw-semibold shadow-sm" @click="bookRoom">
+        <button type="submit" class="btn btn-success  w-100 py-2 fw-semibold shadow-sm" @click="bookRoom">
             <i class="bi bi-calendar-check-fill me-2"></i>Make a Booking
         </button>
 
@@ -109,11 +110,14 @@ import axios from 'axios'
 import Toastcomponents from '@/components/Toastcomponents.vue';
 import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
+import NotificationList from '@/components/notifications.vue';
 export default {
     components: {
         Toastcomponents,
         Loader,
-        Modalconfirmation
+        Modalconfirmation,
+        NotificationList,
+
     },
     data() {
         return {
@@ -135,13 +139,31 @@ export default {
             moveOutDate: '',
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
             id_picture: '/images/tenant/allimagesResouces/vector-id-card-icon.jpg',
-
             openPaymentModel: false,
             imageUrl: '',
+            notifications: [],
+            receiverID: '',
         }
     },
     methods: {
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
 
+            this.receiverID = this.tenant_id;
+            Echo.private(`notifications.${this.tenant_id}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
         async getRoomDetails() {
             try {
                 const response = await axios.get(`/get-room-details/${this.room_id}`);
@@ -237,12 +259,13 @@ export default {
             this.idPicturePreview = parsed.idPicturePreview;
             this.imageUrl = parsed.imageUrl;
         }
-        console.log(this.imageUrl);
         const element = document.getElementById('roomBook');
         this.dormitory_id = element.dataset.dormId;
         this.room_id = element.dataset.roomId;
         this.tenant_id = element.dataset.tenantId;
         this.getRoomDetails();
+        this.subscribeToNotifications();
+
     }
 }
 </script>

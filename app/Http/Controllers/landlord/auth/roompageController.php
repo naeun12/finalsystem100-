@@ -5,7 +5,6 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
 use App\Http\Controllers\Controller;
 use App\Models\landlord\landlordModel;
 use App\Models\landlord\roomModel;
@@ -111,46 +110,46 @@ class roompageController extends Controller
     ], [
         // Custom error messages
         'dormsId.required' => 'Please select a dormitory.',
-'dormsId.integer' => 'Invalid dormitory selection.',
+        'dormsId.integer' => 'Invalid dormitory selection.',
 
-'roomNumber.required' => 'Please enter the room number.',
-'roomNumber.string' => 'Room number must be text.',
-'roomNumber.max' => 'Room number must be 255 characters or fewer.',
+        'roomNumber.required' => 'Please enter the room number.',
+        'roomNumber.string' => 'Room number must be text.',
+        'roomNumber.max' => 'Room number must be 255 characters or fewer.',
 
-'roomType.required' => 'Please select a room type.',
-'roomType.string' => 'Room type must be text.',
-'roomType.max' => 'Room type must be 255 characters or fewer.',
+        'roomType.required' => 'Please select a room type.',
+        'roomType.string' => 'Room type must be text.',
+        'roomType.max' => 'Room type must be 255 characters or fewer.',
 
-'availability.required' => 'Please select availability status.',
-'availability.string' => 'Availability must be text.',
-'availability.max' => 'Availability must be 255 characters or fewer.',
+        'availability.required' => 'Please select availability status.',
+        'availability.string' => 'Availability must be text.',
+        'availability.max' => 'Availability must be 255 characters or fewer.',
 
-'listing_type.required' => 'Please select a bed type.',
-'listing_type.string' => 'Bed type must be text.',
-'listing_type.max' => 'Bed type must be 255 characters or fewer.',
+        'listing_type.required' => 'Please select a bed type.',
+        'listing_type.string' => 'Bed type must be text.',
+        'listing_type.max' => 'Bed type must be 255 characters or fewer.',
 
-'area_sqm.required' => 'Please enter the room area in square meters.',
-'area_sqm.string' => 'Room area must be text.',
-'area_sqm.max' => 'Room area must be 255 characters or fewer.',
+        'area_sqm.required' => 'Please enter the room area in square meters.',
+        'area_sqm.string' => 'Room area must be text.',
+        'area_sqm.max' => 'Room area must be 255 characters or fewer.',
 
-'gender_preference.required' => 'Please select a gender preference.',
-'gender_preference.string' => 'Gender preference must be text.',
-'gender_preference.max' => 'Gender preference must be 255 characters or fewer.',
+        'gender_preference.required' => 'Please select a gender preference.',
+        'gender_preference.string' => 'Gender preference must be text.',
+        'gender_preference.max' => 'Gender preference must be 255 characters or fewer.',
 
-'furnishing_status.required' => 'Please specify the furnishing status.',
-'furnishing_status.string' => 'Furnishing status must be text.',
-'furnishing_status.max' => 'Furnishing status must be 255 characters or fewer.',
+        'furnishing_status.required' => 'Please specify the furnishing status.',
+        'furnishing_status.string' => 'Furnishing status must be text.',
+        'furnishing_status.max' => 'Furnishing status must be 255 characters or fewer.',
 
-'roomImageFile.required' => 'Please upload a room image.',
-'roomImageFile.image' => 'The uploaded file must be an image.',
-'roomImageFile.mimes' => 'Accepted image formats: jpg, jpeg, png, webp.',
-'roomImageFile.max' => 'Image size must not exceed 2MB.',
+        'roomImageFile.required' => 'Please upload a room image.',
+        'roomImageFile.image' => 'The uploaded file must be an image.',
+        'roomImageFile.mimes' => 'Accepted image formats: jpg, jpeg, png, webp.',
+        'roomImageFile.max' => 'Image size must not exceed 2MB.',
 
-'price.required' => 'Please enter the room price.',
-'price.numeric' => 'Price must be a valid number.',
-'price.min' => 'Price cannot be negative.',
+        'price.required' => 'Please enter the room price.',
+        'price.numeric' => 'Price must be a valid number.',
+        'price.min' => 'Price cannot be negative.',
 
-    ]);
+            ]);
 
     if ($validator->fails()) {
         return response()->json([
@@ -168,6 +167,13 @@ class roompageController extends Controller
                 'message' => 'Unauthorized action. Please log in as a landlord.'
             ], 403);
         }
+        $dorm = dormModel::find($request->input('dormsId'));
+        if ($dorm->totalRooms <= 0) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'No available capacity for new rooms in this dormitory.'
+        ], 422);
+    }
 
         $room = new roomModel();
         $room->fkdormID = $request->input('dormsId');
@@ -189,8 +195,13 @@ class roompageController extends Controller
             $mainImageUrl = null;
         }
         $room->roomImages = $mainImageUrl;
+           $dorm = dormModel::find($request->input('dormsId'));
+       $room->save();
 
-        $room->save();
+        $dorm->totalRooms = max(0, $dorm->totalRooms - 1);
+        $dorm->save();
+
+        
 
         return response()->json([
             'status' => 'success',

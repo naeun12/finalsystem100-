@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class approvepaymentModel extends Model
 {
       use HasFactory;
-    protected $table = 'paymentapprove';
+    protected $table = 'approvepayments';
     protected $primaryKey = 'paymentID';
     public $incrementing = true;
 
@@ -17,10 +17,15 @@ class approvepaymentModel extends Model
         'paymentID',
         'fkapprovedID',
         'paymentType',
-        'paymentImage'
+        'paymentImage',
+        'amount',
+        'status'
     ];
     public function approvedTenant()
     {
-        return $this->belongsTo(approvetenantsModel::class, 'approvedID', 'approvedID');
+        return $this->belongsTo(approvetenantsModel::class, 'fkapprovedID', 'approvedID');
     }
+ 
+
+    
 }
