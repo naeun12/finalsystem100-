@@ -3,7 +3,7 @@
     <NotificationList ref="toastRef" />
 
     <div class="p-4 mt-4">
-        <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden" style="border:2px solid #4edce2;">
+        <div class="input-group  w-100 shadow-sm rounded-pill overflow-hidden" style="border:2px solid #4edce2;">
             <span class="input-group-text bg-white border-0">
                 <i class="bi bi-search text-primary"></i>
             </span>
@@ -13,8 +13,8 @@
         <div class="row g-3 py-3">
             <!-- Dorm Dropdown -->
             <div class="col-12 col-md-4">
-                <select class="form-select form-select-lg shadow-sm rounded-3" style="border:2px solid #4edce2;"
-                    v-model="selectedDormId" @change="filterDorms">
+                <select class="form-select form-select-sm rounded-3 shadow-sm rounded-3"
+                    style="border:2px solid #4edce2;" v-model="selectedDormId" @change="filterDorms">
                     <option disabled value="">Select Dorm</option>
                     <option value="all">All Dorms</option>
                     <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
@@ -25,8 +25,8 @@
 
             <!-- Room Dropdown -->
             <div class="col-12 col-md-4">
-                <select class="form-select form-select-lg shadow-sm rounded-3" style="border:2px solid #4edce2;"
-                    v-model="selectedroomNumber" @change="filterroomNumber">
+                <select class="form-select form-select-sm rounded-3 shadow-sm rounded-3"
+                    style="border:2px solid #4edce2;" v-model="selectedroomNumber" @change="filterroomNumber">
                     <option disabled value="">Select Room Number</option>
                     <option value="all">All Rooms</option>
                     <option v-for="room in uniqueRooms" :key="room.fkroomID" :value="room.room?.roomNumber">
@@ -37,8 +37,9 @@
 
             <!-- Application Status Dropdown -->
             <div class="col-12 col-md-4">
-                <select class="form-select form-select-lg shadow-sm rounded-3" style="border:2px solid #4edce2;"
-                    v-model="selectedapplicationStatus" @change="filterApplicationStatus">
+                <select class="form-select form-select-sm rounded-3 shadow-sm rounded-3"
+                    style="border:2px solid #4edce2;" v-model="selectedapplicationStatus"
+                    @change="filterApplicationStatus">
                     <option disabled value="">Select Application Status</option>
                     <option value="all">All Status</option>
                     <option value="pending">Pending</option>
@@ -51,9 +52,7 @@
                 </select>
             </div>
         </div>
-
-
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 ">
             <div class="col" v-for="booking in tenants" :key="booking.bookingID">
                 <div class="card shadow-sm rounded-4 h-100 w-100 border-0">
                     <div class="card-body p-4 rounded-4" style="border:2px solid #4edce2;">
@@ -178,11 +177,18 @@
                         <div class="mb-2 mt-2">
                             <select class="form-select" v-model="status">
                                 <option value="" disabled selected>Select Action</option>
-                                <option value="pending">Pending - Awaiting Confirmation</option>
-                                <option value="confirmed">Confirmed - Tenant Process Payment</option>
-                                <option value="approved">Approved - Fully Booked</option>
-                                <option value="cancelled">Cancelled - User Initiated</option>
-                                <option value="paid">Paid - Payment Completed</option>
+                                <option value="pending"
+                                    v-if="['cancelled', 'rejected'].includes(selectedtenant.status)">
+                                    Pending - Awaiting Confirmation
+                                </option>
+
+                                <option value="confirmed"
+                                    v-if="['cancelled', 'rejected', 'pending'].includes(selectedtenant.status)">
+                                    Confirmed - Tenant To Pay</option>
+                                <option value="approved"
+                                    v-if="['cancelled', 'rejected', 'paid'].includes(selectedtenant.status)">
+                                    Approved
+                                    - Reservation Approved</option>
                                 <option value="rejected">Rejected - User Initiated</option>
                             </select>
                         </div>
@@ -473,6 +479,7 @@ export default {
                 this.$refs.loader.loading = true;
                 const formdata = new FormData();
                 formdata.append('bookingID', booking_id);
+                formdata.append('landlordID', this.landlord_id);
                 formdata.append('status', this.status);
                 const response = await axios.post('/handle-tenant-booking', formdata);
                 if (response.data.status === 'success') {

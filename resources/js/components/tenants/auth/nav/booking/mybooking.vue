@@ -97,7 +97,9 @@ export default {
     components: {
         Loader,
         BookingStatus,
-        statusMap
+        statusMap,
+        NotificationList,
+
     },
     data() {
         return {

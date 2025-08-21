@@ -188,13 +188,16 @@ import Loader from '@/components/loader.vue';
 import Modalconfirmation from '@/components/modalconfirmation.vue';
 import BookingStatus from '@/components/BookingStatusAlert.vue';
 import statusMap from '@/components/statusmap.vue';
+import NotificationList from '@/components/notifications.vue';
+
 export default {
     components: {
         Toastcomponents,
         Loader,
         Modalconfirmation,
         BookingStatus,
-        statusMap
+        statusMap,
+        NotificationList,
     },
     data() {
         return {
@@ -214,8 +217,11 @@ export default {
             PaymentPictureFile: null,
             isPaymentImage: true,
             bookingID: '',
-
+            notifications: [],
+            receiverID: '',
             payment_type: '',
+            tenantid: '',
+
         };
     },
     methods: {
@@ -289,6 +295,24 @@ export default {
             }
             this.isPaymentImage = true;
         },
+        subscribeToNotifications() {
+            if (this.hasSubscribed) return;
+            this.hasSubscribed = true;
+
+            this.receiverID = this.tenantid;
+            Echo.private(`notifications.${this.tenantid}`)
+                .subscribed(() => {
+                    console.log('✔ Subscribed!');
+                })
+                .listen('.NewNotificationEvent', (e) => {
+                    this.notifications.unshift(e); // save for list
+                    this.$refs.toastRef.pushNotification({
+                        title: e.title || 'New Notification',
+                        message: e.message,
+                        color: 'success',
+                    });
+                });
+        },
         async submitPayment() {
             this.errors = {};
             const confirmed = await this.$refs.modal.show({
@@ -344,7 +368,11 @@ export default {
     mounted() {
         const el = document.getElementById('viewBookingDetails');
         this.bookingID = el.getAttribute('booking_id')?.trim();
+        this.tenantid = el.getAttribute('tenant_id')?.trim();
+
         this.getBookingDetails();
+        this.subscribeToNotifications();
+
     },
 };
 </script>

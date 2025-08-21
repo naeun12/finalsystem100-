@@ -225,7 +225,7 @@ public function acceptReservation(Request $request)
         'dorm'          => 'required|string',
         'firstname'     => 'required|string',
         'lastname'      => 'required|string',
-        'status'        => 'required|in:pending,confirmed,approved,cancelled,paid,rejected',
+        'status'        => 'required|in:pending,confirmed,approved,rejected',
     ]);
 
     $reservation = reservationModel::findOrFail($request->reservationID);
@@ -236,22 +236,43 @@ public function acceptReservation(Request $request)
         $type = 'tenant';
 
         switch ($request->status) {
-            case 'pending':
-                $message = "Hi {$tenantName}, 👋 Your reservation for Room {$request->roomNumber} at {$request->dorm} is pending. Please wait for landlord confirmation.";
-                break;
-
+           case 'pending':
+            $message = "Hi {$tenantName}, 👋 Your reservation for Room {$request->roomNumber} at {$request->dorm} is pending. Please wait for the landlord’s confirmation.";
+            $notifications = notificationModel::create([
+                'senderID'     => $request->landlordID,
+                'senderType'   => 'landlord',
+                'receiverID'   => $reservation->fktenantID,
+                'receiverType' => 'tenant',
+                'title'        => 'Reservation Update: Pending',
+                'message'      => "Your reservation for Room #{$reservation->room->roomNumber} at {$request->dorm} is currently pending landlord confirmation. Please wait for further updates ⏳.",
+                'isRead'       => false,
+                'readAt'       => null,
+            ]);
+            $reservation->status = $request->status;
+            $reservation->save();
+            $reservation->updated_at = now();
+            broadcast(new \App\Events\NewNotificationEvent($notifications));  
+            break;  
             case 'confirmed':
-                $message = "Hi {$tenantName}, 👋 Your reservation for Room {$request->roomNumber} at {$request->dorm} has been confirmed. Please proceed with the payment to secure your slot. Thank you!";
-                break;
-
-            case 'paid':
-                $message = "Hi {$tenantName}, 👋 We’ve received your payment for Room {$request->roomNumber} at {$request->dorm}. Your payment is being verified. Thank you!";
-                break;
-
+            $message = "Hi {$tenantName}, 👋 Your reservation for Room {$request->roomNumber} at {$request->dorm} has been confirmed. Please proceed with the payment to secure your slot. Thank you!";
+            $notifications = notificationModel::create([
+                'senderID'     => $request->landlordID,
+                'senderType'   => 'landlord',
+                'receiverID'   => $reservation->fktenantID,
+                'receiverType' => 'tenant',
+                'title'        => 'Reservation Update: Confirmed',
+                'message'      => "Your reservation for Room #{$reservation->room->roomNumber} at {$request->dorm} has been confirmed. Please complete your payment to finalize your reservation ✅.",
+                'isRead'       => false,
+                'readAt'       => null,
+            ]);
+            $reservation->status = $request->status;
+            $reservation->save();
+            $reservation->updated_at = now();
+            broadcast(new \App\Events\NewNotificationEvent($notifications));  
+            break;  
             case 'approved':
                 $moveIn = Carbon::parse($reservation->moveInDate);
                 $moveOut = $moveIn->copy()->addMonth()->subDay();
-
                 approvetenantsModel::create([
                     'fktenantID'       => $reservation->fktenantID,
                     'fkroomID'         => $reservation->fkroomID,
@@ -265,38 +286,44 @@ public function acceptReservation(Request $request)
                     'moveInDate'       => $moveIn,
                     'moveOutDate'      => $moveOut,
                 ]);
-
                 $message = "Hi {$tenantName}, 👋 Your reservation for Room {$request->roomNumber} at {$request->dorm} has been fully approved. Your move-in date is confirmed: {$moveIn->format('M d, Y')} until {$moveOut->format('M d, Y')}. Please prepare for your stay!";
+                $notifications = notificationModel::create([
+                'senderID'     => $request->landlordID,
+                'senderType'   => 'landlord',
+                'receiverID'   => $reservation->fktenantID,
+                'receiverType' => 'tenant',
+                'title'        => 'Reservation Update: Approved',
+                'message'      => "Congratulations! 🎉 Your reservation for Room #{$reservation->room->roomNumber} at {$request->dorm} has been approved. Your stay is confirmed from {$moveIn->format('M d, Y')} to {$moveOut->format('M d, Y')}.",
+                'isRead'       => false,
+                'readAt'       => null,
+            ]);
+                 $reservation->status = $request->status;
+                $reservation->save();
+                $reservation->updated_at = now();
+                broadcast(new \App\Events\NewNotificationEvent($notifications)); 
                 break;
-
-            case 'cancelled':
-                $message = "Hi {$tenantName}, 👋 Your reservation for Room {$request->roomNumber} at {$request->dorm} has been cancelled. If this was not intended, please contact the landlord immediately.";
-                break;
-
             case 'rejected':
                 $message = "Hi {$tenantName}, 👋 We regret to inform you that your reservation for Room {$request->roomNumber} at {$request->dorm} has been declined by the landlord. If you wish, you may apply for other available rooms. Thank you!";
+                    $notifications = notificationModel::create([
+                    'senderID'     => $request->landlordID,
+                    'senderType'   => 'landlord',
+                    'receiverID'   => $reservation->fktenantID,
+                    'receiverType' => 'tenant',
+                    'title'        => 'Reservation Update: Declined',
+                    'message'      => "Your reservation for Room #{$reservation->room->roomNumber} at {$request->dorm} has been declined by the landlord.",
+                    'isRead'       => false,
+                    'readAt'       => null,
+                ]);
+                 $reservation->status = $request->status;
+                $reservation->save();
+                $reservation->updated_at = now();
+                broadcast(new \App\Events\NewNotificationEvent($notifications));   
                 break;
         }
 
         if ($message) {
             Mail::to($request->email)->send(new TenantLandlordReminder($tenantName, $message, $type));
         }
-
-        $reservation->status = $request->status;
-        $reservation->updated_at = now();
-        $reservation->save();
-         $notifications = notificationModel::create([
-        'senderID'     => $request->landlordID,
-        'senderType'   => 'landlord',
-        'receiverID'   => $reservation->fktenantID,
-        'receiverType' => 'tenant',
-        'title'   => 'Reservation Update: Cancelled',
-        'message' => "The reservation for Room #{$reservation->room->roomNumber} has been cancelled by the tenant.",
-        'isRead'       => false,
-        'readAt'       => null,
-    ]);
-        broadcast(new \App\Events\NewNotificationEvent($notifications));
-
         return response()->json([
             'status'  => 'success',
             'message' => "Reservation status updated to {$request->status}.",

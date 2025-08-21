@@ -158,6 +158,11 @@
 
                     <!-- Body -->
                     <div class="modal-body px-5">
+                        <div v-if="selectedReservation.status === 'expired'"
+                            class="overlay-message d-flex justify-content-center align-items-center">
+                            <span>This reservation is expired</span>
+                        </div>
+
                         <!-- Profile Picture and Status -->
                         <div class="text-center mb-4">
                             <img :src="selectedReservation.studentpictureID"
@@ -193,11 +198,18 @@
                         <div class="mb-2 mt-2">
                             <select class="form-select" v-model="status">
                                 <option value="" disabled selected>Select Action</option>
-                                <option value="pending">Pending - Awaiting Confirmation</option>
-                                <option value="confirmed">Confirmed - Tenant To Pay</option>
-                                <option value="approved">Approved - Reservation Approved</option>
-                                <option value="cancelled">Cancelled - User Initiated</option>
-                                <option value="paid">Paid - Payment Completed</option>
+                                <option value="pending"
+                                    v-if="['cancelled', 'rejected'].includes(selectedReservation.status)">
+                                    Pending - Awaiting Confirmation
+                                </option>
+
+                                <option value="confirmed"
+                                    v-if="['cancelled', 'rejected', 'pending'].includes(selectedReservation.status)">
+                                    Confirmed - Tenant To Pay</option>
+                                <option value="approved"
+                                    v-if="['cancelled', 'rejected', 'paid'].includes(selectedReservation.status)">
+                                    Approved
+                                    - Reservation Approved</option>
                                 <option value="rejected">Rejected - User Initiated</option>
                             </select>
                         </div>
@@ -275,8 +287,6 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
         <!-- Modal -->
         <div v-if="paymentImageModal" class="modal d-block" style="background-color: rgba(0, 0, 0, 0.8);">
@@ -544,7 +554,7 @@ export default {
             formData.append('dorm', selectedReservation.room?.dorm?.dormName);
             formData.append('landlordID', this.landlord_id);
             formData.append('status', this.status);
-
+            console.log(this.status);
             this.$refs.loader.loading = true;
 
             try {
@@ -690,3 +700,31 @@ export default {
     }
 }
 </script>
+<style>
+.overlay-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* dark semi-transparent overlay */
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 10;
+    border-radius: 12px;
+    /* kung gusto rounded ang modal body */
+    text-align: center;
+    pointer-events: none;
+    /* para dili clickable ang ubos */
+}
+
+.overlay-message span {
+    background: rgba(255, 0, 0, 0.8);
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+</style>

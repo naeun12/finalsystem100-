@@ -33,8 +33,8 @@ class mybookingController extends Controller
             if (!$tenant) {
                 return redirect()->route('tenant-login')->with('error', 'Landlord not found.');
             }
-            $title = 'Tenant room Details - Dormhub';
-            return view('tenant.auth.nav.bookings.bookingdormitory',['title' => 'Room Details',
+            $title = 'Tenant Booking List - Dormhub';
+            return view('tenant.auth.nav.bookings.bookingdormitory',['title' => $title,
             'tenant_id' => $tenant_id,
             'cssPath' => asset('css/tenantpage/auth/roomdetails.css'),
                'notifications' => $notifications,
@@ -45,6 +45,7 @@ class mybookingController extends Controller
             $bookings = bookingModel::with(['tenant','room.dorm' // nested eager load
 ])
                 ->where('fktenantID', $tenant_id)
+                ->orderBy('updated_at','desc')
                 ->get();
 
             return response()->json($bookings);
