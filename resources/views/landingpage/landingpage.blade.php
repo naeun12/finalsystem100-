@@ -17,7 +17,7 @@
             </div>
 
             <!-- Content Overlay -->
-            <div class="position-relative z-2 h-100 d-flex align-items-center justify-content-center px-3 px-md-5">
+            <div class="position-relative z-2 h-75 d-flex align-items-center justify-content-center px-3 px-md-5">
                 <div class="bg-white bg-opacity-10 text-white p-5 rounded-4 shadow-lg backdrop-blur"
                     style="max-width: 700px; width: 100%; border: 1px solid rgba(255,255,255,0.15);">
 
@@ -45,8 +45,90 @@
                 </div>
             </div>
         </div>
+        <!-- Cards Section (Overlap sa Background Image) -->
+        <div class="container position-relative" style="margin-top: -120px; z-index: 5;">
+            <h2 class="text-center fw-bold mb-5 text-white">✨ Benefits of DormHub ✨</h2>
+            <div class="row g-4">
 
+                <!-- Card 1 -->
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
+                        <div class="icon-wrapper mb-3">
+                            📍
+                        </div>
+                        <h5 class="fw-bold text-gradient">Easy Search</h5>
+                        <p class="text-muted">
+                            Quickly find dormitories around Cebu with filters for price, location, and amenities.
+                        </p>
+                    </div>
+                </div>
 
+                <!-- Card 2 -->
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
+                        <div class="icon-wrapper mb-3">
+                            💸
+                        </div>
+                        <h5 class="fw-bold text-gradient">Affordable Options</h5>
+                        <p class="text-muted">
+                            Access budget-friendly dorms suited for students and workers with transparent pricing.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
+                        <div class="icon-wrapper mb-3">
+                            🔒
+                        </div>
+                        <h5 class="fw-bold text-gradient">Safe & Verified</h5>
+                        <p class="text-muted">
+                            All listings are verified to ensure secure and trustworthy accommodations.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
+                        <div class="icon-wrapper mb-3">
+                            ⚡
+                        </div>
+                        <h5 class="fw-bold text-gradient">Fast Booking</h5>
+                        <p class="text-muted">
+                            Reserve your dorm instantly with our seamless booking system.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
+                        <div class="icon-wrapper mb-3">
+                            📱
+                        </div>
+                        <h5 class="fw-bold text-gradient">User-Friendly</h5>
+                        <p class="text-muted">
+                            Enjoy a simple and easy-to-use platform on both mobile and desktop.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
+                        <div class="icon-wrapper mb-3">
+                            🤝
+                        </div>
+                        <h5 class="fw-bold text-gradient">Community Support</h5>
+                        <p class="text-muted">
+                            Connect with landlords and co-tenants, fostering a safe and supportive community.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="container mt-5">
             <div class="text-center mb-4">
                 <h2 class="fw-bold text-uppercase border-bottom pb-2 d-inline-block" style="color: #4edce2;">
@@ -572,4 +654,5 @@
         }
     }
 </script>
+
 @include('landingpage.partials.footer')

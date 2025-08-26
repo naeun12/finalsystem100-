@@ -24,6 +24,7 @@ return new class extends Migration
         $table->integer('totalRooms');
         $table->string('contactEmail');
         $table->string('contactPhone');
+        $table->string('gcashNumber');
         $table->string('availability',255)->default('Not Available');
         $table->string('occupancyType',255);
         $table->string('buildingType',255);

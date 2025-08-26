@@ -21,6 +21,10 @@ class approvetenantsModel extends Model
         'lastname',
         'contactNumber',
         'contactEmail',
+        'source_type',
+         'source_id',
+         'notifyRent',
+         'extension_decision',
         'age',
         'gender',
         'moveInDate',
@@ -28,7 +32,7 @@ class approvetenantsModel extends Model
         'notify-extend',
         'paymentType',
         'paymentImage',
-        'studentpictureId'
+        'pictureID'
     ];
      public function room()
     {

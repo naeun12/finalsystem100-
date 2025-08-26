@@ -24,8 +24,6 @@ class tenantController extends Controller
     public function login()
     {
         $title = 'Login - Dormhub';
-
-    
         return view('tenant.accountprocess.login', compact('title'));
 
     }
@@ -95,7 +93,7 @@ class tenantController extends Controller
                 'province' => $validated['province'],
                 'postalcode' => $validated['postalcode'],
                 'currentaddress' => $validated['currentaddress'],
-                'profile_pic_url' => $profilePicUrl,
+                'profilePicUrl' => $profilePicUrl,
             ]);
             $verifyOtp->where('email',$validated['email'])->forceDelete();
             return response()->json([
@@ -256,7 +254,7 @@ public function loginTenant(Request $request)
         'tenant_id' => $user->tenantID,
         'tenant_firstname' => $user->firstname,
         'tenant_lastname' => $user->lastname,
-        'profile_pic_url' => $user->profile_pic_url
+        'profilePicUrl' => $user->profilePicUrl
     ]);
     
         return response()->json([

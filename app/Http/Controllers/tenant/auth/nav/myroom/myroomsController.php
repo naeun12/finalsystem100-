@@ -286,6 +286,46 @@ $tenant = approvetenantsModel::with(['room.dorm','room.landlord', 'payments'])->
             ], 500);
         }
     }
+public function notifyrentUpdate(Request $request)
+{
+    $request->validate([
+        'approveID' => 'required|integer',
+        'decision'    => 'required|string',
+    ]);
+
+    $tenant = approvetenantsModel::with('room.landlord','room.dorm')->find($request->approveID);
+
+    if (!$tenant) {
+        return response()->json(['status' => 'error', 'message' => 'Tenant not found']);
+    }
+
+    // Update status
+    $tenant->notifyRent = false; // or 0
+        $tenant->extension_decision = $request->decision; // <-- expects string, e.g. "approved" or "rejected"
+        $tenant->save();
+
+    // Send notification to landlord
+    $notification = notificationModel::create([
+        'senderID'     => $tenant->fktenantID,   // tenant ID as sender
+        'senderType'   => 'tenant',
+        'receiverID'   => $tenant->room->landlord->landlordID, // landlord as receiver
+        'receiverType' => 'landlord',
+        'title'        => 'Extension Decision',
+        'message'      => 'Tenant ' . $tenant->firstname . ' ' . $tenant->lastname . 
+                          ' has ' . $request->desicion . ' the rent extension request for room ' .
+                          $tenant->room->roomNumber . ' at ' . $tenant->room->dorm->dormName . '.',
+        'isRead'       => false,
+        'readAt'       => null,
+    ]);
+
+    // Broadcast the new notification
+    broadcast(new \App\Events\NewNotificationEvent($notification));
+
+    return response()->json([
+        'status'  => 'success',
+        'message' => 'Rent status updated and landlord notified'
+    ]);
+}
 
 
 }

@@ -33,16 +33,8 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign('fkdormID')->references('dormID')->on('dorms')->onDelete('cascade');
             $table->foreign('fklandlordID')->references('landlordID')->on('landlords')->onDelete('cascade');
-
-
-
-
         });
     }
-
-
-
-
     /**
      * Reverse the migrations.
      */

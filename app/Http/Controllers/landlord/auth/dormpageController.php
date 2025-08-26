@@ -162,6 +162,7 @@ class dormpageController extends Controller
                 'availability' => 'required|string',
                 'occupancy_type' => 'required|string',
                 'building_type' => 'required|string',
+                'gcashNumber'  => 'required|string|regex:/^09[0-9]{9}$/',
 
             ], [
                 'dorm_name.required' => 'Please enter the dormitory name.',
@@ -170,7 +171,8 @@ class dormpageController extends Controller
                 'availability.required' => 'Please enter the Availability.',
                 'occupancy_type.required' => 'Please enter the Occupancy type name.',
                 'building_type.required' => 'Please enter the Building type.',
-
+                'gcashNumber.required' => 'Please enter your GCash number.',
+                'gcashNumber.regex'    => 'Invalid GCash number format. Must be 11 digits starting with 09.',
                 'address.required' => 'Please enter the address.',
                 'address.max' => 'The address must not exceed 255 characters.',
             
@@ -294,6 +296,7 @@ class dormpageController extends Controller
             'availability' => 'required|string',
             'occupancy_type' => 'required|string',
             'building_type' => 'required|string',
+            'gcashNumber'  => 'required|string',
         ],[
             'roomImage3File.required' => 'Please upload an image of the room.',
             'roomImage3File.image' => 'The uploaded file must be an image.',
@@ -317,6 +320,7 @@ class dormpageController extends Controller
             $dorm->longitude = $validated['longitude'];
             $dorm->description = $validated['description'] ?? null;
             $dorm->totalRooms = $validated['total_rooms'];
+            $dorm->gcashNumber = $validated['gcashNumber'];
             $dorm->contactEmail = $validated['contact_email'];
             $dorm->contactPhone = $validated['contact_phone'];
             $dorm->availability = $validated['availability'] ?? null;
@@ -403,6 +407,7 @@ class dormpageController extends Controller
                 'contactPhone' => 'required|string|min:11|max:11|regex:/^\+?[0-9]{7,11}$/',
                 'availability' => 'required|string',
                 'occupancyType' => 'required|string',
+                'gcashNumber'  => 'required|string|regex:/^09[0-9]{9}$/',
                 'buildingType' => 'required|string',
             ],
             [
@@ -414,7 +419,8 @@ class dormpageController extends Controller
                 'buildingType.required' => 'Please enter the Building type.',
                 'address.required' => 'Please enter the address.',
                 'address.max' => 'The address must not exceed 255 characters.',
-            
+                'gcashNumber.required' => 'Please enter your GCash number.',
+                'gcashNumber.regex'    => 'Invalid GCash number format. Must be 11 digits starting with 09.',
                 'totalRooms.required' => 'Please enter the total number of rooms.',
                 'totalRooms.integer' => 'Total rooms must be a number.',
                 'totalRooms.min' => 'There must be at least 1 room.',
@@ -434,17 +440,18 @@ class dormpageController extends Controller
                     'message' => 'Dorm not found.'
                 ], 404);
             }
-            $dorm->dormName = $validated['dorm_name'];
+            $dorm->dormName = $validated['dormName'];
             $dorm->address = $validated['address'];
             $dorm->latitude = $validated['latitude'];
             $dorm->longitude = $validated['longitude'];
             $dorm->description = $validated['description'] ?? null;
-            $dorm->totalRooms = $validated['total_rooms'];
-            $dorm->contactEmail = $validated['contact_email'];
-            $dorm->contactPhone = $validated['contact_phone'];
+            $dorm->totalRooms = $validated['totalRooms'];
+            $dorm->gcashNumber = $validated['gcashNumber'];
+            $dorm->contactEmail = $validated['contactEmail'];
+            $dorm->contactPhone = $validated['contactPhone'];
             $dorm->availability = $validated['availability'] ?? null;
-            $dorm->occupancyType = $validated['occupancy_type'] ?? null;
-            $dorm->buildingType = $validated['building_type'] ?? null;
+            $dorm->occupancyType = $validated['occupancyType'] ?? null;
+            $dorm->buildingType = $validated['buildingType'] ?? null;
             $dorm->save();
             return response()->json([
                 'status' => 'success',

@@ -32,6 +32,7 @@ class dormModel extends Model
         'views',
         'contactPhone',
         'availability',
+        'gcashNumber',
         'occupancyType',
         'buildingType',
         'created_at',

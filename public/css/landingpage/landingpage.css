@@ -110,3 +110,29 @@ h1 {
 .navbar-dark .navbar-toggler {
     border-color: rgba(255, 255, 255, 0.3);
 }
+ .hover-card {
+     transition: transform 0.3s ease, box-shadow 0.3s ease;
+ }
+
+ .hover-card:hover {
+     transform: translateY(-8px);
+     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+ }
+
+ .icon-wrapper {
+     width: 70px;
+     height: 70px;
+     background: #f1f5ff;
+     border-radius: 50%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     font-size: 2rem;
+     margin: 0 auto;
+ }
+
+ .text-gradient {
+     background: linear-gradient(45deg, #0d6efd, #6610f2);
+     -webkit-background-clip: text;
+     -webkit-text-fill-color: transparent;
+ }

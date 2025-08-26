@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id('paymentID');
             $table->unsignedBigInteger('reservationID');
             $table->string('paymentType'); // GCash, BDO, etc.
+                    $table->decimal('amount', 10, 2); 
+
             $table->string('paymentImage'); // file path
             $table->string('status')->default('pending'); // pending, verified, rejected
             $table->timestamps();

@@ -245,6 +245,15 @@
                                 <span class="text-danger mb-3" v-if="errors.contact_phone"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
                                             errors.contact_phone[0] }}</span>
+                                <div class="form-floating mb-3 mt-3">
+                                    <input type="tel" class="form-control border-primary shadow-sm" id="contact_phone"
+                                        placeholder="Gcash Number" v-model="gcashNumber"
+                                        style="height: 48px; font-size: 1rem;" />
+                                    <label for="contact_phone" class="fw-semibold text-primary">Gcash Number</label>
+                                </div>
+                                <span class="text-danger mb-3" v-if="errors.gcashNumber"> <i
+                                        class="fa-solid fa-circle-exclamation"></i> {{
+                                            errors.gcashNumber[0] }}</span>
 
                                 <div class="form-floating mb-3 mt-3">
                                     <input type="text" class="form-control border-primary shadow-sm" id="building_type"
@@ -567,8 +576,6 @@
                                     <!-- Contact Phone -->
                                     <div class="form-floating mb-2 position-relative">
                                         <!-- Phone Icon -->
-
-
                                         <input type="tel" class="form-control  rounded-4 border-primary shadow-sm"
                                             id="contact_phone" v-model="editDormData.contactPhone"
                                             placeholder="Contact Phone">
@@ -580,7 +587,24 @@
                                             <i class="fa-solid fa-circle-exclamation me-1"></i>
                                             {{ errors.editDormData.contactPhone[0] }}
                                         </span>
+
                                     </div>
+                                    <div class="form-floating mb-2 position-relative">
+                                        <!-- Phone Icon -->
+                                        <input type="tel" class="form-control  rounded-4 border-primary shadow-sm"
+                                            id="gcash number" v-model="editDormData.gcashNumber"
+                                            placeholder="Gcash number">
+                                        <label for="gcash number" class="text-primary">Gcash Number</label>
+
+                                        <!-- Error message with icon -->
+                                        <span class="text-danger small d-flex align-items-center mt-1"
+                                            v-if="errors.editDormData?.gcashNumber">
+                                            <i class="fa-solid fa-circle-exclamation me-1"></i>
+                                            {{ errors.editDormData.gcashNumber[0] }}
+                                        </span>
+
+                                    </div>
+
                                     <div class="form-floating mb-2 position-relative">
                                         <!-- Building Icon -->
 
@@ -891,6 +915,28 @@
                                         </p>
                                     </div>
                                 </div>
+                                <div class="card border-0 shadow-sm mt-3 mb-3">
+                                    <div class="card-body rounded-4 p-3"
+                                        style="border:2px solid #4edce2; background: linear-gradient(135deg, #e0f7f9, #ffffff);">
+
+                                        <div class="d-flex align-items-center">
+                                            <!-- GCash Icon -->
+                                            <div class="me-3 p-2 bg-primary bg-opacity-10 rounded-circle">
+                                                <i class="bi bi-wallet2 text-primary fs-4"></i>
+                                            </div>
+
+                                            <!-- Text Section -->
+                                            <div>
+                                                <h6 class="fw-bold text-primary mb-1">GCash Number</h6>
+                                                <p class="mb-0 text-dark fw-semibold fs-5">
+                                                    {{ selectedDorm?.gcashNumber }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
                             </div>
                         </div>
                         <!-- end row -->
@@ -1251,6 +1297,7 @@ export default {
             latitude: "",
             amenities: [''],
             inputamenities: '',
+            gcashNumber: '',
             rules: [''],
             inputrules: '',
             errors: {},
@@ -1283,6 +1330,7 @@ export default {
                 roomImage3: '',
                 roomImage3Preview: "",
                 roomImage3File: "",
+                gcashNumber: '',
                 image_id: "",
                 images: {
                     main_image: null,
@@ -1446,7 +1494,8 @@ export default {
             this.contact_email = " ";
             this.contact_phone = " ";
             this.rules = " ";
-            this.roomImage1File = ' ';
+            this.gcashNumber = " ",
+                this.roomImage1File = ' ';
             if (this.$refs.roomImage1Preview) {
                 this.$refs.roomImage1Preview.value = ''; // Reset file input
             }
@@ -1486,6 +1535,7 @@ export default {
             formData.append('availability', this.availability);
             formData.append('occupancy_type', this.occupancy_type);
             formData.append('building_type', this.building_type);
+            formData.append('gcashNumber', this.gcashNumber);
             formData.append('roomImage1File', this.roomImage1File);
             formData.append('roomImage2File', this.roomImage2File);
             formData.append('roomImage3File', this.roomImage3File);
@@ -1570,6 +1620,9 @@ export default {
             formData.append('availability', this.availability);
             formData.append('occupancy_type', this.occupancy_type);
             formData.append('building_type', this.building_type);
+            formData.append('gcashNumber', this.gcashNumber);
+
+
             try {
                 const response = await axios.post('/input-text', formData, {
                     headers: {
@@ -2140,6 +2193,8 @@ export default {
             formData.append('availability', this.editDormData.availability);
             formData.append('occupancyType', this.editDormData.occupancyType);
             formData.append('buildingType', this.editDormData.buildingType);
+            formData.append('gcashNumber', this.editDormData.gcashNumber);
+
             try {
                 const confirmed = await this.$refs.modal.show({
                     title: 'Update Dorm',

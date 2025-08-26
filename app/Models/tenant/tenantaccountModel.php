@@ -37,7 +37,7 @@ class tenantaccountModel extends Authenticatable
         'region',
         'postalcode',
         'currentaddress',
-        'profile_pic_url',
+        'profilePicUrl',
     ];
     public function getAuthPassword()
     {

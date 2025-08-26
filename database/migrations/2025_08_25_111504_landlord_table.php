@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('profilePicUrl', 255)->nullable();
             $table->string('govermentID', 255)->nullable();
             $table->string('businessPermit', 255)->nullable();
+            $table->boolean('isVerified')->default(false);
             $table->timestamps();
         });
     }

@@ -162,7 +162,31 @@
                                 </li>
                             </ul>
                             <div class="mt-2 mb-4 p-3 border rounded shadow-sm bg-light small"
-                                v-if="tenant.notify_extend === 'Yes'">
+                                v-if="tenant.notifyRent == 1">
+                                <h6 class="fw-bold text-primary text-center mb-3">
+                                    💰 Please choose an option for the rent extension request
+                                </h6>
+
+                                <!-- Extend Button -->
+                                <button class="btn btn-success btn-sm px-4" @click="updateRentStatus(tenant, 'extend')">
+                                    ✅ Extend
+                                </button>
+
+                                <!-- Not Extending Button -->
+                                <button class="btn btn-danger btn-sm px-4"
+                                    @click="updateRentStatus(tenant, 'not_extending')">
+                                    ❌ Not Extending
+                                </button>
+
+                            </div>
+
+                            <div v-else class="alert alert-info text-center p-3 rounded shadow-sm">
+                                <p class="mb-0 fw-semibold">
+                                    ⏳ Wait for your landlord to notify you if you can extend your stay.
+                                </p>
+                            </div>
+                            <div class="mt-2 mb-4 p-3 border rounded shadow-sm bg-light small"
+                                v-if="tenant.extension_decision === 'extend'">
                                 <h6 class="fw-bold text-primary text-center mb-3">
                                     💰 Extension Payment Details
                                 </h6>
@@ -202,11 +226,6 @@
                                     Rent
                                 </button>
                             </div>
-                            <div v-else class="alert alert-info text-center p-3 rounded shadow-sm">
-                                <p class="mb-0 fw-semibold">
-                                    ⏳ Wait for your landlord to notify you if you can extend your stay.
-                                </p>
-                            </div>
 
 
 
@@ -227,17 +246,21 @@
                         <div class="modal-body">
 
                             <div class="container py-4 mb-4">
-                                <div class="mb-3">
-                                    <label for="paymentType" class="form-label fw-semibold text-dark">
-                                        <i class="bi bi-credit-card-2-front-fill text-primary me-2"></i>Payment Method
-                                    </label>
-                                    <input type="text" class="form-control form-control-lg shadow-sm" id="paymentType"
-                                        v-model="payment_type" readonly />
-                                    <div id="paymentTypeHelp" class="form-text text-muted">
-                                        Specify your preferred method of payment.
+                                <div class="card shadow-sm border-0 rounded-4 mb-3">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-primary mb-2">
+                                            <i class="bi bi-credit-card-2-front-fill me-2"></i> Landlord GCash Number
+                                        </h6>
+                                        <div class="p-3 bg-light rounded-3 border text-center">
+                                            <span class="fw-semibold fs-5 text-dark">
+                                                {{ tenant.room?.dorm.gcashNumber }}
+                                            </span>
+                                        </div>
+                                        <p class="text-muted mt-2 mb-0 small">
+                                            Use this number when sending your payment via GCash.
+                                        </p>
                                     </div>
                                 </div>
-
                                 <!-- Payment Options -->
                                 <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
                                     <div v-for="(src, name) in payment" :key="name"
@@ -393,7 +416,7 @@ export default {
             },
             currentIndex: 0,
             errors: {},
-            payment_type: '',
+            payment_type: 'gcash',
             payment: '',
             animate: false,
             isPaymentImage: true,
@@ -403,8 +426,6 @@ export default {
             alreadyReviewed: 0,
             payment: {
                 gcash: '/images/tenant/allimagesResouces/GCash-Logo.png',
-                maya: '/images/tenant/allimagesResouces/maya.png',
-                bank_transer: '/images/tenant/allimagesResouces/bank-transfer-logo.png',
 
             },
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
@@ -608,7 +629,6 @@ export default {
                 );
                 if (response.data.status === 'success') {
                     this.extendRateModal = false;
-                    this.payment_type = '';
                     this.PaymentPictureFile = null;
                     this.PaymentPicturePreview = null;
                     this.isPaymentImage = true;
@@ -658,6 +678,48 @@ export default {
                 this.$refs.loader.loading = false;
             }
         },
+        async updateRentStatus(tenant, decision) {
+            try {
+                let actionText = '';
+                if (decision === 'extend') {
+                    actionText = 'approve this extension request';
+                } else if (decision === 'not_extending') {
+                    actionText = 'reject this extension request';
+                } else {
+                    actionText = 'set as pending';
+                }
+
+                const confirmed = await this.$refs.modal.show({
+                    title: `Confirm Action`,
+                    message: `Are you sure you want to ${actionText}?`,
+                    functionName: 'Confirm'
+                });
+
+                if (!confirmed) {
+                    return;
+                }
+
+                const formdata = new FormData();
+                formdata.append('approveID', tenant.approvedID);
+                formdata.append('decision', decision);
+
+                const response = await axios.post('/update/rentstatus', formdata);
+
+                if (response.data.status === 'success') {
+                    this.$refs.toast.showToast(
+                        `The request has been successfully ${decision}.`,
+                        'success'
+                    );
+                } else {
+                    this.$refs.toast.showToast('Something went wrong.', 'error');
+                }
+            }
+            catch (error) {
+                console.error(error);
+                this.$refs.toast.showToast('Server error, please try again later.', 'error');
+            }
+        }
+
 
     },
     mounted() {

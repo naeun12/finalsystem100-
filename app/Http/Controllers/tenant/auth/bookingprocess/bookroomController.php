@@ -69,7 +69,7 @@ class bookroomController extends Controller
                 'gender'             => $request->gender,
                 'moveInDate'            => $request->moveInDate,
                 'moveOutDate'             => $request->moveOutDate,
-                'studentpictureID'  => $request->studentpicture_id,
+                'pictureID'  => $request->studentpicture_id,
                 'status'             => 'pending',
             ]);
             $room = roomModel::with('landlord')->find($request->room_id);

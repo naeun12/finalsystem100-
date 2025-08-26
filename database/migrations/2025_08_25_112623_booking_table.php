@@ -1,9 +1,8 @@
-
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
 
 return new class extends Migration
 {
@@ -24,23 +23,20 @@ return new class extends Migration
             $table->string('status')->default('pending')->nullable();
             $table->string('paymentType')->nullable();
             $table->string('paymentImage')->nullable();
-            $table->string('studentpictureID')->nullable();
+            $table->string('pictureID')->nullable();
             $table->timestamps();
+
+            // 🔹 Add soft deletes
+            $table->softDeletes();
+
             // Foreign key constraints
             $table->foreign('fkroomID')->references('roomID')->on('rooms')->onDelete('cascade');
             $table->foreign('fktenantID')->references('tenantID')->on('tenants')->onDelete('cascade');
         });
     }
 
-
     public function down()
     {
         Schema::dropIfExists('bookings');
     }
 };
-
-
-
-
-?>
-

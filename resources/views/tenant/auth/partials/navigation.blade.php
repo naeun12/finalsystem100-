@@ -99,10 +99,13 @@
                                 <hr class="dropdown-divider">
                             </li>
                             <li class="text-center">
-                                <a href="{{ route('NotificationPage') }}" class="dropdown-item text-primary fw-bold">
+                                <a href="{{ route('view.notifications.tenant', ['tenant_id' => session('tenant_id')]) }}"
+                                    class="dropdown-item text-primary fw-bold">
                                     See All Notifications
                                 </a>
                             </li>
+
+
                         </ul>
                     </div>
 
@@ -112,7 +115,7 @@
                 <div class="dropdown">
                     <a class="d-flex align-items-center text-black text-decoration-none dropdown-toggle" href="#"
                         id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ asset(session('profile_pic_url')) }}" alt="User Avatar" width="40" height="40"
+                        <img src="{{ asset(session('profilePicUrl')) }}" alt="User Avatar" width="40" height="40"
                             class="rounded-circle me-2">
                         <span class="fw-semibold d-none d-md-inline">
                             {{ session('tenant_firstname') }} {{ session('tenant_lastname') }}

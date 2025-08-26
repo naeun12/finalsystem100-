@@ -15,6 +15,8 @@ return new class extends Migration
     $table->id('paymentID');
     $table->unsignedBigInteger('fkapprovedID'); // foreign key to approved_tenants
     $table->string('paymentType');
+        $table->string('status')->default('pending');
+        $table->decimal('amount', 10, 2); 
     $table->string('paymentImage')->nullable();
     $table->timestamps();
 

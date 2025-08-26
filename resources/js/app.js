@@ -30,6 +30,8 @@ import myRooms from './components/tenants/auth/nav/rooms/myrooms.vue';
 import myReservation from './components/tenants/auth/nav/reservation/reservation.vue';
 import paymentLandlord from './components/landlord/auth/paymentlandlord.vue';
 import reviewandrating from './components/tenants/auth/reviewandrating.vue';
+import notificationsTenant from './components/tenants/auth/nav/notificationstenant.vue';
+
 
 
 
@@ -176,6 +178,12 @@ const reviewandratingController = document.querySelector('#reviewandrating');
 if (reviewandratingController) {
     createApp(reviewandrating).mount('#reviewandrating');
 }
+const notificationsTenantController = document.querySelector('#notificationsTenant');
+
+if (notificationsTenantController) {
+    createApp(notificationsTenant).mount('#notificationsTenant');
+}
+
 
 
 

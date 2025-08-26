@@ -29,7 +29,8 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link nav-feature-link d-flex align-items-center gap-2">
+                <a href="#" @click="viewnotifications"
+                    class="nav-link nav-feature-link d-flex align-items-center gap-2">
                     <i class="bi bi-bell fs-5"></i>
                     <span>Notifications</span>
                 </a>
@@ -221,7 +222,10 @@ export default {
             window.location.href = `/view/reservation/${this.tenant_id}`;
 
         },
-
+        viewnotifications() {
+            this.tenant_id = window.tenant_id;
+            window.location.href = `/view/notifications/${this.tenant_id}`;
+        },
         initMap() {
             this.tenant_id = window.tenant_id;
 

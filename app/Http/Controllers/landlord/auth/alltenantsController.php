@@ -311,7 +311,61 @@ public function filterByDorm(Request $request)
         'tenants' => $tenants
     ]);
 }
+public function notifyTenant(Request $request)
+{
+    try {
+        // 1. Validate input
+        $request->validate([
+            'landlordID' => 'required|string',
+            'approveID'  => 'required|integer',
+        ]);
 
+        // 2. Find tenant with room + dorm
+        $tenant = approvetenantsModel::with('room.dorm')->findOrFail($request->approveID);
+
+        // 3. Update notify flag
+        $tenant->notifyRent = true;
+        $tenant->save();
+
+        // 4. Create notification
+        $notification = notificationModel::create([
+            'senderID'     => $request->landlordID,
+            'senderType'   => 'landlord',
+            'receiverID'   => $tenant->fktenantID,
+            'receiverType' => 'tenant',
+            'title'        => 'Extension Notification',
+            'message'      => 'Hello ' . $tenant->firstname .
+                              ', your landlord is notifying you about your rental extension for room ' .
+                              $tenant->room->roomNumber . ' at ' . $tenant->room->dorm->dormName .
+                              '. Kindly check and confirm.',
+            'isRead'       => false,
+        ]);
+
+        // 5. Fire event for broadcasting (real-time notif)
+        broadcast(new \App\Events\NewNotificationEvent($notification));
+
+        // 6. Return success response
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Notification sent to tenant successfully',
+            'data'    => $notification
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        // Validation errors
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Validation failed',
+            'errors'  => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        // Any other errors
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Something went wrong while sending notification',
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
 
 
 

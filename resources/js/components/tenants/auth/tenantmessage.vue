@@ -1,5 +1,4 @@
 <template>
-    <NotificationList ref="toastRef" />
 
     <div class="container-fluid vh-150 d-flex flex-column bg-light">
         <div class="row flex-grow-1 h-100 overflow-hidden">

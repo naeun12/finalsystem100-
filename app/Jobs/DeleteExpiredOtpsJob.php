@@ -6,7 +6,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\tenant\otpModel;
+use App\Models\otpModel;
 use Illuminate\Foundation\Bus\Dispatchable;
 
 

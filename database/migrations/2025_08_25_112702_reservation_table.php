@@ -19,11 +19,12 @@ return new class extends Migration
             $table->string('contactEmail');
             $table->string('age');
             $table->string('gender');
+            $table->string('status')->default('pending')->change(); // Revert to original default
             $table->string('status')->default('pending'); // pending, approved, for-confirmation, certified
-            $table->string('studentpictureID')->nullable();
+            $table->string('pictureID')->nullable();
             $table->date('moveInDate')->nullable();
             $table->timestamps();
-
+            $table->softDeletes();
             // Foreign key constraints
             $table->foreign('fkdormitoryID')->references('dormID')->on('dorms')->onDelete('cascade');
             $table->foreign('fkroomID')->references('roomID')->on('rooms')->onDelete('cascade');

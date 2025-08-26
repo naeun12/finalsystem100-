@@ -272,9 +272,10 @@
 
                     </div>
                     <div class="modal-footer justify-content-between bg-light border-top-0 px-4 py-3">
-                        <button class="btn btn-outline-primary px-4">
+                        <button class="btn btn-outline-primary px-4" @click="messagePage(selectedReservation)">
                             💬 Message Tenant
                         </button>
+
                         <div class="d-flex gap-2">
                             <div>
                                 <button class="btn btn-outline-success" @click="acceptReservation(selectedReservation)">
@@ -626,7 +627,19 @@ export default {
             } else {
                 this.reservationList(page); // Default
             }
+        },
+        messagePage(selectedReservation) {
+            const tenantID = selectedReservation.tenant?.tenantID;
+
+            if (!tenantID) {
+                alert('No tenant assigned to this reservation.');
+                return;
+            }
+
+            const url = `/api/select/landlord/conversations/${this.landlord_id}?tenant_id=${tenantID}`;
+            window.location.href = url;
         }
+
 
     },
     mounted() {

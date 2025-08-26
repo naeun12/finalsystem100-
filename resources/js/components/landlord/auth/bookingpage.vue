@@ -141,7 +141,7 @@
                     <div class="modal-body px-5">
                         <!-- Profile Picture and Status -->
                         <div class="text-center mb-4">
-                            <img :src="selectedtenant.studentpictureID"
+                            <img :src="selectedtenant.pictureID"
                                 class="rounded-circle border border-3 border-light shadow-sm"
                                 style="width: 130px; height: 130px; object-fit: cover;" />
                             <p class="mt-3">

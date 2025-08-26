@@ -244,7 +244,10 @@ public function handletenantBooking(Request $request)
                     ], 403);
                 }
               $approve =  approvetenantsModel::create([
+                    'fktenantID'       => $booking->fktenantID,
                     'fkroomID'          => $booking->fkroomID,
+                    'source_type'       => 'Booking', 
+                    'source_id'         => $booking->bookingID,
                     'firstname'         => $booking->firstname,
                     'lastname'          => $booking->lastname,
                     'contactNumber'     => $booking->contactNumber,
@@ -253,7 +256,7 @@ public function handletenantBooking(Request $request)
                     'contactEmail'      => $booking->contactEmail,
                     'age'               => $booking->age,
                     'gender'            => $booking->gender,
-                    'studentpictureId'  => $booking->studentpictureID,
+                    'pictureID'  => $booking->pictureID,
                 ]);
                 $message = "Hi {$tenantName}, 👋 Your booking for Room {$room->roomNumber} at {$room->dorm->dormName} has been approved 🎉.";
                 $notifications = notificationModel::create([
@@ -266,7 +269,7 @@ public function handletenantBooking(Request $request)
                     'isRead'       => false,
                 ]);
 
-                $room->availability = $request->status;
+                $room->availability = 'Occupied';
                 $room->updated_at = now();
                 $room->save();
                 break;

@@ -277,10 +277,10 @@
 
                     <!-- Footer -->
                     <div class="modal-footer justify-content-between bg-light border-top-0 px-4 py-3">
-                        <button class="btn btn-outline-primary px-4">
+                        <button class="btn btn-outline-primary px-4" @click="messagePage(selectedtenant)">
                             💬 Message Tenant
                         </button>
-                        <button class="btn btn-outline-success px-4">
+                        <button @click="notifyTenant(selectedtenant)" class="btn btn-outline-success px-4">
                             📩 Notify Tenant about Rent Extension
                         </button>
                         <button class="btn btn-outline-secondary px-4" @click="updateTenantInformation">
@@ -407,7 +407,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Modal Footer -->
                     <div class="modal-footer bg-light">
                         <div v-if="isButtonChangingRoom === true">
@@ -419,10 +418,7 @@
                     </div>
                 </div>
             </div>
-
         </div>
-
-
     </div>
     <Modalconfirmation ref="modal" />
 
@@ -723,7 +719,58 @@ export default {
             } finally {
                 this.$refs.loader.loading = false;
             }
+        },
+        messagePage(selectedReservation) {
+            const tenantID = selectedReservation.fktenantID;
+
+            if (!tenantID) {
+                alert('No tenant assigned to this reservation.');
+                return;
+            }
+
+            const url = `/api/select/landlord/conversations/${this.landlord_id}?tenant_id=${tenantID}`;
+            window.location.href = url;
+        },
+        async notifyTenant(selectedtenant) {
+            try {
+                const confirmed = await this.$refs.modal.show({
+                    title: 'Confirm Rent Extension',
+                    message: `Are you sure you want to notify this tenant about their rent extension?`,
+                    functionName: 'Send Notification'
+                });
+
+                if (!confirmed) {
+                    if (this.rules && this.rules.length > 0) {
+                        this.rules.pop();
+                    }
+                    return;
+                }
+                this.$refs.loader.loading = true;
+                const response = await axios.post('/notify/tenant', {
+                    landlordID: this.landlord_id,
+                    approveID: selectedtenant.approvedID
+                });
+
+                if (response.data.status === 'success') {
+                    this.$refs.toast.showToast(response.data.message, 'success');
+                    this.VisibleTenantModal = false;
+
+                } else {
+                    this.$refs.toast.showToast('Failed to send notification.', 'error');
+                    this.VisibleTenantModal = false;
+
+                }
+            }
+            catch (error) {
+                console.error(error);
+                this.$refs.toast.showToast('Something went wrong while sending the notification.', 'error');
+            }
+            finally {
+                this.$refs.loader.loading = false;
+            }
         }
+
+
     },
     mounted() {
         this.landlord_id = document.getElementById('tenantpage').dataset.landlordId;

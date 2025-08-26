@@ -15,6 +15,7 @@ return new class extends Migration
     $table->id('paymentID');
     $table->unsignedBigInteger('fkbookingID');
     $table->string('paymentType');
+    $table->decimal('amount', 10, 2); 
     $table->string('paymentImage')->nullable();
     $table->timestamps();
 

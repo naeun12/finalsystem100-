@@ -118,7 +118,7 @@ public function paymentHistory(Request $request, $tenant_id)
     ->when($chooseDate, function ($query) use ($chooseDate) {
         return $query->whereDate('created_at', $chooseDate);
     })
-    ->sum('paymentAmount');
+    ->sum('amount');
 
     // Reservation total
     $reservationTotal = reservationpaymentModel::whereHas('reservation', function ($q) use ($tenantID) {
@@ -130,7 +130,7 @@ public function paymentHistory(Request $request, $tenant_id)
     ->when($chooseDate, function ($query) use ($chooseDate) {
         return $query->whereDate('created_at', $chooseDate);
     })
-    ->sum('paymentAmount');
+    ->sum('amount');
 
     // Approved total
     $approve = approvepaymentModel::whereHas('approvedTenant', function ($q) use ($tenantID) {

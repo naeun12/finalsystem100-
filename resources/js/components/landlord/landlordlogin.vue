@@ -1,62 +1,69 @@
 <template>
     <Loader ref="loader" />
     <Toastcomponents ref="toast" />
-    <div class="card border-primary shadow-lg mt-5 py-3" style="width: 700px; height:auto;">
-        <div class="card-body ">
-            <h1 class="text-center mb-2 mt-4 text-create">Hello Landlord</h1>
-            <p class="text-center mb-4 text-muted">Welcome back! Please log in to manage your properties and connect
-                with
-                tenants.</p>
+    <div class="card border-0 shadow-lg mt-5 py-4 px-3 mx-auto"
+        style="width: 700px; border-radius: 25px; background: #ffffff;">
+        <div class="card-body">
+            <h1 class="text-center mb-2 mt-3 fw-bold text-primary">👋 Hello Landlord</h1>
+            <p class="text-center mb-4 text-muted fs-6">
+                Welcome back! Please log in to manage your properties and connect with tenants.
+            </p>
         </div>
-        <form @submit.prevent="LandlordLogin">
 
-            <div class="row  m-2">
+        <!-- Login Form -->
+        <form @submit.prevent="LandlordLogin">
+            <div class="row px-4">
+                <!-- Email -->
                 <div class="mt-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" name="email" id="email" class="form-control" v-model="email"
-                        placeholder="Email Address" style="border: 2px solid #4edce2;">
-                    <span v-if="errors.email" class="text-danger">
+                    <label for="email" class="form-label fw-semibold">Email</label>
+                    <input type="email" name="email" id="email" class="form-control p-3" v-model="email"
+                        placeholder="Enter your email" style="border: 2px solid #4edce2; border-radius: 12px;">
+                    <span v-if="errors.email" class="text-danger small">
                         {{ errors.email[0] }}
                     </span>
                 </div>
-                <div class="mt-2">
 
-                    <label for="password" class="form-label">Password</label>
+                <!-- Password -->
+                <div class="mt-3">
+                    <label for="password" class="form-label fw-semibold">Password</label>
                     <div class="input-group">
-                        <input type="password" id="password" name="password" v-model="password" class="form-control"
-                            placeholder="Password" style="border: 2px solid #4edce2;">
-
+                        <input type="password" id="password" name="password" v-model="password" class="form-control p-3"
+                            placeholder="Enter your password" style="border: 2px solid #4edce2; border-radius: 12px;">
                     </div>
-                    <span v-if="errors.password" class="text-danger">{{ errors.password[0] }}</span>
-
+                    <span v-if="errors.password" class="text-danger small">
+                        {{ errors.password[0] }}
+                    </span>
                 </div>
-                <div class="mt-2 ">
 
-                    <label for="show-password" class="form-label  me-1">Show Password</label>
-
-                    <input type="checkbox" id="show-password" name="show-password" class="form-check-input"
+                <!-- Show Password -->
+                <div class="mt-3 d-flex align-items-center">
+                    <input type="checkbox" id="show-password" name="show-password" class="form-check-input me-2"
                         style="border: 2px solid #4edce2;" @click="toggleShowPassword">
-
+                    <label for="show-password" class="form-label m-0">Show Password</label>
                 </div>
+
+                <!-- Sign In Button -->
                 <div class="container d-flex justify-content-center">
-                    <div class=" gap-2  w-50 mt-5">
-                        <button type="submit"
-                            class="btn rounded-pill d-flex justify-content-center align-items-center w-100">Sign
-                            In</button>
+                    <div class="w-75 mt-4">
+                        <button type="submit" class="btn btn-primary rounded-pill w-100 py-2 shadow-sm"
+                            style="background: linear-gradient(135deg, #4edce2, #1fb6ff); border: none; font-weight: 600; transition: all 0.3s;"
+                            @mouseover="event.target.style.opacity = '0.9'"
+                            @mouseout="event.target.style.opacity = '1'">
+                            Sign In
+                        </button>
                     </div>
                 </div>
             </div>
-
-
         </form>
 
-
-        <p class="text-center mt-5">
-            Hello Landlord! Don't have an account?
-            <a @click="clickSignupLink" style="cursor: pointer;" class="text-primary">Sign up here.</a>
+        <!-- Signup Link -->
+        <p class="text-center mt-4 mb-2 text-muted">
+            Don’t have an account?
+            <a @click="clickSignupLink" style="cursor: pointer; font-weight: 600;"
+                class="text-decoration-none text-primary">
+                Sign up here
+            </a>
         </p>
-
-
     </div>
 
 

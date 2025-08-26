@@ -15,7 +15,7 @@ class bookingpaymentModel extends Model
 
     protected $table = 'bookingpayments';
     protected $primaryKey = 'paymentID';
-    protected $fillable = ['fkbookingID', 'paymentType', 'paymentAmount','paymentImage'];
+    protected $fillable = ['fkbookingID', 'paymentType', 'amount','paymentImage'];
 
     public function booking()
     {

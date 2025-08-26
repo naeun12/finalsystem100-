@@ -111,13 +111,14 @@ class reservationController extends Controller
         }
     
         $reservation = reservationModel::with([
-            'room.dorm','room.currentTenant' , 'payment'
+            'room.dorm','room.currentTenant','tenant' , 'payment'
         ])
         ->where('reservationID', $id)
         ->whereHas('room', function ($query) use ($landlordId) {
         $query->where('fklandlordID', $landlordId);
         })
         ->first();
+
     
         if (!$reservation) {
             return response()->json([

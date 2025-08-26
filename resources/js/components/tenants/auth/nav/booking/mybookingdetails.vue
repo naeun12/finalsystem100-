@@ -10,8 +10,8 @@
             <div class="col-md-4  text-black text-center py-4" style="background-color: #4edce2;">
                 <div class="border mb-4 rounded bg-white d-flex align-items-center justify-content-center overflow-hidden"
                     style="height: 200px;">
-                    <img :src="booking.studentpictureID" alt="Profile Image"
-                        class="img-fluid w-100 h-100 object-fit-cover rounded" v-if="booking.studentpictureID">
+                    <img :src="booking.pictureID" alt="Profile Image"
+                        class="img-fluid w-100 h-100 object-fit-cover rounded" v-if="booking.pictureID">
                     <p class="mb-0 text-muted" v-else>No Image</p>
                 </div>
 
@@ -101,45 +101,39 @@
 
 
                 <div v-if="ispayment === 'confirmed'">
-                    <!-- Payment method selection -->
+                    <!-- Payment method (fixed to GCash) -->
                     <div class="container py-4 mb-4">
                         <div class="mb-3">
-                            <label for="paymentType" class="form-label fw-semibold text-dark">
+                            <label class="form-label fw-semibold text-dark">
                                 <i class="bi bi-credit-card-2-front-fill text-primary me-2"></i>Payment Method
                             </label>
-                            <input type="text" class="form-control form-control-lg shadow-sm" id="paymentType"
-                                v-model="payment_type" readonly />
-                            <div id="paymentTypeHelp" class="form-text text-muted">
-                                Specify your preferred method of payment.
+                            <input type="text" class="form-control form-control-lg shadow-sm" v-model="payment_type"
+                                value="GCash" readonly />
+                            <div class="form-text text-muted">
+                                Payments are only available via GCash.
                             </div>
                         </div>
 
-                        <!-- Payment Options -->
-                        <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
-                            <div v-for="(src, name) in payment" :key="name"
-                                class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
-                                :class="{ 'border-primary bg-light': payment_type === name }" role="button"
-                                style="cursor: pointer; width: 120px; height: 130px;"
-                                @click="paymentTypeSelection(name)">
-                                <img :src="src" :alt="name" class="img-fluid mb-2"
-                                    style="width: 50px; height: 50px; object-fit: contain;" />
-                                <small class="fw-semibold text-capitalize text-center">
-                                    {{ name.replace('_', ' ') }}
-                                </small>
+                        <!-- GCash Card -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body rounded-4 p-4"
+                                style="border:2px solid #4edce2; background: linear-gradient(135deg,#e8fafa,#ffffff);">
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold text-primary mb-0">
+                                        <i class="bi bi-wallet2 me-2"></i>GCash Number
+                                    </h6>
+
+                                </div>
+
+                                <p class="fs-5 fw-bold text-dark mb-1">{{ booking.room?.dorm.gcashNumber }}</p>
+                                <small class="text-muted">Send payment to this number and upload your receipt
+                                    below.</small>
                             </div>
-
                         </div>
-                        <div class="justify-content-center d-flex mt-2">
-                            <span v-if="errors.paymentType" class="text-danger small mt-1 d-block">
-                                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.paymentType[0] }}
-                            </span>
-                        </div>
-
-
-
                     </div>
 
-                    <!-- Payment Upload -->
+                    <!-- Upload Proof of Payment -->
                     <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
                         v-if="isPaymentImage" @click="triggerPaymentImage">
                         <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
@@ -147,7 +141,7 @@
                         <div class="d-flex flex-column align-items-center text-center mb-3">
                             <img :src="paymentIcon" alt="Payment Icon" style="max-width: 60px; height: auto;"
                                 class="mb-2" />
-                            <h5 class="text-secondary mt-2">Upload Payment Image</h5>
+                            <h5 class="text-secondary mt-2">Upload GCash Payment Receipt</h5>
                             <small class="text-muted">Click to browse and select an image file</small>
                         </div>
                     </div>
@@ -171,12 +165,11 @@
                     <!-- Pay Button -->
                     <button type="submit" class="btn btn-success w-100 py-2 fw-semibold shadow-sm"
                         @click="submitPayment">
-                        <i class="bi bi-calendar-check-fill me-2"></i>Pay for Room
+                        <i class="bi bi-check-circle-fill me-2"></i>Confirm GCash Payment
                     </button>
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
@@ -205,12 +198,6 @@ export default {
             ispayment: '',
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
             id_picture: '/images/tenant/allimagesResouces/vector-id-card-icon.jpg',
-            payment: {
-                gcash: '/images/tenant/allimagesResouces/GCash-Logo.png',
-                maya: '/images/tenant/allimagesResouces/maya.png',
-                bank_transer: '/images/tenant/allimagesResouces/bank-transfer-logo.png',
-
-            },
             errors: [],
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
             PaymentPicturePreview: '',
@@ -219,7 +206,7 @@ export default {
             bookingID: '',
             notifications: [],
             receiverID: '',
-            payment_type: '',
+            payment_type: 'Gcash',
             tenantid: '',
 
         };
@@ -263,9 +250,7 @@ export default {
                 alert('Failed to cancel reservation.');
             }
         },
-        paymentTypeSelection(name) {
-            this.payment_type = name;
-        },
+
         handlePaymentPicture(event) {
             const file = event.target.files[0];
             if (file) {

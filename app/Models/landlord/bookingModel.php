@@ -26,7 +26,7 @@ class bookingModel extends Model
         'age',
         'gender',
         'status',
-        'studentpictureID'
+        'pictureID'
     ];
    
 

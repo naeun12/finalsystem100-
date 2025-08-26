@@ -16,8 +16,6 @@ use App\Http\Controllers\landlord\auth\bookingpageController;
 use App\Http\Controllers\landlord\auth\messagelandlordController;
 use App\Http\Controllers\landlord\auth\NotificationController;
 use App\Http\Controllers\landlord\auth\paymentlandlordController;
-
-
 use App\Http\Controllers\landlord\auth\reservationController;
 use App\Http\Controllers\landlord\auth\alltenantsController;
 use App\Http\Controllers\tenant\auth\dormitoriesmapcontroller;
@@ -31,6 +29,9 @@ use App\Http\Controllers\tenant\auth\nav\nextpayment\nextpaymentController;
 use App\Http\Controllers\tenant\auth\nav\myroom\myroomsController;
 use App\Http\Controllers\tenant\auth\nav\reservations\myreservationController;
 use App\Http\Controllers\tenant\auth\reviewandfeedbackController;
+use App\Http\Controllers\tenant\auth\nav\notificationsController;
+
+
 use App\Models\tenant\messageModel;
 use App\Events\NewNotificationEvent;
 
@@ -161,8 +162,9 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('get/rooms',[alltenantsController::class,'getRooms']);
     Route::get('get/roomsdetails',[alltenantsController::class,'getRoomsDetails']);
     Route::put('/tenant/room/update/{roomID}',[alltenantsController::class,'roomUpdate']);
-    Route::get('/tenants/search', [AllTenantsController::class, 'searchTenants']);
-    Route::get('/tenants/filter-by-dorm', [AllTenantsController::class, 'filterByDorm']);
+    Route::get('/tenants/search', [alltenantsController::class, 'searchTenants']);
+    Route::get('/tenants/filter-by-dorm', [alltenantsController::class, 'filterByDorm']);
+Route::post('/notify/tenant',[alltenantsController::class,'notifyTenant']);
     //functions for messaging landlord 
     Route::get('/api/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'getConversations']);
     Route::get('/api/select/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'selecttenantToMessage']);
@@ -257,15 +259,21 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::post('/extend-rent', [myroomsController::class, 'extendRent']);
     Route::post('/reviewandrating', [myroomsController::class, 'ReviewAndRating']);
     Route::post('/send/issue/', [myroomsController::class, 'sendIssue']);
+        Route::post('/update/rentstatus', [myroomsController::class, 'notifyrentUpdate']);
 
-
-    
     //reservations view
     Route::get('/view/reservation/{tenant_id}', [myreservationController::class, 'viewReservation'])->name('view.reservation');
     Route::get('/tenant/my-reservation/{tenant_id}', [myreservationController::class, 'myReservationList']);
     Route::get('/tenant/my-reservation/details/{reservationID}', [myreservationController::class, 'reservationDetails']);
     Route::get('/tenant/cancel/reservation/{reservationID}', [myreservationController::class, 'cancelReservation']);
     Route::post('/tenant/pay/reservation/{reservationID}', [myreservationController::class, 'paymentReservation']);
+// notifications view
+    Route::get('/view/notifications/{tenant_id}', [notificationsController::class, 'notificationstenant'])->name('view.notifications.tenant');
+     Route::get('/get/notifications/tenant/{tenant_id}', [notificationsController::class, 'gettenantotificationsList']);
+    Route::post('/mark/read/tenant/{tenant_id}', [notificationsController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read/tenant', [notificationsController::class, 'markAllAsRead']);
+    Route::post('/clear/notifications/tenant', [notificationsController::class, 'clearAll']);
+
 });
 Route::get('/test-auth', function () {
     return auth('landlord')->check() ? 'Authenticated as landlord' : 'NOT authenticated';
