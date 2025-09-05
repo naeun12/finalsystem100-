@@ -73,14 +73,24 @@ class myroomsController extends Controller
 
 public function extendRent(Request $request)
 {
-    // 1️⃣ Custom validator with messages
+        $paymentOption = $request->input('paymentOption');
+                $approveID = $request->input('approveID');
+
+ $approve = approvetenantsModel::with('room.landlord')->find($request->approveID);
+
+$landlord = $approve->room->landlord;
+     $tenant = approvetenantsModel::with('room.landlord','room.dorm')->find($request->approveID);
+        if ($paymentOption === 'online') {
+
     $validator = Validator::make($request->all(), [
+        'paymentOption' => 'required|string|in:online,onsite',
         'approveID'    => 'required|integer|exists:approved_tenants,approvedID',
         'paymentType'  => 'required|string|max:50',
         'paymentImage' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         'amount'       => 'required|numeric|min:1'
     ], [
         'approveID.required'    => 'Approve ID is required.',
+        'paymentOption.required'    => 'Choose payment option',
         'approveID.exists'      => 'The selected approve ID does not exist.',
         'paymentType.required'  => 'Payment type is required.',
         'paymentImage.required' => 'Payment image is required.',
@@ -90,7 +100,7 @@ public function extendRent(Request $request)
         'amount.min'            => 'Amount must be greater than 0.'
     ]);
 
-    // 2️⃣ Return error response if validation fails
+    
     if ($validator->fails()) {
         return response()->json([
             'status' => 'error',
@@ -117,9 +127,15 @@ public function extendRent(Request $request)
     'moveInDate'  => now(),
     'moveOutDate' => now()->addDays(30)
 ]);
- $approve = approvetenantsModel::with('room.landlord')->find($request->approveID);
 
-$landlord = $approve->room->landlord;
+
+    if (!$tenant) {
+        return response()->json(['status' => 'error', 'message' => 'Tenant not found']);
+    }
+        $tenant->notifyRent = false; 
+        $tenant->extension_decision = 'pending'; 
+        $tenant->paymentOption = $paymentOption;
+        $tenant->save();
 
 $notifications = notificationModel::create([
     'senderID'     => $approve->fktenantID,
@@ -132,14 +148,35 @@ $notifications = notificationModel::create([
     'readAt'       => null,
 ]);
     broadcast(new \App\Events\NewNotificationEvent($notifications));
-
-
-
     // 5️⃣ Return success
     return response()->json([
         'status'  => 'success',
         'message' => 'Successfully paid extension, wait for landlord approval'
     ]);
+}
+else if($paymentOption === 'onsite')
+{
+    $tenant->paymentOption = $paymentOption;
+     $tenant->notifyRent = false; 
+        $tenant->extension_decision = 'pending'; 
+    $tenant->save();
+   $notifications = notificationModel::create([
+    'senderID'     => $approve->fktenantID,
+    'senderType'   => 'tenant',
+    'receiverID'   => $landlord->landlordID,
+    'receiverType' => 'landlord',
+    'title'        => 'Onsite Payment Chosen',
+    'message'      => "The tenant has chosen onsite payment for the rent extension of Room #{$approve->room->roomNumber}. Please coordinate with the tenant directly for the payment.",
+    'isRead'       => false,
+    'readAt'       => null,
+]);
+
+    broadcast(new \App\Events\NewNotificationEvent($notifications));
+     return response()->json([
+        'status'  => 'success',
+        'message' => 'You selected On-site Payment. Please proceed to your landlord to complete the payment.'
+    ]);
+}
 }
 public function generateReceipt($id)
     {
@@ -150,7 +187,7 @@ $tenant = approvetenantsModel::with(['room.dorm','room.landlord', 'payments'])->
 
         $data = [
             'tenant' => $tenant,
-            'balance' => $tenant->room->price - ($tenant->amountPaid ?? 0),
+            'balance' => $tenant->room->price - ($tenant->amount ?? 0),
              'totalPaid' => $totalPaid,
              'paymentType'  => $latestPayment ? $latestPayment->paymentType : null
 

@@ -143,16 +143,16 @@
             </nav>
         </div>
 
-        <div v-if="VisibleModalApproval" class="modal fade show d-block" style="background: rgba(0, 0, 0, 0.5);"
-            tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div v-if="VisibleModalApproval" class="modal fade show d-block radius-3"
+            style="background: rgba(0, 0, 0, 0.5);" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered ">
                 <div class="modal-content shadow-lg rounded-4 border-0 overflow-hidden">
                     <!-- Header -->
-                    <div class="modal-header  text-black border-bottom-0 py-3">
+                    <div class="modal-header bg-info  text-white border-bottom-0 py-3">
                         <h5 class="modal-title fw-bold">
                             🧾 Reservation Information
                         </h5>
-                        <button type="button" class="btn-close btn-close-black"
+                        <button type="button" class="btn-close btn-close-white"
                             @click="VisibleModalApproval = false"></button>
                     </div>
 
@@ -165,7 +165,7 @@
 
                         <!-- Profile Picture and Status -->
                         <div class="text-center mb-4">
-                            <img :src="selectedReservation.studentpictureID"
+                            <img :src="selectedReservation.pictureID"
                                 class="rounded-circle border border-3 border-light shadow-sm"
                                 style="width: 130px; height: 130px; object-fit: cover;" />
                             <p class="mt-3">
@@ -190,9 +190,9 @@
                                 <p><strong>🏠 Dorm:</strong> {{ selectedReservation.room?.dorm?.dormName || 'N/A' }}</p>
                                 <p><strong>💰 Price:</strong> ₱{{
                                     Number(selectedReservation.room?.price).toLocaleString(undefined, {
-                                        minimumFractionDigits: 2
+                                    minimumFractionDigits: 2
                                     })
-                                }}</p>
+                                    }}</p>
                             </div>
                         </div>
                         <div class="mb-2 mt-2">

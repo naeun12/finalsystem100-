@@ -11,26 +11,155 @@
             <input type="text" class="form-control border-0 shadow-none" placeholder="Search Tenants name"
                 aria-label="Search Tenant " v-model="searchTerm" @input="searchTenants" />
         </div>
-        <div class="py-3 d-flex gap-3 align-items-center">
+        <div class="py-3 d-flex gap-3 align-items-center flex-wrap">
             <!-- Dorm No Dropdown -->
-            <div class="mb-2 d-flex align-items-center gap-2"
-                style="border:1px solid #4edce2; border-radius: 0.375rem;">
-                <div class="w-100">
+            <div class="mb-2 d-flex align-items-center px-2 py-1 rounded shadow-sm"
+                style="border: 1px solid #4edce2; min-width: 250px;">
+                <select id="dormSelect" class="form-select border-0 shadow-none" @change="filterDorms"
+                    v-model="selectedDormId">
+                    <option value="" disabled> Select Dorm</option>
+                    <option value="all"> All Dorms</option>
+                    <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
+                        {{ dorm.dormName }} (ID: {{ dorm.dormID }})
+                    </option>
+                </select>
+            </div>
 
-                    <select id="dormSelect" class="form-select shadow-sm" @change="filterDorms"
-                        v-model="selectedDormId">
-                        <option value="" disabled> Select Dorm</option>
-                        <option value="all"> All dorms</option>
-                        <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
-                            {{ dorm.dormName }} (ID: {{ dorm.dormID }})
-                        </option>
-                    </select>
+            <!-- Add Tenant Button -->
+            <div class="ms-auto">
+                <button class="btn btn-success px-4 py-2 shadow-sm fw-semibold d-flex align-items-center gap-2"
+                    @click="viewMoveInTenants">
+                    <i class="bi bi-house-check fs-5"></i>
+                    Confirmed Move-in Tenant
+                </button>
+            </div>
+
+        </div>
+        <div v-if="clickConfirmedMoveInTenantModal" class="modal d-block modal-lg modal-dialog-centered" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+
+                    <!-- Header -->
+                    <div class="modal-header bg-info text-white rounded-top-4">
+                        <h5 class="modal-title fw-semibold">
+                            <i class="bi bi-house-door me-2"></i> Confirmed Move-in Tenant
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white"
+                            @click="clickConfirmedMoveInTenantModal = false"></button>
+                    </div>
+                    <div></div>
+                    <!-- Body -->
+                    <div class="modal-body">
+                        <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden"
+                            style="border: 1px solid #4edce2;">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="bi bi-search text-primary"></i>
+                            </span>
+                            <input type="text" class="form-control border-0 shadow-none"
+                                placeholder="Search Tenants name" aria-label="Search Tenant " v-model="searchMoveIn"
+                                @input="searchMoveInTenant" />
+                        </div>
+                        <div v-if="moveInTenants.length > 0">
+
+                            <div class="card border-0 shadow-sm rounded-3 overflow-hidden"
+                                v-for="moveInTenant in moveInTenants" :key="moveInTenant.approvedID">
+
+                                <!-- Tenant Image -->
+                                <div class="position-relative">
+                                    <img :src="moveInTenant.pictureID" alt="Tenant Image" class="card-img-top"
+                                        style="height: 200px; object-fit: cover;">
+                                    <span class="badge bg-success position-absolute top-0 end-0 m-3 px-3 py-2 shadow">
+                                        <i class="bi bi-check-circle me-1"></i> {{ moveInTenant.source_type }}
+                                    </span>
+                                </div>
+
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <!-- Tenant Info -->
+                                    <h6 class="fw-bold text-info mb-3">
+                                        <i class="bi bi-person-circle me-2"></i> Tenant Information
+                                    </h6>
+                                    <ul class="list-group list-group-flush mb-4">
+                                        <li class="list-group-item"><strong>Name:</strong> {{ moveInTenant.firstname }}
+                                            {{
+                                            moveInTenant.lastname }}</li>
+                                        <li class="list-group-item"><strong>Email:</strong> {{ moveInTenant.contactEmail
+                                            }}
+                                        </li>
+                                        <li class="list-group-item"><strong>Phone:</strong> {{
+                                            moveInTenant.contactNumber }}
+                                        </li>
+                                    </ul>
+
+                                    <!-- Room Info -->
+                                    <h6 class="fw-bold text-info mb-3">
+                                        <i class="bi bi-door-closed me-2"></i> Room Information
+                                    </h6>
+                                    <ul class="list-group list-group-flush mb-3">
+                                        <li class="list-group-item"><strong>Dorm:</strong>
+                                            {{ moveInTenant.room?.dorm?.dormName }}</li>
+                                        <li class="list-group-item"><strong>Room Number:</strong> {{
+                                            moveInTenant.room?.roomNumber }}</li>
+                                        <li class="list-group-item"><strong>Room Type:</strong> {{
+                                            moveInTenant.room?.roomType }}</li>
+                                        <li class="list-group-item"><strong>Move-in Date:</strong> {{
+                                            formatDate(moveInTenant.moveInDate) }}</li>
+                                    </ul>
+
+                                    <!-- Action Button -->
+                                    <div class="d-flex justify-content-end">
+                                        <button class="btn btn-success fw-semibold shadow-sm px-4"
+                                            @click="moveInTenantBTN(moveInTenant.approvedID)">
+                                            <i class="bi bi-house-door me-1"></i> Move in
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Pagination -->
+                                <div class="card-footer bg-light d-flex justify-content-center">
+                                    <nav>
+                                        <ul class="pagination pagination-sm mb-0 shadow-sm">
+                                            <!-- Previous -->
+                                            <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                                <a class="page-link" href="#"
+                                                    @click.prevent="viewMoveInTenants(currentPage - 1)">« Previous</a>
+                                            </li>
+
+                                            <!-- Page Numbers -->
+                                            <li v-for="page in totalPages" :key="page" class="page-item"
+                                                :class="{ active: currentPage === page }">
+                                                <a class="page-link" href="#" @click.prevent="viewMoveInTenants(page)">
+                                                    {{ page }}
+                                                </a>
+                                            </li>
+
+                                            <!-- Next -->
+                                            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                                                <a class="page-link" href="#"
+                                                    @click.prevent="viewMoveInTenants(currentPage + 1)">Next »</a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="text-center text-muted py-4">
+                            <i class="bi bi-person-x fs-3 d-block mb-2"></i>
+                            <span>No tenants found</span>
+                        </div>
+                    </div>
+
+
+                    <!-- Footer -->
+
                 </div>
             </div>
         </div>
+
+
         <div class="container bg-white rounded shadow-sm "
             style="border:1px solid #4edce2; border-radius: 0.375rem; max-height: 700px; overflow-y: auto;">
-            <div class="row fw-bold bg-primary text-white text-center py-3 rounded">
+            <div class="row fw-bold bg-info text-white text-center py-3 rounded">
                 <div class="col">#</div>
                 <div class="col">Tenant Name</div>
                 <div class="col">Email</div>
@@ -52,51 +181,55 @@
                     <span class="badge rounded-pill px-3 py-2" :class="{
                         'bg-success text-white': tenant.status === 'active',
                         'bg-secondary text-white': tenant.status === 'moved_out',
-                        'bg-danger text-white': tenant.status === 'terminated',
                         'bg-warning text-dark': tenant.status === 'pending_moveout',
                         'bg-info text-white': tenant.status === 'transferring',
-                        'bg-dark text-white': tenant.status === 'suspended'
                     }">
                         {{ tenant.status?.replace('_', ' ').toUpperCase() }}
                     </span>
                 </div>
                 <div class="col">
-                    <button class="btn btn-sm btn-outline-primary"
-                        @click="displaytenantInformation(tenant.approvedID)">View</button>
-                    <button class="btn btn-sm btn-outline-danger ms-2"
-                        @click="deleteReservation(tenant.approvedID)">Delete</button>
+                    <!-- View Button -->
+                    <button class="btn btn-sm btn-outline-primary" @click="displaytenantInformation(tenant.approvedID)"
+                        title="View">
+                        <i class="bi bi-eye"></i>
+                    </button>
+
+                    <!-- Delete Button -->
+                    <button class="btn btn-sm btn-outline-danger ms-2" @click="deleteReservation(tenant.approvedID)"
+                        title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
+
             </div>
         </div>
 
 
-        <div v-if="VisibleTenantModal" class="modal fade show d-block" style="background: rgba(0, 0, 0, 0.5);"
+        <div v-if="VisibleTenantModal" class="modal fade show d-block rounded-3" style="background: rgba(0, 0, 0, 0.5);"
             tabindex="-1">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content shadow-lg rounded-4 border-0">
                     <!-- Header -->
-                    <div class="modal-header bg-white border-bottom-0">
-                        <h5 class="modal-title text-primary fw-bold">
+                    <div class="modal-header bg-info border-bottom-0">
+                        <h5 class="modal-title text-white fw-bold">
                             🧾 Tenants Information
                         </h5>
-                        <button type="button" class="btn-close" @click="VisibleTenantModal = false"></button>
+                        <button type="button" class="btn-close text-white" @click="VisibleTenantModal = false"></button>
                     </div>
 
                     <!-- Body -->
                     <div class="modal-body px-5">
                         <!-- Profile Picture and Status -->
                         <div class="text-center mb-4">
-                            <img :src="selectedtenant.studentpictureId"
+                            <img :src="selectedtenant.pictureID"
                                 class="rounded-circle border border-3 border-light shadow-sm"
                                 style="width: 130px; height: 130px; object-fit: cover;" />
                             <p class="mt-3">
                                 <span class="badge rounded-pill px-3 py-2 fs-6" :class="{
                                     'bg-success text-white': tenantStatus === 'active',
                                     'bg-secondary text-white': tenantStatus === 'moved_out',
-                                    'bg-danger text-white': tenantStatus === 'terminated',
                                     'bg-warning text-dark': tenantStatus === 'pending_moveout',
                                     'bg-info text-white': tenantStatus === 'transferring',
-                                    'bg-dark text-white': tenantStatus === 'suspended'
                                 }">
                                     {{ tenantStatus?.replace('_', ' ').toUpperCase() }}
                                 </span>
@@ -108,11 +241,13 @@
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="">
-                                    <label class="form-label"><i class="bi bi-person-fill me-2"></i>First Name</label>
+                                    <label class="form-label"><i class="bi bi-person-fill me-2"></i>First
+                                        Name</label>
                                     <input type="text" class="form-control" v-model="selectedtenant.firstname">
                                 </div>
                                 <div class="mb-3">
-                                    <p v-if="errors.firstname" class="text-danger small">{{ errors.firstname[0] }}</p>
+                                    <p v-if="errors.firstname" class="text-danger small">{{ errors.firstname[0] }}
+                                    </p>
 
                                 </div>
 
@@ -131,7 +266,8 @@
                                     <input type="email" class="form-control" v-model="selectedtenant.contactEmail">
                                 </div>
                                 <div class="mb-3">
-                                    <p v-if="errors.contactEmail" class="text-danger small">{{ errors.contactEmail[0] }}
+                                    <p v-if="errors.contactEmail" class="text-danger small">{{
+                                        errors.contactEmail[0] }}
                                     </p>
 
                                 </div>
@@ -167,11 +303,13 @@
 
 
                                 <div class="mb-3">
-                                    <label class="form-label"><i class="bi bi-calendar-check-fill me-2"></i>Move-In
-                                        Date</label>
-                                    <input type="text" class="form-control" v-model="selectedtenant.moveInDate"
-                                        readonly>
+                                    <label class="form-label">
+                                        <i class="bi bi-calendar-x me-2"></i> Move-In Date
+                                    </label>
+                                    <input type="text" class="form-control"
+                                        :value="formatDate(selectedtenant.moveInDate)" readonly>
                                 </div>
+
                                 <div class="mb-3">
                                     <label class="form-label"><i class="bi bi-door-closed-fill me-2"></i>Room
                                         Number</label>
@@ -183,7 +321,8 @@
 
                             <div class="col-md-6">
                                 <div class="">
-                                    <label class="form-label"><i class="bi bi-person-fill me-2"></i>Last Name</label>
+                                    <label class="form-label"><i class="bi bi-person-fill me-2"></i>Last
+                                        Name</label>
                                     <input type="text" class="form-control" v-model="selectedtenant.lastname">
                                 </div>
                                 <div class="mb-3">
@@ -214,8 +353,9 @@
                                     <input type="text" class="form-control" v-model="selectedtenant.contactNumber">
                                 </div>
                                 <div class="mb-3">
-                                    <p v-if="errors.contactNumber" class="text-danger small">{{ errors.contactNumber[0]
-                                    }}
+                                    <p v-if="errors.contactNumber" class="text-danger small">{{
+                                        errors.contactNumber[0]
+                                        }}
                                     </p>
 
                                 </div>
@@ -239,10 +379,13 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label"><i class="bi bi-calendar-x me-2"></i>Move-Out Date</label>
-                                    <input type="text" class="form-control" v-model="selectedtenant.moveOutDate"
-                                        readonly>
+                                    <label class="form-label">
+                                        <i class="bi bi-calendar-x me-2"></i> Move-Out Date
+                                    </label>
+                                    <input type="text" class="form-control"
+                                        :value="formatDate(selectedtenant.moveOutDate)" readonly>
                                 </div>
+
                                 <div class="mb-3">
                                     <div class="mb-3">
                                         <label for="status" class="form-label">
@@ -251,17 +394,13 @@
                                         <select v-model="selectedtenant.status" id="status" class="form-select" :class="{
                                             'text-success': selectedtenant.status === 'active',
                                             'text-secondary': selectedtenant.status === 'moved_out',
-                                            'text-danger': selectedtenant.status === 'terminated',
                                             'text-warning': selectedtenant.status === 'pending_moveout',
                                             'text-info': selectedtenant.status === 'transferring',
-                                            'text-dark': selectedtenant.status === 'suspended'
                                         }">
                                             <option value="active">Active</option>
                                             <option value="moved_out">Moved Out</option>
-                                            <option value="terminated">Terminated</option>
                                             <option value="pending_moveout">Pending Move Out</option>
                                             <option value="transferring">Transferring</option>
-                                            <option value="suspended">Suspended</option>
                                         </select>
                                     </div>
 
@@ -280,8 +419,16 @@
                         <button class="btn btn-outline-primary px-4" @click="messagePage(selectedtenant)">
                             💬 Message Tenant
                         </button>
-                        <button @click="notifyTenant(selectedtenant)" class="btn btn-outline-success px-4">
+
+                        <button v-if="selectedtenant.notifyRent === 1" @click="notifyTenant(selectedtenant)"
+                            class="btn btn-outline-success px-4">
                             📩 Notify Tenant about Rent Extension
+                        </button>
+                        <button v-else-if="selectedtenant.notifyRent === 0"
+                            @click="btnViewTenantPaymentModal(selectedtenant)"
+                            class="btn btn-outline-primary px-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-receipt"></i>
+                            <span>View Tenant Payment</span>
                         </button>
                         <button class="btn btn-outline-secondary px-4" @click="updateTenantInformation">
                             Update Tenant Information
@@ -313,7 +460,8 @@
 
                         <!-- Select Room -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold"><i class="bi bi-door-closed me-2"></i>Select Room</label>
+                            <label class="form-label fw-bold"><i class="bi bi-door-closed me-2"></i>Select
+                                Room</label>
                             <select class="form-select shadow-sm" @change="onchangeRoomDetails"
                                 v-model="selectedRoomId">
                                 <option disabled value="">Select Room</option>
@@ -419,6 +567,155 @@
                 </div>
             </div>
         </div>
+        <div v-if="viewtenantpaymentModal" class="modal d-block modal-lg modal-dialog-centered" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+
+                    <!-- Header -->
+                    <div class="modal-header bg-info text-white rounded-top-4">
+                        <h5 class="modal-title fw-semibold">
+                            <i class="bi bi-house-door me-2"></i> Tenant Extension Payment
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white"
+                            @click="viewtenantpaymentModal = false"></button>
+                    </div>
+                    <div class="modal-body">
+    <!-- Online Payment -->
+    <div class="p-4" v-if="tenantpayment.paymentOption === 'onsite'">
+        <h5 class="fw-semibold text-primary mb-3">
+            <i class="bi bi-wallet2 me-2"></i> Online Payment
+        </h5>
+        <p class="small text-muted mb-4">
+            The tenant has submitted an online payment. Please review the details and verify.
+        </p>
+
+        <!-- Payment Proof (QR / Screenshot) -->
+        <div class="text-center mb-4">
+            <img :src="tenantpayment.paymentProof || 'default-placeholder.png'" 
+                 alt="Payment Proof" 
+                 class="img-fluid rounded shadow-sm border" 
+                 style="max-width: 220px;">
+            <p class="mt-2 small text-muted">Payment Screenshot / GCash Receipt</p>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <p class="mb-2">
+                    <i class="bi bi-person-circle text-primary me-2"></i>
+                    <strong>Tenant Name:</strong> {{ tenantpayment.firstname }} {{ tenantpayment.lastname }}
+                </p>
+                <p class="mb-2">
+                    <p>
+                        <i class="bi bi-currency-dollar text-success me-2"></i>
+                        <strong>Amount:</strong> ₱{{ tenantpayment?.payments?.[0]?.amount || 'N/A' }}
+                    </p>
+                </p>
+                
+            </div>
+        </div>
+
+        <!-- Extension Date -->
+        <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-calendar-plus text-primary me-2"></i> Extend Move-Out Date
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="bi bi-calendar-event"></i>
+                        </span>
+                      <input 
+                    type="date" 
+                    v-model="extensionMoveOutDate.split(' ')[0]" 
+                    :min="tenantpayment.moveOutDate.split(' ')[0]" 
+                    class="form-control"
+                />
+
+                    </div>
+                    <small class="text-muted">
+                        Please select a new date later than the current move-out date.
+                    </small>
+                </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2">
+            <button class="btn btn-success w-50 shadow-sm">
+                <i class="bi bi-check-circle me-2"></i> Approve Payment
+            </button>
+            <button class="btn btn-danger w-50 shadow-sm">
+                <i class="bi bi-x-circle me-2"></i> Reject Payment
+            </button>
+        </div>
+    </div>
+
+
+                        <!-- Onsite Payment -->
+                        <div class="p-4" v-if="tenantpayment.paymentOption === 'online'">
+                            <h5 class="fw-semibold mb-4">
+                                <i class="bi bi-cash-coin me-2 text-success"></i> Onsite Payment
+                            </h5>
+
+                            <!-- Payment Details Card -->
+                            <div class="card shadow-sm border-0 rounded-4 mb-3">
+                                <div class="card-body">
+                                    <p class="mb-2">
+                                        <i class="bi bi-person-fill text-primary me-2"></i>
+                                        <strong>Tenant Name:</strong> {{ tenantpayment.firstname }} {{
+                                        tenantpayment.lastname }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="bi bi-currency-exchange text-success me-2"></i>
+                                        <strong>Room Monthly Rate:</strong> ₱{{ tenantpayment?.room?.price }}
+                                    </p>
+                                    <p class="mb-0">
+                                        <i class="bi bi-calendar-check-fill text-info me-2"></i>
+                                        <strong>Move-out Date:</strong> {{ formatDate(tenantpayment.moveOutDate) }}
+                                    </p>
+
+                                </div>
+
+                            </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-calendar-plus text-primary me-2"></i> Extend Move-Out Date
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="bi bi-calendar-event"></i>
+                        </span>
+                      <input 
+                    type="date" 
+                    v-model="extensionMoveOutDate.split(' ')[0]" 
+                    :min="tenantpayment.moveOutDate.split(' ')[0]" 
+                    class="form-control"
+                />
+
+                    </div>
+                    <small class="text-muted">
+                        Please select a new date later than the current move-out date.
+                    </small>
+                </div>
+
+
+                            <!-- Notice -->
+                            <div class="alert alert-warning mt-3 rounded-3 d-flex align-items-center">
+                                <i class="bi bi-info-circle-fill fs-5 me-2"></i>
+                                <span>
+                                    The tenant will pay <strong>personally</strong> to the landlord.
+                                    (The landlord will verify the payment)
+                                </span>
+                            </div>
+                                                    <button class="btn btn-success">Update Extension</button>
+
+                        </div>
+
+                    </div>
+                    
+                </div>
+               
+            </div>
+        </div>
+
     </div>
     <Modalconfirmation ref="modal" />
 
@@ -472,7 +769,17 @@ export default {
             hasSubscribed: false,
             receiverID: '',
             landlord_id: '',
-            searchTimeout: null
+            searchTimeout: null,
+            clickConfirmedMoveInTenantModal: false,
+            moveInTenants: [],
+            currentPage: 1,
+            totalPages: 1,
+            searchMoveInTenantTimeout: null,
+            searchMoveIn: '',
+            viewtenantpaymentModal: false,
+            tenantpayment: [],
+            extensionMoveOutDate: '',
+
 
         }
     },
@@ -521,7 +828,6 @@ export default {
 
                 const response = await axios.get('/tenants-list', { withCredentials: true });
                 this.tenants = response.data.tenant;
-                this.tenants = response.data.tenant.data;
             } catch (error) {
                 console.error("Error fetching tenant list:", error.response?.data || error.message);
             } finally {
@@ -768,12 +1074,113 @@ export default {
             finally {
                 this.$refs.loader.loading = false;
             }
-        }
+        },
+        async viewMoveInTenants(page = 1) {
+            try {
+                this.$refs.loader.loading = true;
 
+                const response = await axios.get('/add/movein/tenant', {
+                    params: { page }
+                });
+
+                if (response.data.status === 'success') {
+                    this.clickConfirmedMoveInTenantModal = true;
+                    this.moveInTenants = response.data.moveInTenant.data; // tenants
+                    this.currentPage = response.data.moveInTenant.current_page;
+                    this.totalPages = response.data.moveInTenant.last_page;
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                this.$refs.loader.loading = false;
+            }
+        },
+        async searchMoveInTenant() {
+            this.$refs.loader.loading = true;
+
+            try {
+                const response = await axios.get('/search/movein/tenant', {
+                    params: {
+                        searchMoveIn: this.searchMoveIn
+                    }
+                });
+
+                if (response.data.status === 'success') {
+                    this.moveInTenants = response.data.tenants.data;
+                } else {
+                    this.moveInTenants = [];
+                }
+            } catch (error) {
+                console.error("Error searching move-in tenants:", error);
+            } finally {
+                this.$refs.loader.loading = false;
+            }
+        },
+        async moveInTenantBTN(approvedID) {
+            try {
+                const confirmed = await this.$refs.modal.show({
+                    title: 'Confirm Move-In',
+                    message: `Are you sure you want to move in this tenant?`,
+                    functionName: 'Move In Tenant'
+                });
+                if (confirmed === false) {
+                    if (this.rules && this.rules.length > 0) {
+                        this.rules.pop();
+                    }
+                    return;
+                }
+                this.$refs.loader.loading = true;
+                const response = await axios.get('/movein/tenant', {
+                    params: { approvedID }
+                });
+                if (response.data.status === 'success') {
+                    this.$refs.toast.showToast(response.data.message, 'success');
+                    this.clickConfirmedMoveInTenantModal = false;
+                    this.getTenantList();
+                } else {
+                    this.$refs.toast.showToast('Failed to move in tenant.', 'error');
+                }
+            } catch (error) {
+                console.error("Error moving in tenant:", error);
+            } finally {
+                this.$refs.loader.loading = false;
+            }
+        },
+        async btnViewTenantPaymentModal(selectedtenant)
+        {
+            try { 
+                const res = await axios.get(`/view/tenant/payment/${selectedtenant.approvedID}`);
+                this.$refs.loader.loading = true;
+                this.tenantpayment = res.data.tenant;
+                this.extensionMoveOutDate = this.tenantpayment.moveOutDate;
+                this.viewtenantpaymentModal = true;
+            }catch (error) {
+                console.error("Error viewing tenant payment:", error);
+            }
+            finally {
+                this.$refs.loader.loading = false;
+            }
+            
+        },
+        formatDate(date) {
+            if (!date) return "N/A";
+            return new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        },
+        nextDay(date) {
+            if (!date) return null;
+            let d = new Date(date);
+            d.setDate(d.getDate() + 1);
+            return d.toISOString().split('T')[0]; // format YYYY-MM-DD
+        }
 
     },
     mounted() {
         this.landlord_id = document.getElementById('tenantpage').dataset.landlordId;
+                      
         this.subscribeToNotifications();
         this.getTenantList();
         if (this.selectedtenant?.room?.dorm?.dormID) {

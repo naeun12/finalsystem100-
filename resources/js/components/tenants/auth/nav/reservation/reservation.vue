@@ -17,7 +17,7 @@
             <div class="row g-0" style="border:1px solid #4edce2;">
                 <!-- Image Column -->
                 <div class="col-md-2 d-flex align-items-center justify-content-center  rounded-start-4">
-                    <img :src="reservation.studentpictureID" alt="Dorm Image" class="img-fluid rounded-start-4"
+                    <img :src="reservation.pictureID" alt="Dorm Image" class="img-fluid rounded-start-4"
                         style="height: 100px; object-fit:  cover; width: 100%; border-right:1px solid #4edce2;" />
                 </div>
                 <div class="col-md-9 p-3  rounded-end-4">
@@ -95,13 +95,15 @@
                         <div class="row">
                             <!-- Left Column -->
                             <div class="col-md-4  text-black p-3 rounded-start" style="background-color: #4edce2;">
-                                <img :src="reservationDetails.studentpictureID" class="img-fluid rounded mb-3"
+                                <img :src="reservationDetails.pictureID" class="img-fluid rounded mb-3"
                                     alt="ERD Image" />
 
                                 <p><strong>📌 Reservation Status: </strong>
                                     <StatusBadge :status="reservationDetails.status" />
-
+                                    
                                 </p>
+                                
+                                
 
                                 <p><strong>👤 Name:</strong> {{ reservationDetails.firstname }} {{
                                     reservationDetails.lastname }}</p>
@@ -112,7 +114,8 @@
 
                                 <div class="d-flex justify-content-center align-items-center"
                                     v-if="reservationDetails.status === 'confirmed' || reservationDetails.status === 'pending'">
-                                    <button @click="cancelReservation(reservationDetails.reservationID)" class="btn ">
+                                    <button @click="cancelReservation(reservationDetails.reservationID)"
+                                        class="btn btn-danger ">
                                         Cancel Reservation
                                     </button>
                                 </div>
@@ -121,7 +124,7 @@
 
                             <!-- Right Column -->
                             <div class="col-md-8 p-3">
-                                <img :src="reservationDetails.room?.roomImages" class="img-fluid rounded mb-3"
+                                <img :src="reservationDetails.room?.roomImages" class="img-fluid rounded mb-3 w-100"
                                     alt="ERD Image" />
 
                                 <div class="row">
@@ -182,97 +185,85 @@
                     </div>
                     <div class="col-md-12 mt-3">
                         <div v-if="reservationDetails.status === 'confirmed'">
-                            <!-- Payment method selection -->
-                            <div class="container py-4 mb-4">
-                                <div class="mb-3">
-                                    <div class="mb-3">
+                            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+
+                                <!-- Card Header -->
+                                <div class="card-header bg-primary text-white fw-bold text-center py-3">
+                                    <i class="bi bi-wallet2 me-2"></i> Payment Details
+                                </div>
+
+                                <div class="card-body p-4">
+
+                                    <!-- Move In Date -->
+                                    <div class="mb-4">
                                         <label for="moveInDate" class="form-label fw-semibold text-dark">
-                                            <i class="bi bi-calendar2-check-fill text-primary me-2"></i>Move In
-                                            Date
+                                            <i class="bi bi-calendar2-check-fill text-primary me-2"></i> Move In Date
                                         </label>
-                                        <input type="date" class="form-control form-control-lg shadow-sm"
+                                        <input type="date" class="form-control form-control-lg shadow-sm rounded-3"
                                             id="moveInDate" v-model="moveInDate" :min="moveOutDateLocal" />
                                     </div>
 
-                                    <label for="paymentType" class="form-label fw-semibold text-dark">
-                                        <i class="bi bi-credit-card-2-front-fill text-primary me-2"></i>Payment
-                                        Method
-                                    </label>
-                                    <input type="text" class="form-control form-control-lg shadow-sm" id="paymentType"
-                                        v-model="payment_type" readonly />
-                                    <div id="paymentTypeHelp" class="form-text text-muted">
-                                        Specify your preferred method of payment.
-                                    </div>
-                                </div>
+                                    <!-- Gcash Number -->
+                                    <div class="mb-4">
+                                        <label for="paymentType" class="form-label fw-semibold text-dark">
+                                            <i class="bi bi-credit-card-2-front-fill text-primary me-2"></i> Landlord
+                                            GCash Number
+                                        </label>
+                                        <div class="mb-4">
 
-                                <!-- Payment Options -->
-                                <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
-                                    <div v-for="(src, name) in payment" :key="name"
-                                        class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
-                                        :class="{ 'border-primary bg-light': payment_type === name }" role="button"
-                                        style="cursor: pointer; width: 120px; height: 130px;"
-                                        @click="paymentTypeSelection(name)">
-                                        <img :src="src" :alt="name" class="img-fluid mb-2"
-                                            style="width: 50px; height: 50px; object-fit: contain;" />
-                                        <small class="fw-semibold text-capitalize text-center">
-                                            {{ name.replace('_', ' ') }}
-                                        </small>
+
+                                            <div class="p-3 border rounded-3 shadow-sm bg-light fw-semibold text-dark">
+                                                {{ reservationDetails.room?.dorm.gcashNumber }}
+                                            </div>
+
+                                            <div class="form-text text-muted mt-1">
+                                                <i class="bi bi-info-circle me-2"></i> Use this number when sending your
+                                                payment
+                                            </div>
+                                        </div>
+
                                     </div>
 
-                                </div>
-                                <div class="justify-content-center d-flex mt-2">
-                                    <span v-if="errors.paymentType" class="text-danger small mt-1 d-block">
-                                        <i class="bi bi-exclamation-circle-fill me-1"></i>{{
-                                            errors.paymentType[0] }}
-                                    </span>
-                                </div>
+                                    <!-- Upload Proof -->
+                                    <div class="border border-secondary rounded-4 p-4 mb-4 text-center upload-box"
+                                        v-if="isPaymentImage" @click="triggerPaymentImage" style="cursor: pointer;">
+                                        <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
+                                            @change="handlePaymentPicture" />
+                                        <div class="d-flex flex-column align-items-center">
+                                            <img :src="paymentIcon" alt="Payment Icon"
+                                                style="max-width: 60px; height: auto;" class="mb-3" />
+                                            <h6 class="fw-bold text-secondary">Upload Payment Proof</h6>
+                                            <small class="text-muted">Click to browse and select an image file</small>
+                                        </div>
+                                    </div>
 
+                                    <!-- Preview -->
+                                    <div v-if="PaymentPicturePreview" class="text-center mb-4">
+                                        <img :src="PaymentPicturePreview" alt="Uploaded Payment Image"
+                                            class="img-fluid rounded-3 shadow-sm mb-3" style="max-height: 250px;" />
+                                        <button type="button" @click="removePaymentPicture"
+                                            class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-x-circle me-1"></i> Remove Uploaded Image
+                                        </button>
+                                    </div>
+                                    <div class="justify-content-center d-flex mb-3">
+                                        <span v-if="errors.payment_image" class="text-danger small">
+                                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.payment_image[0]
+                                            }}
+                                        </span>
+                                    </div>
 
-
-                            </div>
-
-                            <!-- Payment Upload -->
-                            <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
-                                v-if="isPaymentImage" @click="triggerPaymentImage">
-                                <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
-                                    @change="handlePaymentPicture" />
-                                <div class="d-flex flex-column align-items-center text-center mb-3">
-                                    <img :src="paymentIcon" alt="Payment Icon" style="max-width: 60px; height: auto;"
-                                        class="mb-2" />
-                                    <h5 class="text-secondary mt-2">Upload Payment Image</h5>
-                                    <small class="text-muted">Click to browse and select an image
-                                        file</small>
-                                </div>
-                            </div>
-
-                            <!-- Preview -->
-                            <div v-if="PaymentPicturePreview" class="text-center mb-3">
-                                <img :src="PaymentPicturePreview" alt="Uploaded Payment Image"
-                                    class="img-fluid rounded mb-2" style="max-height: 250px;" />
-                                <div>
-                                    <button type="button" @click="removePaymentPicture" class="btn btn-sm">
-                                        Remove Uploaded Image
+                                    <!-- Pay Button -->
+                                    <button type="submit"
+                                        class="btn btn-success w-100 py-3 fw-semibold shadow-sm rounded-3"
+                                        @click="submitPayment(reservationDetails)">
+                                        <i class="bi bi-cash-coin me-2"></i> Pay for Room
                                     </button>
+
                                 </div>
                             </div>
-                            <div class="justify-content-center d-flex mb-2">
-                                <span v-if="errors.payment_image" class="text-danger small mt-1 d-block">
-                                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{
-                                        errors.payment_image[0]
-                                    }}
-                                </span>
-                            </div>
-
-                            <!-- Pay Button -->
-                            <button type="submit" class="btn btn-success w-100 py-2 fw-semibold shadow-sm"
-                                @click="submitPayment(reservationDetails.reservationID)">
-                                <i class="bi bi-calendar-check-fill me-2"></i>Pay for Room
-                            </button>
                         </div>
-
                     </div>
-
-
 
                 </div>
 
@@ -317,16 +308,13 @@ export default {
             id_picture: '/images/tenant/allimagesResouces/vector-id-card-icon.jpg',
             payment: {
                 gcash: '/images/tenant/allimagesResouces/GCash-Logo.png',
-                maya: '/images/tenant/allimagesResouces/maya.png',
-                bank_transer: '/images/tenant/allimagesResouces/bank-transfer-logo.png',
-
             },
             errors: [],
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
             PaymentPicturePreview: '',
             PaymentPictureFile: null,
             isPaymentImage: true,
-            payment_type: '',
+            payment_type: 'Gcash',
             moveInDateLocal: '',
             moveOutDateLocal: '',
             notifications: [],
@@ -377,21 +365,7 @@ export default {
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             return new Date(date).toLocaleDateString('en-US', options);
         },
-        getStatusClass(status) {
-            if (!status) return 'text-secondary';
 
-            const map = {
-                approved: 'text-success',
-                pending: 'text-warning',
-                confirmed: 'text-warning',
-                rejected: 'text-danger',
-                cancelled: 'text-danger',
-                expired: 'text-secondary',
-                paid: 'text-info',
-            };
-
-            return map[status.toLowerCase()] || 'text-secondary';
-        },
 
         toggleView() {
             this.showAll = !this.showAll;
@@ -454,7 +428,7 @@ export default {
             }
             this.isPaymentImage = true;
         },
-        async submitPayment(reservationID) {
+        async submitPayment(reservationDetails) {
             this.errors = {};
             const confirmed = await this.$refs.modal.show({
                 title: `Confirm Payment`,
@@ -471,11 +445,12 @@ export default {
             formData.append('moveInDate', this.moveInDate);
             formData.append('tenant_id', this.tenantid);
             formData.append('paymentType', this.payment_type);
+            formData.append('amount', reservationDetails.room?.price);
             if (this.PaymentPictureFile) {
                 formData.append('paymentImage', this.PaymentPictureFile);
             }
             try {
-                const response = await axios.post(`/tenant/pay/reservation/${reservationID}`, formData, {
+                const response = await axios.post(`/tenant/pay/reservation/${reservationDetails.reservationID}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },

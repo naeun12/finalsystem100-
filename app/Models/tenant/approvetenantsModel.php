@@ -32,7 +32,9 @@ class approvetenantsModel extends Model
         'notify-extend',
         'paymentType',
         'paymentImage',
-        'pictureID'
+        'pictureID',
+        'status',
+        'paymentOption'
     ];
      public function room()
     {

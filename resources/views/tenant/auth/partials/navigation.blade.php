@@ -143,5 +143,72 @@
 
 
     <style>
+        /* Navbar wrapper */
+        .custom-navbar-border {
+            border-bottom: 2px solid #f0f0f0;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.08);
+        }
 
+        /* Logo text */
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+            color: #0d6efd;
+        }
+
+        /* Nav Links */
+        .nav-custom-link {
+            font-weight: 500;
+            color: #333 !important;
+            transition: color 0.3s, transform 0.2s;
+        }
+
+        .nav-custom-link:hover {
+            color: #0d6efd !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-custom-link.active {
+            color: #0d6efd !important;
+            font-weight: 600;
+            border-bottom: 2px solid #0d6efd;
+        }
+
+        /* Notifications */
+        #notificationDropdown {
+            transition: transform 0.2s;
+        }
+
+        #notificationDropdown:hover {
+            transform: scale(1.1);
+        }
+
+        /* Notification dropdown */
+        .dropdown-menu {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .dropdown-header {
+            font-size: 0.95rem;
+        }
+
+        /* User Avatar */
+        #userDropdown img {
+            border: 2px solid #0d6efd;
+            padding: 2px;
+            background-color: #fff;
+        }
+
+        #userDropdown span {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Dropdown items */
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #0d6efd;
+        }
     </style>

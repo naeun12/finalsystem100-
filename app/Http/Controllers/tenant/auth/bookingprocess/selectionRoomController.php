@@ -48,7 +48,7 @@ return view('tenant.auth.bookingProcess.roomSelection', [
          $reservedRoomIDs = reservationModel::where('fkdormitoryID', $dormitoryID)
         ->whereIn('status', ['approved', 'paid']) 
         ->pluck('fkroomID');
-       $rooms = roomModel::with('currentTenant')
+       $rooms = roomModel::with('currentTenant','dorm')
         ->where('fkdormID', $dormitoryID)
         ->where(function ($query) use ($reservedRoomIDs) {
             $query->where('availability', 'Occupied')
@@ -87,69 +87,110 @@ public function filterGender(Request $request, $dormitoryID)
 }
     public function viewRoomDetails($id)
     {
-        $room = roomModel::with('approvedTenant')->where('roomID',$id)->first();
+        $room = roomModel::with('approvedTenant','dorm')->where('roomID',$id)->first();
         return response()->json([
             'status' => 'success',
             'room' => $room,
         ]);
     }
-    public function reservation(Request $request)
-    {
-        try {
-               $room = roomModel::with('landlord')->find($request->room_id);
-            $landlord = $room->landlord;
-            $validatedData = $request->validate([
-                'dormitory_id'        => 'required|integer',
-                'room_id'             => 'required|integer',
-                'tenant_id'           => 'required|string',
-                'firstname'           => 'required|string|max:255',
-                'lastname'            => 'required|string|max:255',
-                'contact_number'      => 'required|string|max:255',
-                'email'               => 'required|email|max:255',
-                'age'                 => 'required|integer|min:15|max:60',
-                'gender'              => 'required|in:Male,Female',
-                'studentpicture_id'   => 'required|string',
-            ]);
-            // 3. SAVE TO DATABASE
-            $reservation = reservationModel::create([
-                'fkdormitoryID'      => $request->dormitory_id,
-                'fkroomID'           => $request->room_id,
-                'fktenantID'         => $request->tenant_id,
-                'firstname'          => $request->firstname,
-                'lastname'           => $request->lastname,
-                'contactNumber'     => $request->contact_number,
-                'contactEmail'      => $request->email,
-                'age'                => $request->age,
-                'gender'             => $request->gender,
-                'studentpictureId'  => $request->studentpicture_id,
-                'status'             => 'pending',
-            ]);
-            $tenantName = $request->firstname . ' ' . $request->lastname;
-            $tenantMessage = "Hi $tenantName, your room reservation has been submitted successfully and is currently pending approval.";
-            Mail::to($request->email)->send(new TenantLandlordReminder($tenantName, $tenantMessage, 'tenant'));
-            $notifications = notificationModel::create([
-                'senderID'     => $request->tenant_id,
-                'senderType'   => 'tenant',
-                'receiverID'   => $landlord->landlordID,
-                'receiverType' => 'landlord',
-                'title'         => 'New Reservation Request',
-                'message'       => "A tenant has reserved Room #{$room->roomNumber}. Please review the request.",
-                'isRead'       => false,
-                'readAt'       => null,
-            ]);
-broadcast(new \App\Events\NewNotificationEvent($notifications));
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Room reserved successfully. Waiting for landlord confirmation.',
-                'data' => $reservation
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Reservation failed: ' . $e->getMessage());
+   public function reservation(Request $request)
+{
+    try {
+          $validatedData = $request->validate([
+            'dormitory_id'      => 'required|integer|exists:dorms,dormID',
+            'room_id'           => 'required|integer|exists:rooms,roomID',
+            'tenant_id'         => 'required|string|exists:tenants,tenantID',
+            'firstname'         => 'required|string|max:255',
+            'lastname'          => 'required|string|max:255',
+            'contact_number'    => 'required|string|max:20',
+            'email'             => 'required|email|max:255',
+            'age'               => 'required|integer|min:15|max:60',
+            'gender'            => 'required|in:Male,Female',
+            'studentpicture_id' => 'required|string',
+        ]);
+        // 1. Get the room with landlord and tenant
+        $room = roomModel::with('landlord','currentTenant')->find($request->room_id);
+
+        if (!$room) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Reservation failed.',
-                'error' => $e->getMessage()]);
-            }
+                'message' => 'Room not found.'
+            ], 404);
         }
-        
+
+        $landlord = $room->landlord;
+        $currentTenant = $room->currentTenant;
+
+        // 2. Check tenant extension decision
+       if ($currentTenant && $currentTenant->extension_decision === 'extending') {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'The current tenant has decided to extend their stay. Reservation is not allowed at the moment.',
+        ]);
+    } elseif ($currentTenant && $currentTenant->extension_decision === 'pending') {
+        return response()->json([
+            'status' => 'error',
+             'message' => 'The current tenant’s extension request is still pending. Reservation is not allowed at the moment. Please message the landlord for request.'
+        ]);
+    }
+
+
+        // 3. Validate input
+      
+
+        // 4. Save reservation
+        $reservation = reservationModel::create([
+            'fkdormitoryID' => $request->dormitory_id,
+            'fkroomID'      => $request->room_id,
+            'fktenantID'    => $request->tenant_id,
+            'firstname'     => $request->firstname,
+            'lastname'      => $request->lastname,
+            'contactNumber' => $request->contact_number,
+            'contactEmail'  => $request->email,
+            'age'           => $request->age,
+            'gender'        => $request->gender,
+            'pictureID'     => $request->studentpicture_id,
+            'status'        => 'pending',
+        ]);
+
+        // 5. Send email to tenant (optional wrap in try/catch to avoid breaking flow if mail fails)
+        try {
+            $tenantName = $request->firstname . ' ' . $request->lastname;
+            $tenantMessage = "Hi $tenantName, your room reservation has been submitted successfully and is currently pending confirmation.";
+            Mail::to($request->email)->send(new TenantLandlordReminder($tenantName, $tenantMessage, 'tenant'));
+        } catch (\Exception $mailException) {
+            \Log::warning('Failed to send reservation email: ' . $mailException->getMessage());
+        }
+
+        // 6. Create landlord notification
+        $notifications = notificationModel::create([
+            'senderID'     => $request->tenant_id,
+            'senderType'   => 'tenant',
+            'receiverID'   => $landlord->landlordID ?? null,
+            'receiverType' => 'landlord',
+            'title'        => 'New Reservation Request',
+            'message'      => "A tenant has reserved Room #{$room->roomNumber}. Please review the request.",
+            'isRead'       => false,
+            'readAt'       => null,
+        ]);
+
+        broadcast(new \App\Events\NewNotificationEvent($notifications));
+
+        // 7. Success response
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Room reserved successfully. Waiting for landlord confirmation.',
+            'data'    => $reservation
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Reservation failed: ' . $e->getMessage());
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Reservation failed.',
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
+
 }

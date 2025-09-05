@@ -164,8 +164,12 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::put('/tenant/room/update/{roomID}',[alltenantsController::class,'roomUpdate']);
     Route::get('/tenants/search', [alltenantsController::class, 'searchTenants']);
     Route::get('/tenants/filter-by-dorm', [alltenantsController::class, 'filterByDorm']);
-Route::post('/notify/tenant',[alltenantsController::class,'notifyTenant']);
-    //functions for messaging landlord 
+    Route::post('/notify/tenant',[alltenantsController::class,'notifyTenant']);
+    Route::get('/add/movein/tenant',[alltenantsController::class,'addMoveInTenant']);
+    Route::get('/search/movein/tenant',[alltenantsController::class,'searchMoveInTenant']);
+    Route::get('/movein/tenant',[alltenantsController::class,'moveInTenant']);
+    Route::get('/view/tenant/payment/{tenantID}',[alltenantsController::class,'viewTenantPayment']);
+    //functions for messaging landlord
     Route::get('/api/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'getConversations']);
     Route::get('/api/select/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'selecttenantToMessage']);
     Route::get('/api/get/landlord/messages/{conversation_id}', [messagelandlordController::class, 'getMessages']);
@@ -196,7 +200,7 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/filter-price-range/{dormitoryID}', [selectionRoomController::class, 'selectedPriceRange']);
     Route::get('/filter-gender/{dormitoryID}', [selectionRoomController::class, 'filterGender']);
     Route::post('/reserved-room', [selectionRoomController::class, 'reservation'])->name('reserved.room');
-    Route::get('/view-room-details/{id}', [selectionRoomController::class, 'ViewRoomDetails'])->name('view.room.details');
+    Route::get('/view-room-details/{id}', [selectionRoomController::class, 'viewRoomDetails'])->name('view.room.details');
     Route::get('/booking-process/{roomId}/{tenantID}', [bookroomController::class, 'bookRoomPage'])->name('room.selection');
     Route::get('/get-room-details/{roomID}', [bookroomController::class, 'getRoom'])->name('get.room.details');
     Route::post('/book-room',[bookroomController::class,'bookingaRoom']);
@@ -259,8 +263,7 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::post('/extend-rent', [myroomsController::class, 'extendRent']);
     Route::post('/reviewandrating', [myroomsController::class, 'ReviewAndRating']);
     Route::post('/send/issue/', [myroomsController::class, 'sendIssue']);
-        Route::post('/update/rentstatus', [myroomsController::class, 'notifyrentUpdate']);
-
+    Route::post('/update/rentstatus', [myroomsController::class, 'notifyrentUpdate']);
     //reservations view
     Route::get('/view/reservation/{tenant_id}', [myreservationController::class, 'viewReservation'])->name('view.reservation');
     Route::get('/tenant/my-reservation/{tenant_id}', [myreservationController::class, 'myReservationList']);

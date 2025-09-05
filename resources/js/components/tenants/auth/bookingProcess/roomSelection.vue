@@ -497,20 +497,50 @@ export default {
         openReservationModal(room) {
             this.room_id = room.roomID;
             this.roomNu = room.roomNumber;
+            this.roomsex = room.genderPreference;
+            this.dormsec = room.dorm?.occupancyType;
             this.reservationDetailsModal = true;
         },
         async reserveRoom() {
-
             try {
+
+                const tenantSex = this.sex.toLowerCase(); // "male" / "female"
+
+                // Normalize room preference
+                let roomPref = this.roomsex?.toLowerCase();
+                if (roomPref === "male only") roomPref = "male";
+                if (roomPref === "female only") roomPref = "female";
+                if (roomPref === "any gender") roomPref = "any";
+
+                // Normalize occupancy type
+                let occupancyType = this.dormsec?.toLowerCase();
+                if (occupancyType === "male only") occupancyType = "male";
+                if (occupancyType === "female only") occupancyType = "female";
+                if (occupancyType === "any gender") occupancyType = "any";
+
+                // ✅ Gender restriction check
+                const genderAllowed =
+                    roomPref === "any" || tenantSex === roomPref;
+
+                // ✅ Occupancy restriction check
+                const occupancyAllowed =
+                    !occupancyType || occupancyType === "any" || tenantSex === occupancyType;
+
+                if (!genderAllowed || !occupancyAllowed) {
+                    this.$refs.toast.showToast('You are not eligible to reserve this room.', 'warning');
+                    return;
+                    this.reservationDetails = false;
+                }
+
+                // Confirm reservation
                 const confirmed = await this.$refs.modal.show({
-                    title: `Are you sure you want to choose Room #${this.roomNu || this.room_id}?`,
+                    title: `Are you sure you want to reserve Room #${this.roomNu || this.room_id}?`,
                     message: `This will reserve Room #${this.roomNu || this.room_id} for you.`,
-                    functionName: 'Confirm Room Selection'
+                    functionName: 'Confirm Reservation'
                 });
 
-                if (!confirmed) {
-                    return;
-                }
+                if (!confirmed) return;
+
                 this.$refs.loader.loading = true;
 
                 const formdata = new FormData();
@@ -524,40 +554,78 @@ export default {
                 formdata.append('age', this.age);
                 formdata.append('gender', this.sex);
                 formdata.append('studentpicture_id', this.imageUrl);
+
                 const response = await axios.post('/reserved-room', formdata);
+
                 if (response.data.status === 'success') {
                     this.$refs.toast.showToast(response.data.message, 'success');
+                    this.reservationDetailsModal = false;
+                } else if (response.data.status === 'error') {
+                    this.$refs.toast.showToast(response.data.message, 'danger');
                     this.reservationDetailsModal = false;
                 }
 
             } catch (error) {
                 console.error('Reservation error:', error);
 
-            }
-            finally {
+                this.$refs.toast.showToast(
+                    error.response?.data?.message || 'Reservation failed. Please try again later.',
+                    'error'
+                );
+            } finally {
                 this.$refs.loader.loading = false;
+                this.openRoomDetailsModal = false;
 
             }
         },
+
+
         CloseRoomDetails() {
             this.selectedRoomId = '';
             this.openRoomDetailsModal = false;
 
         },
         async bookRoom(room) {
-            const confirmed = await this.$refs.modal.show({
-                title: `Are you sure you want to choose Room #${room.room_number || room.roomID}?`,
-                message: `This will reserve Room #${room.room_number || room.roomID} for you.`,
-                functionName: 'Confirm Room Selection'
-            });
+            console.log("Tenant Sex:", this.sex);
+            console.log("Room Preference:", room.genderPreference);
+            console.log("Occupancy Type:", room.dorm?.occupancyType);
 
-            if (!confirmed) {
-                return;
+            const tenantSex = this.sex.toLowerCase(); // "male" / "female"
+
+            // Convert room values to simpler form
+            let roomPref = room.genderPreference?.toLowerCase(); // "male only", "female only", "any gender"
+            if (roomPref === "male only") roomPref = "male";
+            if (roomPref === "female only") roomPref = "female";
+            if (roomPref === "any gender") roomPref = "any";
+
+            let occupancyType = room.dorm?.occupancyType?.toLowerCase();
+            if (occupancyType === "male only") occupancyType = "male";
+            if (occupancyType === "female only") occupancyType = "female";
+            if (occupancyType === "any gender") occupancyType = "any";
+
+            // ✅ Gender eligibility
+            const genderAllowed =
+                roomPref === "any" || tenantSex === roomPref;
+
+            // ✅ Occupancy eligibility
+            const occupancyAllowed =
+                !occupancyType || occupancyType === "any" || tenantSex === occupancyType;
+
+            if (genderAllowed && occupancyAllowed) {
+                const confirmed = await this.$refs.modal.show({
+                    title: `Are you sure you want to choose Room #${room.roomNumber || room.roomID}?`,
+                    message: `This will book Room #${room.roomNumber || room.roomID} for you.`,
+                    functionName: 'Confirm Room Selection'
+                });
+
+                if (!confirmed) return;
+
+                this.room_id = room.roomID;
+                this.getInformationData();
+                window.location.href = `/booking-process/${this.room_id}/${this.tenant_id}`;
+            } else {
+                this.$refs.toast.showToast('You are not eligible to book this room.', 'warning');
             }
-            this.room_id = room.roomID;
-
-            this.getInformationData(); // ✅ Call before redirect
-            window.location.href = `/booking-process/${this.room_id}/${this.tenant_id}`;
         },
         toggleShowMore() {
             this.showAll = !this.showAll;

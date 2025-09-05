@@ -256,7 +256,8 @@ public function handletenantBooking(Request $request)
                     'contactEmail'      => $booking->contactEmail,
                     'age'               => $booking->age,
                     'gender'            => $booking->gender,
-                    'pictureID'  => $booking->pictureID,
+                    'status'            => 'active',
+                    'pictureID'        => $booking->pictureID,
                 ]);
                 $message = "Hi {$tenantName}, 👋 Your booking for Room {$room->roomNumber} at {$room->dorm->dormName} has been approved 🎉.";
                 $notifications = notificationModel::create([

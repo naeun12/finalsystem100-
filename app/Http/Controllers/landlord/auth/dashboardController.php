@@ -75,6 +75,8 @@ public function getTotalTenants(Request $request, $landlord_id)
     $totalTenants = approvetenantsModel::whereHas('room', function ($query) use ($landlord_id) {
         $query->where('fklandlordID', $landlord_id);
     })
+    ->where('status','<>','moved_out')
+    ->where('status','<>','pending')
     ->whereDate('created_at', '<=', $date)
     ->count();
 

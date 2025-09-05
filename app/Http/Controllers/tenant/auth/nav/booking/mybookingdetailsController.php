@@ -62,6 +62,7 @@ public function payRoom(Request $request)
             'fkbookingID' => 'required|exists:bookings,bookingID',
             'paymentType' => 'required|string',
             'paymentImage' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'amount' => 'required|numeric|min:0'
         ], [
             'fkbookingID.required' => 'Booking ID is required.',
             'fkbookingID.exists' => 'Booking ID does not exist.',
@@ -97,6 +98,7 @@ public function payRoom(Request $request)
             'fkbookingID' => $request->fkbookingID,
             'paymentType' => $request->paymentType,
             'paymentImage' => $mainImageUrl,
+            'amount' => $request->amount
         ]);
         bookingModel::with('tenant', 'room.dorm')->where('bookingID', $request->fkbookingID)->update([
             'status' => 'paid'

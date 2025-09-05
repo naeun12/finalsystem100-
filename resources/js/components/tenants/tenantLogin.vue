@@ -15,8 +15,8 @@
             <div class="row px-4">
                 <!-- Email -->
                 <div class="mt-3">
-                    <label for="email" class="form-label fw-semibold text-primary">
-                        📧 Email Address
+                    <label for="email" class="form-label fw-semibold text-dark">
+                        Email Address
                     </label>
                     <input type="email" name="email" id="email" class="form-control p-3 shadow-sm rounded border-2"
                         v-model="email" placeholder="Enter your email" style="border-color: #4edce2;" />
@@ -27,8 +27,8 @@
 
                 <!-- Password -->
                 <div class="mt-3">
-                    <label for="password" class="form-label fw-semibold text-primary">
-                        🔒 Password
+                    <label for="password" class="form-label fw-semibold text-dark">
+                        Password
                     </label>
                     <div class="input-group shadow-sm rounded border-2" style="border: 2px solid #4edce2;">
                         <input :type="showPassword ? 'text' : 'password'" id="password" name="password"

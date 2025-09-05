@@ -73,35 +73,46 @@
             <section class="text-primary mb-4">
                 <h5 class="mb-3 fw-bold">Most Watched Dormitories</h5>
                 <div style="overflow-x: auto; white-space: nowrap; padding-bottom: 1rem;"
-                    class="shadow-sm rounded-4 bg-white p-3">
+                    class="shadow-sm rounded-4 bg-light p-3">
+
                     <div class="d-flex flex-row gap-3" style="width: max-content;">
-                        <div class="card shadow-sm rounded-4" v-for="(dorm, index) in mostwatchdorm" :key="index"
-                            style="width: 18rem; flex-shrink: 0;">
-                            <img :src="dorm?.images?.mainImage ||
-                                dorm?.mainImage ||
-                                'https://via.placeholder.com/286x180'
-                                " class="card-img-top rounded-top" :alt="dorm.dormName"
-                                style="height: 180px; object-fit: cover;" />
-                            <div class="card-body d-flex flex-column justify-content-between" style="height: 180px;">
-                                <h5 class="card-title text-primary fw-bold">{{ dorm.dormName }}</h5>
-                                <p class="card-text text-truncate" style="max-height: 3rem;">
-                                    <i class="bi bi-geo-alt-fill text-secondary me-1"></i>
+                        <div class="card dorm-card shadow-sm border-0 rounded-4 overflow-hidden"
+                            v-for="(dorm, index) in mostwatchdorm" :key="index"
+                            style="width: 20rem; flex-shrink: 0; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+
+                            <!-- Image -->
+                            <div class="position-relative">
+                                <img :src="dorm?.images?.mainImage || dorm?.mainImage || 'https://via.placeholder.com/320x200'"
+                                    class="card-img-top" :alt="dorm.dormName"
+                                    style="height: 200px; object-fit: cover;" />
+
+                                <!-- Views badge -->
+                                <span
+                                    class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark rounded-pill shadow-sm px-3 py-2">
+                                    <i class="bi bi-eye-fill me-1"></i>{{ dorm.views }}
+                                </span>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="card-body d-flex flex-column" style="height: 200px;">
+                                <h5 class="card-title text-primary fw-bold text-truncate">{{ dorm.dormName }}</h5>
+
+                                <p class="card-text text-muted small mb-2 text-truncate">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
                                     {{ dorm.address || 'No description available.' }}
                                 </p>
-                                <p class="text-muted small mb-2">
-                                    <i class="bi bi-eye-fill text-warning me-1"></i>
-                                    Most Watched: <strong>{{ dorm.views }}</strong>
-                                </p>
-                                <button class="btn btn-outline-primary mt-auto rounded-pill"
-                                    @click="viewDormsDetails(dorm.dormID)">
-                                    <i class="bi bi-box-arrow-up-right me-1"></i> View Details
-                                </button>
+
+                                <!-- Button at the bottom -->
+                                <div class="mt-auto">
+                                    <button class="btn rounded-pill w-100" @click="viewDormsDetails(dorm.dormID)">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> View Details
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-
             <!-- Search Bar -->
             <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden border">
                 <span class="input-group-text bg-white border-0">

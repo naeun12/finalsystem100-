@@ -55,20 +55,21 @@ class alltenantsController extends Controller
             ], 403);
         }
         $tenant = approvetenantsModel::with(['room.dorm', 'room.landlord'])
+        ->where('status','<>', 'pending')
         ->whereHas('room', function ($query) use ($landlordId) {
             $query->where('fklandlordID', $landlordId);
         })
         ->orderBy('created_at', 'desc')
-        ->paginate(11);
+        ->get();
     
         return response()->json([
             'status' => 'success',
             'tenant' => $tenant,
             'landlord_id' => $landlordId
         ]);
-    }
-     public function ViewTenant($id)
-{
+    }   
+public function ViewTenant($id)
+    {
     $landlordId = session('landlord_id');
     if (!$landlordId) {
         return response()->json([
@@ -139,16 +140,100 @@ $validator = Validator::make($request->all(), [
             'errors' => $validator->errors()
         ], 422);
     }
-      $tenant->firstname = $request->input('firstname');
+        $tenant->firstname = $request->input('firstname');
         $tenant->lastname = $request->input('lastname');
         $tenant->gender = $request->input('gender');
         $tenant->age = $request->input('age');
         $tenant->contactEmail = $request->input('contactEmail');
         $tenant->contactNumber = $request->input('contactNumber');
-        $tenant->status = $request->input('status');
+       if ($request->filled('status') && $request->input('status') === 'active') {
+            $tenant->status = $request->input('status'); 
+             $notification = notificationModel::create([
+            'senderID'     => $landlordId,
+            'senderType'   => 'landlord',
+            'receiverID'   => $tenant->fktenantID,
+            'receiverType' => 'tenant',
+            'title'        => 'Status Notification',
+            'message'      => 'Hello ' . $tenant->firstname .
+                              ', your landlord is notifying you about your status update to ' . $request->input('status') . ' for room ' .
+                              $tenant->room->roomNumber . ' at ' . $tenant->room->dorm->dormName .
+                              '. Kindly check and confirm.',
+            'isRead'       => false,
+        ]);
+       
 
-        $tenant->save();
-    
+        // 5. Fire event for broadcasting (real-time notif)
+        }
+         else if ($request->input('status') === 'transferring')
+        {
+            $tenant->status = $request->input('status');
+            $notification = notificationModel::create([
+                'senderID'     => $landlordId,
+                'senderType'   => 'landlord',
+                'receiverID'   => $tenant->fktenantID,
+                'receiverType' => 'tenant',
+                'title'        => 'Status Notification',
+                'message'      => 'Hello ' . $tenant->firstname .
+                                  ', your landlord is notifying you about your status update to ' . $request->input('status') . ' for room ' .
+                                  $tenant->room->roomNumber . ' at ' . $tenant->room->dorm->dormName .
+                                  '. Kindly check and confirm.',
+                'isRead'       => false,
+            ]);
+        }
+          else if ($request->input('status') === 'pending_moveout')
+        {
+            $tenant->status = $request->input('status');
+            $notification = notificationModel::create([
+                'senderID'     => $landlordId,
+                'senderType'   => 'landlord',
+                'receiverID'   => $tenant->fktenantID,
+                'receiverType' => 'tenant',
+                'title'        => 'Status Notification',
+                'message'      => 'Hello ' . $tenant->firstname .
+                                  ', your landlord is notifying you about your status update to ' . $request->input('status') . ' for room ' .
+                                  $tenant->room->roomNumber . ' at ' . $tenant->room->dorm->dormName .
+                                  '. Kindly check and confirm.',
+                'isRead'       => false,
+            ]);
+        }
+         else if ($request->input('status') === 'moved_out')
+        {
+            $tenant->status = $request->input('status');
+            if ($tenant->source_type === 'Reservation') {
+            // Count tenants sa same room nga active/occupied pa
+            $otherTenants = approvetenantsModel::where('fkroomID', $tenant->fkroomID)
+                ->where('approvedID', '!=', $tenant->approvedID) // exclude current tenant
+                ->where('status', 'active') 
+                ->orWhere('status', 'pending')
+                ->count();
+
+            if ($otherTenants === 0) {
+                $tenant->room->availability = 'Available';
+            } else {
+                // Naay occupant gihapon -> dili i-available
+                $tenant->room->availability = 'Occupied';
+            }
+              $tenant->room->save();
+
+            $tenant->extension_decision = 'not_extending';
+        }
+
+            $notification = notificationModel::create([
+                'senderID'     => $landlordId,
+                'senderType'   => 'landlord',
+                'receiverID'   => $tenant->fktenantID,
+                'receiverType' => 'tenant',
+                'title'        => 'Status Notification',
+                'message'      => 'Hello ' . $tenant->firstname .
+                                  ', your landlord is notifying you about your status update to ' . $request->input('status') . ' for room ' .
+                                  $tenant->room->roomNumber . ' at ' . $tenant->room->dorm->dormName .
+                                  '. Kindly check and confirm.',
+                'isRead'       => false,
+            ]);
+        }
+            $tenant->save();
+        broadcast(new \App\Events\NewNotificationEvent($notification));
+
 
 
     return response()->json([
@@ -276,6 +361,7 @@ public function searchTenants(Request $request)
                   ->orWhere('lastname', 'LIKE', "%{$searchTerm}%");
             });
         })
+        ->where('status','<>','pending')
         ->orderBy('updated_at', 'desc')
         ->get();
 
@@ -302,7 +388,9 @@ public function filterByDorm(Request $request)
         if ($dormId) {
             $q->where('fkdormID', $dormId);
         }
-    });
+        
+    })    ->where('approved_tenants.status', '<>', 'pending'); // ✅ correct table
+;
 
     $tenants = $query->get();
 
@@ -366,7 +454,142 @@ public function notifyTenant(Request $request)
         ], 500);
     }
 }
+public function addMoveInTenant()
+{
+    $landlordId = session('landlord_id');
 
+    if (!$landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized action. Please log in as a landlord.'
+        ], 403);
+    }
+
+    $tenant = approvetenantsModel::with(['room.dorm', 'room.landlord'])
+        ->where('status', 'pending')
+        ->whereHas('room', function ($query) use ($landlordId) {
+            $query->where('fklandlordID', $landlordId);
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(1); // 👈 per page items (e.g., 5 per page)
+
+    return response()->json([
+        'status' => 'success',
+        'moveInTenant' => $tenant,
+        'landlord_id' => $landlordId
+    ]);
+}
+public function searchMoveInTenant(Request $request)
+{
+    $landlordId = session('landlord_id');
+    $searchTerm = $request->input('searchMoveIn');
+
+    if (!$landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized action.'
+        ], 403);
+    }
+
+ $tenants = approvetenantsModel::with('room.dorm')
+    ->whereHas('room', function ($q) use ($landlordId) {
+        $q->where('fklandlordID', $landlordId);
+    })
+    ->where('status', 'pending') // ✅ Only pending tenants
+    ->when($searchTerm, function ($q) use ($searchTerm) {
+        $q->where(function ($sub) use ($searchTerm) {
+            $sub->where('firstname', 'like', "%{$searchTerm}%")
+                ->orWhere('lastname', 'like', "%{$searchTerm}%")
+                ->orWhere('contactEmail', 'like', "%{$searchTerm}%");
+        });
+    })
+    ->paginate(1);
+
+
+    return response()->json([
+        'status' => 'success',
+        'tenants' => $tenants
+    ]);
+}
+public function moveInTenant(Request $request)
+{
+    $landlordId = session('landlord_id');
+    $request->validate([
+        'approvedID' => 'required|integer',
+    ]);
+
+    try {
+        $approvedID = $request->input('approvedID');
+
+        // Find the tenant and update their status
+        $tenant = approvetenantsModel::with('room.dorm','room.landlord')->findOrFail($approvedID);
+        $tenant->status = 'active';
+        $tenant->save();
+        $notification = notificationModel::create([
+            'senderID'     => $landlordId,
+            'senderType'   => 'landlord',
+            'receiverID'   => $tenant->fktenantID,
+            'receiverType' => 'tenant',
+            'title'        => 'Move IN Notification',
+            'message'      => 'Hello ' . $tenant->firstname .
+                              ', your landlord is notifying you about your move-in for room ' .
+                              $tenant->room->roomNumber . ' at ' . $tenant->room->dorm->dormName .
+                              '. Kindly check and confirm.',
+            'isRead'       => false,
+        ]);
+
+        // 5. Fire event for broadcasting (real-time notif)
+        broadcast(new \App\Events\NewNotificationEvent($notification));
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Tenant moved in successfully',
+            'data'    => $tenant
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        // Validation errors
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Validation failed',
+            'errors'  => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        // Any other errors
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Something went wrong while moving in tenant',
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
+public function viewTenantPayment($id)
+{
+    $landlordId = session('landlord_id');
+    if (!$landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized action. Please log in as a landlord.'
+        ], 403);
+    }
+
+    $tenant = approvetenantsModel::with(['room.dorm', 'payments'])
+    ->where('approvedID', $id)
+    ->whereHas('room', function ($query) use ($landlordId) {
+        $query->where('fklandlordID', $landlordId);
+    })
+    ->first();
+
+    if (!$tenant) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Tenant screening record not found.'
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'tenant' => $tenant
+    ]);
+}
 
 
 

@@ -1,11 +1,13 @@
 <template>
     <div class="d-flex bg-light" style="min-height: 90vh;">
         <!-- Left Side: Benefits -->
-        <div class="p-4 text-white" style="background-color: #0d6efd; width: 300px;">
-            <h4 class="mb-4">
-                <i class="bi bi-star-fill me-2"></i> Benefits
+        <div class="p-4 text-white bg-info shadow-lg rounded-4" style="width: 320px;">
+            <!-- Title -->
+            <h4 class="mb-4 text-center fw-bold">
+                <i class="bi bi-star-fill me-2 text-warning"></i> Benefits
             </h4>
 
+            <!-- Benefits List -->
             <ul class="list-unstyled">
                 <li class="mb-3 d-flex align-items-start">
                     <i class="bi bi-house-door-fill me-2 text-warning fs-5"></i>
@@ -25,39 +27,50 @@
                 </li>
             </ul>
 
-            <hr class="border-light" />
-            <div class="mt-4 text-center">
-                <small class="text-white-50">Powered by Dormhub Secure Payments</small>
+            <!-- Divider -->
+            <hr class="border-light opacity-75" />
+
+            <!-- Footer -->
+            <div class="mt-3 text-center">
+                <small class="text-light fst-italic">Powered by Dormhub Secure Payments</small>
             </div>
         </div>
 
         <!-- Right Side: Payment Form -->
-        <div class="flex-fill d-flex align-items-center">
-            <div class="p-4 rounded" style="width: 100%; max-width: 100%;  overflow-y: auto;">
+        <div class="flex-fill d-flex align-items-center justify-content-center">
+            <div class="card shadow-lg border-0 rounded-4 p-4" style="width: 100%; max-width: 420px;">
 
                 <!-- Title -->
-                <h5 class="mb-4 text-center fw-bold">Upgrade Your Account</h5>
+                <h4 class="text-center fw-bold mb-4 text-primary">Upgrade Your Account</h4>
 
                 <!-- Payment Method -->
-                <div class="mb-4 d-flex justify-content-center" style="font-size: 1rem;">
-                    <div class="fw-bold">
-                        Payment Method: <span class="text-primary">GCash</span>
+                <div class="mb-4 d-flex justify-content-center">
+                    <div class="fw-bold border rounded-pill px-4 py-2 shadow-sm bg-light">
+                        Payment Method:
+                        <span class="badge bg-primary ms-2 px-3 py-2">GCash</span>
                     </div>
                 </div>
 
-
                 <!-- Email -->
-                <div class="mb-4">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email Address</label>
                     <input type="email" class="form-control form-control-lg" placeholder="you@email.com" />
                 </div>
-                <div v-if="selectedMethod === 'gcash'" class="mb-4">
-                    <input type="text" class="form-control form-control-lg" placeholder="GCash Number" />
+
+                <!-- GCash Number -->
+                <div v-if="selectedMethod === 'gcash'" class="mb-3">
+                    <label class="form-label fw-semibold">GCash Number</label>
+                    <input type="text" class="form-control form-control-lg" placeholder="09XXXXXXXXX" />
                 </div>
-                <button class="btn btn-primary btn-lg w-100 py-2">
-                    Pay ₱500
+
+                <!-- Pay Button -->
+                <button class="btn btn-primary btn-lg w-100 py-2 shadow-sm">
+                    <i class="bi bi-wallet2 me-2"></i> Pay ₱500
                 </button>
+
             </div>
         </div>
+
     </div>
 </template>
 

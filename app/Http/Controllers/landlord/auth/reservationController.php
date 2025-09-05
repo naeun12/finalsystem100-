@@ -283,9 +283,12 @@ public function acceptReservation(Request $request)
                     'contactEmail'     => $reservation->contactEmail,
                     'age'              => $reservation->age,
                     'gender'           => $reservation->gender,
-                    'studentpictureId' => $reservation->studentpictureID,
+                    'pictureID'       => $reservation->pictureID,
+                    'source_type'       => 'Reservation',
+                    'source_id'         => $reservation->reservationID,
                     'moveInDate'       => $moveIn,
                     'moveOutDate'      => $moveOut,
+                    'status'           => 'pending'
                 ]);
                 $message = "Hi {$tenantName}, 👋 Your reservation for Room {$request->roomNumber} at {$request->dorm} has been fully approved. Your move-in date is confirmed: {$moveIn->format('M d, Y')} until {$moveOut->format('M d, Y')}. Please prepare for your stay!";
                 $notifications = notificationModel::create([

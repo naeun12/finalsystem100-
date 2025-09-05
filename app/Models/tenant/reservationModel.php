@@ -27,7 +27,7 @@ class reservationModel extends Model
         'gender',
         'moveInDate',
         'status',
-        'studentpictureID'
+        'pictureID'
     ];
     public function dormitory()
     {

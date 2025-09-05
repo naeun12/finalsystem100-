@@ -62,7 +62,7 @@ class myreservationController extends Controller
         }
         public function reservationDetails($reservationID)
         {
-            $reservation = reservationModel::with(['tenant','room.dorm','room.currentTenant'])->find($reservationID);
+            $reservation = reservationModel::with(['tenant','room.dorm','room.currentTenant','room.landlord'])->find($reservationID);
             return response()->json(['status' => 'success'
             ,'data' => $reservation]);
         }
@@ -101,6 +101,7 @@ class myreservationController extends Controller
             'paymentType' => 'required|string|max:255',
             'paymentImage' => 'required|image|mimes:jpeg,png,jpg|max:1024',
             'tenant_id' => 'required|exists:tenants,tenantID',
+            'amount' => 'required|numeric|min:0',
         ],
         [
             'paymentType.required' => 'Please select a payment method.',
@@ -123,10 +124,11 @@ class myreservationController extends Controller
             'reservationID' => $reservationID,
             'paymentType' => $request->paymentType,
             'paymentImage' => $mainImageUrl,
+            'amount' => $request->amount,
+            'status' => 'pending'
         ]);
-        $reservation = reservationModel::with(['tenant', 'room.dorm'])->where('reservationID', $reservationID)->first();
-         $reservation = reservationModel::with('room.landlord')->find($reservationID);
-            $landlord = $reservation->room->landlord;
+        $reservation = reservationModel::with(['tenant', 'room.dorm','room.landlord'])->where('reservationID', $reservationID)->first();
+        $landlord = $reservation->room->landlord;
           $notifications = notificationModel::create([
         'senderID'     => $request->tenant_id,
         'senderType'   => 'tenant',

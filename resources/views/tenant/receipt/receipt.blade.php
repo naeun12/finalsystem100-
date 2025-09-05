@@ -81,10 +81,10 @@
     <!-- HEADER -->
     <div class="header">
         <div class="left">
-            <div><strong>YOUR LOGO</strong></div>
+            <div><strong>{{ $tenant->room->dorm->dormName }}</strong></div>
             <div>Address: {{ $tenant->room->dorm->address }}</div>
             <div>Mail: {{ $tenant->room->landlord->email }}</div>
-            <div>Phone: {{ $tenant->room->landlord->phonenumber }}</div>
+            <div>Phone: {{ $tenant->room->landlord->phoneNumber }}</div>
         </div>
         <div class="right">
             <div class="receipt-title">RECEIPT</div>
@@ -111,7 +111,8 @@
         </div>
 
         <div class="options">
-            <input type="radio" style="background: transparent" checked> For Rent
+            <input type="radio" style="background: transparent" checked> For {{$tenant->source}} 
+            
         </div>
 
         <div class="row"><span class="label">ACCT.:</span> #{{ $tenant->approvedID }}</div>
@@ -124,14 +125,8 @@
                 <input type="checkbox" style="background: transparent"
                     {{ strtolower($tenant->paymentType) == 'gcash' ? 'checked' : '' }}> Gcash
             </label>
-            <label>
-                <input type="checkbox" style="background: transparent"
-                    {{ strtolower($tenant->paymentType) == 'maya' ? 'checked' : '' }}> Pay Maya
-            </label>
-            <label>
-                <input type="checkbox" style="background: transparent"
-                    {{ strtolower($tenant->paymentType) == 'credit card' ? 'checked' : '' }}> Credit Card
-            </label>
+         
+           
         </div>
 
         <div class="signature">Authorized Signature</div>

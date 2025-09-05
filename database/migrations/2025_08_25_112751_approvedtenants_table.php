@@ -29,7 +29,9 @@ return new class extends Migration
             $table->string('moveInDate');
             $table->string('moveOutDate');
             $table->string('status')->defualt('active');
-            $table->boolean('notifyRent')->default(false);
+             $table->enum('payment_option', ['online', 'onsite'])
+              ->default('onsite');
+             $table->boolean('notifyRent')->default(false);
 
     $table->enum('extension_decision', ['pending', 'extend', 'not_extending'])
           ->default('pending');

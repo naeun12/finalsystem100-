@@ -14,12 +14,24 @@
                 <div class="col d-flex">
                     <div class="card shadow-sm border-0 w-100" style="border: 1px solid #4edce2;">
                         <div class="card-body text-center" style="border: 1px solid #4edce2;">
-                            <img :src="tenant.studentpictureId"
-                                class="rounded-circle mb-3 border border-2 border-primary" width="100" height="100"
-                                alt="User Image" />
+                            <img :src="tenant.pictureID" class="rounded-circle mb-3 border border-2 border-primary"
+                                width="100" height="100" alt="User Image" />
                             <h5 class="fw-bold mb-1">{{ tenant.firstname }} {{
                                 tenant.lastname }}</h5>
-                            <span class="badge bg-success mb-3">{{ tenant.status }}</span>
+                            <span v-if="tenant.status != 'pending'" class="badge rounded-pill px-3 py-2" :class="{
+                                'bg-success text-white': tenant.status === 'active',
+                                'bg-secondary text-white': tenant.status === 'moved_out',
+                                'bg-warning text-dark': tenant.status === 'pending_moveout',
+                                'bg-info text-white': tenant.status === 'transferring',
+                            }">
+                                {{ tenant.status?.replace('_', ' ').toUpperCase() }}
+                            </span>
+                            <span v-if="tenant.status === 'pending'" class="text-success d-block mt-2">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                Note: Your reservation is pending. Please wait for your move-in date and present your
+                                receipt to the landlord.
+                            </span>
+
 
                             <ul class="list-group list-group-flush text-start small">
                                 <li class="list-group-item">
@@ -82,7 +94,7 @@
                                     <strong>For:</strong> {{ tenant.room?.genderPreference }}
                                 </li>
                             </ul>
-                            <div class="text-center" v-if="getDaysStayed(tenant.moveInDate) >= 3">
+                            <div class="text-center"  v-if="getDaysStayed(tenant.moveInDate) >= 3 && tenant.status === 'active' " >
                                 <!-- If not yet reviewed -->
                                 <div v-if="alreadyReviewed === tenant.has_rated">
                                     <h5 class="mb-3 text-primary fw-bold border-bottom pb-2">
@@ -114,14 +126,14 @@
                             </div>
 
                             <!-- If less than 3 days -->
-                            <div v-else class="alert alert-warning text-center shadow-sm p-3 mt-3">
+                            <div v-else v-if="tenant.status != 'pending' && tenant.status != 'moved_out'"  class="alert alert-warning text-center shadow-sm p-3 mt-3">
                                 <i class="bi bi-hourglass-split me-2"></i>
                                 Please wait at least <strong>3 days</strong> before you can rate your Dorm.
                             </div>
 
                             <!-- Reviews List -->
 
-                            <div class="mt-2 d-flex justify-content-center">
+                            <div v-if="tenant.status != 'pending'" class="mt-2 d-flex justify-content-center">
                                 <button class="custom-btn" @click="messageMaintenance()"> Report Maintenance Issue
                                 </button>
 
@@ -152,16 +164,17 @@
                                     <strong class="">💸 Monthly Payment:</strong>
                                     ₱{{ tenant.room?.price }}
                                 </li>
-                                <li class="list-group-item">
+                                <li v-if="tenant.status != 'pending'" class="list-group-item">
                                     <i class="bi bi-clock-history text-warning me-2"></i>
                                     <strong>Days Remaining: </strong>
                                     <span class="text-success">
                                         {{ getRemainingLeaseDays(tenant.moveInDate,
-                                            tenant.moveOutDate) }}
+                                        tenant.moveOutDate) }}
                                     </span>
                                 </li>
+                            
                             </ul>
-                            <div class="mt-2 mb-4 p-3 border rounded shadow-sm bg-light small"
+                            <div  class="mt-2 mb-4 p-3 border rounded shadow-sm bg-light small"
                                 v-if="tenant.notifyRent == 1">
                                 <h6 class="fw-bold text-primary text-center mb-3">
                                     💰 Please choose an option for the rent extension request
@@ -180,7 +193,7 @@
 
                             </div>
 
-                            <div v-else class="alert alert-info text-center p-3 rounded shadow-sm">
+                            <div v-else v-if="tenant.status != 'pending'" class="alert alert-info text-center p-3 rounded shadow-sm">
                                 <p class="mb-0 fw-semibold">
                                     ⏳ Wait for your landlord to notify you if you can extend your stay.
                                 </p>
@@ -208,11 +221,11 @@
                                     <strong> Amount Paid:</strong>
                                     <span class="text-success fw-bold">
                                         ₱{{ Number(tenant.payments[0]?.amount || 0).toLocaleString('en-PH', {
-                                            minimumFractionDigits: 2
+                                        minimumFractionDigits: 2
                                         }) }}
                                     </span>
                                 </p>
-                                <p>
+                                <p v-if="tenant.paymentOption === 'online'">
                                     Payment Status:
                                     <span class="badge" :class="{
                                         'bg-success': tenant.payments[0]?.status === 'Approved',
@@ -233,19 +246,48 @@
                     </div>
                 </div>
             </div>
-            <div v-if="extendRateModal" class="modal fade show d-block" tabindex="-1"
+            <div v-if="extendRateModal" class="modal fade show radius-3 d-block" tabindex="-1"
                 style="background-color: rgba(0,0,0,0.5);" @click.self="extendRateModal = false">
                 <div class="modal-dialog">
                     <div class="modal-content">
 
-                        <div class="modal-header">
-                            <h5 class="modal-title">Extend Payment </h5>
-                            <button type="button" class="btn-close" @click="extendRateModal = false"></button>
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title text-white">Extend Payment </h5>
+                            <button type="button" class="btn-close text-white" @click="extendRateModal = false"></button>
                         </div>
 
                         <div class="modal-body">
+                            <!-- Payment Option (Online or On-site) -->
+<div class="card shadow-sm border-0 rounded-4 mb-3">
+    <div class="card-body">
+        <h6 class="fw-bold text-primary mb-2">
+            <i class="bi bi-wallet2 me-2"></i> Choose Payment Option
+        </h6>
+        <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
+            <!-- Online Option -->
+            <div class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
+                 style="cursor: pointer; width: 120px; height: 120px;"
+                 @click="paymentOption('online')">
+                <i class="bi bi-globe2 fs-1 text-info mb-2"></i>
+                <small class="fw-semibold text-capitalize">Online</small>
+            </div>
 
-                            <div class="container py-4 mb-4">
+            <!-- On-site Option -->
+            <div class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
+                 style="cursor: pointer; width: 120px; height: 120px;"
+                 @click="paymentOption('onsite')">
+                <i class="bi bi-house-door fs-1 text-success mb-2"></i>
+                <small class="fw-semibold text-capitalize">On-site</small>
+            </div>
+        </div>
+        <div class="justify-content-center d-flex mt-2">
+            <span v-if="errors.payment_option" class="text-danger small mt-1 d-block">
+                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.payment_option[0] }}
+            </span>
+            </div>
+        </div>
+    </div>
+                            <div class="container py-4 mb-4" v-if="payment_option === 'online'">
                                 <div class="card shadow-sm border-0 rounded-4 mb-3">
                                     <div class="card-body">
                                         <h6 class="fw-bold text-primary mb-2">
@@ -281,7 +323,6 @@
                                         <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.paymentType[0] }}
                                     </span>
                                 </div>
-                            </div>
                             <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
                                 v-if="isPaymentImage" @click="triggerPaymentImage">
                                 <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
@@ -309,8 +350,14 @@
                                     </button>
                                 </div>
                             </div>
-
                         </div>
+                        </div>
+                   <div v-if="payment_option === 'onsite'" class="alert alert-warning mt-3 shadow-sm">
+                    <i class="bi bi-cash-stack me-2"></i>
+                    You chose <strong>On-Site Payment</strong>.  
+                    Kindly meet your landlord to complete the payment process.
+                </div>
+
 
                         <div class="modal-footer">
                             <button class="btn btn-success" @click="submitRent(tenant)">Submit Extension Rent</button>
@@ -434,6 +481,7 @@ export default {
             notifications: [],
             receiverID: '',
             approvedID: '',
+            payment_option: '',
 
         }
     },
@@ -607,9 +655,9 @@ export default {
         },
         async submitRent(tenant) {
             const confirmed = await this.$refs.modal.show({
-                title: `Cancel Extension Payment`,
-                message: `Are you sure you want to Cancelled this booking?`,
-                functionName: 'Confirm Cancelled Booking'
+                title: `Extension Payment`,
+                message: `Are you sure you want to proceed with this extension payment?`,
+                functionName: 'Confirm Extension Payment'
             });
 
             if (!confirmed) {
@@ -620,6 +668,8 @@ export default {
             formdata.append('approveID', tenant.approvedID);
             formdata.append('amount', tenant.room?.price);
             formdata.append('paymentImage', this.PaymentPictureFile);
+            formdata.append('paymentOption',this.payment_option);
+            console.log(this.payment_option)
             try {
                 const response = await axios.post('/extend-rent', formdata,
                     {
@@ -718,6 +768,10 @@ export default {
                 console.error(error);
                 this.$refs.toast.showToast('Server error, please try again later.', 'error');
             }
+        },
+        paymentOption(payment_option)
+        {
+            this.payment_option = payment_option;
         }
 
 

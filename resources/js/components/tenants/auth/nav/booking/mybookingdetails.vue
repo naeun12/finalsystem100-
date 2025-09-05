@@ -314,6 +314,7 @@ export default {
             const formData = new FormData();
             formData.append('fkbookingID', this.bookingID);
             formData.append('paymentType', this.payment_type);
+            formData.append('amount', this.booking.room?.price || 0);
             if (this.PaymentPictureFile) {
                 formData.append('paymentImage', this.PaymentPictureFile);
             }

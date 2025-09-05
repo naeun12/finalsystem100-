@@ -59,25 +59,25 @@
         <div class="container bg-white rounded shadow-sm p-3"
             style="border: 1px solid #4edce2; border-radius: 0.5rem; max-height: 700px; overflow-y: auto;">
 
-            <table class="table table-bordered table-hover mb-0" style="border-collapse: separate; border-spacing: 0;">
+            <table class="table bg-info table-bordered table-hover mb-0"
+                style="border-collapse: separate; border-spacing: 0;">
                 <!-- Table Header -->
-                <thead style="background: linear-gradient(90deg, #0d6efd, #4edce2); color: white;">
-                    <tr class="text-center">
-                        <th style="border: none;">#</th>
-                        <th style="border: none;">Dormitory Name</th>
-                        <th style="border: none;">Address</th>
-                        <th style="border: none;">Contact Email</th>
-                        <th style="border: none;">Contact Phone</th>
-                        <th style="border: none;">Rooms</th>
-                        <th style="border: none;">Actions</th>
+                <thead class="bg-info text-white">
+                    <tr class="text-center align-middle">
+                        <th scope="col">#</th>
+                        <th scope="col">Dormitory Name</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Contact Email</th>
+                        <th scope="col">Contact Phone</th>
+                        <th scope="col">Rooms</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
 
+
                 <!-- Table Body -->
                 <tbody>
-                    <tr v-for="(dorm, index) in dorms" :key="dorm.dormID"
-                        :style="{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff', transition: 'background-color 0.2s ease' }"
-                        class="text-center align-middle">
+                    <tr v-for="(dorm, index) in dorms" :key="dorm.dormID" class="text-center align-middle bg-info">
 
                         <td class="fw-semibold">{{ dorm.dormID }}</td>
                         <td>{{ dorm.dormName }}</td>
