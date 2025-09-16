@@ -60,12 +60,26 @@ class myreservationController extends Controller
 
             return response()->json($reservations);
         }
-        public function reservationDetails($reservationID)
-        {
-            $reservation = reservationModel::with(['tenant','room.dorm','room.currentTenant','room.landlord'])->find($reservationID);
-            return response()->json(['status' => 'success'
-            ,'data' => $reservation]);
-        }
+       public function reservationDetails($reservationID)
+
+{
+    $reservation = reservationModel::with([
+        'tenant',
+        'room.dorm',
+        'room.landlord',
+        'room.currentTenant' => function ($query) {
+    $query->where('status', 'active');
+}
+
+    ])->find($reservationID);
+
+    return response()->json([
+        'status' => 'success',
+        'data'   => $reservation
+    ]);
+}
+
+
        public function cancelReservation($reservationID)
 {
     $reservation = reservationModel::with(['tenant', 'room.dorm','room.landlord'])->where('reservationID', $reservationID)->first();

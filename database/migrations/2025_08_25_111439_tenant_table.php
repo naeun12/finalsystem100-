@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('currentAddress', 255);
             $table->string('postalCode', 4);
             $table->string('role')->default('tenant');
+             $table->boolean('is_deactivated')->default(false)->comment('0 = active, 1 = deactivated');
             $table->string('profilePicUrl', 255)->nullable();
             $table->timestamps();
         });

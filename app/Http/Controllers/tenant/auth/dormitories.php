@@ -230,44 +230,73 @@ public function getQuestionRecommendations(Request $request)
 {
     $question = $request->input('question');
 
-    // Call Flask API to get filters & AI message
-    $response = Http::post('http://127.0.0.1:5000/api/ask', [
-        'question' => $question,
-    ]);
-
-    \Log::info('Raw Flask response: ' . $response->body());
-
-    $data = $response->json()['answer'] ?? null;
-
-    if (!$data) {
-        return response()->json([
-            'message' => 'Walay tubag nakuha',
-            'result' => []
+    try {
+        // Call Flask API
+        $response = Http::post('http://127.0.0.1:5000/ask-ai/dormitories', [
+            'question' => $question,
         ]);
+
+        \Log::info('Raw Flask response: ' . $response->body());
+
+        $data = $response->json() ?? [];
+
+        // Raw AI message
+        $aiRaw = $data['message'] ?? 'Walay tubag nakuha gikan sa AI';
+
+        // Extract only the textual message (remove JSON block if present)
+        $aiMessage = preg_replace('/```json.*```/s', '', $aiRaw);
+        $aiMessage = trim($aiMessage);
+
+        // Extract recommendations from JSON block if present
+        preg_match('/```json(.*?)```/s', $aiRaw, $matches);
+        $recommendations = [];
+        if (isset($matches[1])) {
+            $recommendations = json_decode(trim($matches[1]), true) ?? [];
+        }
+
+        // Fallback if Flask didn't return JSON separately
+        if (empty($recommendations)) {
+            $recommendations = $data['recommendations'] ?? [];
+        }
+
+        // Ensure dorm objects have mainImage, amenities, rooms, and foreign keys
+        $recommendations = array_map(function ($dorm) {
+            return [
+                'dormID' => $dorm['dormID'] ?? null,
+                'dormName' => $dorm['dormName'] ?? 'Unnamed Dorm',
+                'address' => $dorm['address'] ?? 'No address provided',
+                'occupancyType' => $dorm['occupancyType'] ?? 'Mixed',
+                'price' => $dorm['price'] ?? 'Contact landlord',
+                'dormimages' => [
+                    'mainImage' => $dorm['dormimages']['mainImage'] ?? $dorm['mainImage'] ?? null,
+                    'secondaryImage' => $dorm['dormimages']['secondaryImage'] ?? null,
+                    'thirdImage' => $dorm['dormimages']['thirdImage'] ?? null
+                ],
+                'amenities' => isset($dorm['amenities']) ? implode(',', array_column($dorm['amenities'], 'aminityName')) : '',
+                'rules' => $dorm['rules'] ?? [],
+                'rooms' => $dorm['rooms'] ?? [],
+                'fklandlordID' => $dorm['fklandlordID'] ?? null,
+                'landlord' => $dorm['landlord'] ?? [],
+            ];
+        }, $recommendations);
+
+        return response()->json([
+            'message' => $aiMessage,           // just text, no JSON
+            'dorms' => $data['result'] ?? [],
+            'recommendations' => $recommendations,
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('AI Dorm Recommendation Error: ' . $e->getMessage());
+
+        return response()->json([
+            'message' => 'Naa’y error sa pagkuha og AI recommendations.',
+            'dorms' => [],
+            'recommendations' => [],
+        ], 500);
     }
-
-    // Extract AI message & filters (assuming filters are parsed in AI or sent separately)
-    $aiMessage = $data['message'] ?? 'Walay tubag nakuha';
-
-    // Example: parse filters from AI message or use separate endpoint to extract filters
-    // For demonstration, let's assume the AI sends filters in the response (you'll need to adapt Flask code)
-    $filters = $data['filters'] ?? [];  // <-- implement sa Flask nga mo-send ni siya
-
-    $dorms = $this->searchDormsWithFilters($filters);
-
-    return response()->json([
-        'message' => $aiMessage,
-        'result' => $dorms
-    ]);
 }
 
 
 
-
-
- 
-
-
-
-   
 }

@@ -130,7 +130,7 @@
                 <!-- Upload Box -->
                 <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
                     @click="triggerGovIdInput">
-                    <input ref="govIdInput" class="d-none" type="file" accept="image/*"
+                    <input ref="govIdInput" class="d-none" id="gov-id" type="file" accept="image/*"
                         @change="handleGovermentIdUpload" />
 
                     <!-- Icon + Text -->
@@ -160,7 +160,7 @@
                 <!-- Upload Box -->
                 <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
                     @click="triggerBusinessPermitInput">
-                    <input ref="businessPermitInput" class="d-none" type="file" accept="image/*"
+                    <input ref="businessPermitInput" class="d-none" id="business-permit" type="file" accept="image/*"
                         @change="handleBusinessPermitUpload" />
 
                     <!-- Icon + Text -->
@@ -205,7 +205,7 @@
 
                     <!-- Actions -->
                     <div class="modal-actions d-flex justify-content-center gap-3 mb-3">
-                        <button type="button" @click="RegisterLandlord" class="btn px-4">Sign-in</button>
+                        <button type="button" @click="RegisterLandlord" class="btn px-4">Register</button>
                         <button type="button" @click="resendOtp" class="btn t px-4">Resend
                             OTP</button>
 
@@ -273,6 +273,7 @@ export default {
         };
     },
     //timer
+  
     methods: {
         showToast(message, color = 'success') {
             this.messageToaster = message;
@@ -293,10 +294,8 @@ export default {
             const seconds = this.otpTimer % 60;
             return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         },
-    },
-    methods: {
         //Steps 1 to 4
-        nextStep() {
+       async nextStep() {
             if (this.currentStep < this.steps.length - 1) {
                 let isValid = true;
 
@@ -499,8 +498,7 @@ export default {
                     }
                 });
                 if (response.data.status === "success") {
-                    const message = Object.values(response.data.message).flat().join('\n');
-                    this.$refs.toast.showToast(message, 'success');
+                    this.$refs.toast.showToast(response.data.message, 'success');
                     this.startOtpTimer(response.data.timer);
                     this.currentStep = 3;
                     this.$refs.loader.loading = false;
@@ -569,13 +567,13 @@ export default {
                     const response = error.response;
                     if (response.data.status === "error") {
                         const message = Object.values(response.data.message).flat().join('\n');
-                        this.$refs.toast.showToast(message, 'success');
+                        this.$refs.toast.showToast(message, 'danger');
                         this.$refs.loader.loading = false;
 
                     }
                 } else {
                     const message = Object.values(response.data.message).flat().join('\n');
-                    this.$refs.toast.showToast(message, 'success');
+                    this.$refs.toast.showToast(message, 'danger');
                     this.$refs.loader.loading = false;
 
                 }

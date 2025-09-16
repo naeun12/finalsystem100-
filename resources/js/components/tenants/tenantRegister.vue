@@ -115,7 +115,7 @@
                 <!-- Region -->
                 <div class="col-md-4 mb-3">
                     <label for="region" class="form-label">Region</label>
-                    <select id="region" v-model="selectedRegion" class="form-select "
+                    <select id="region" name="region" v-model="selectedRegion" class="form-select "
                         style="border: 2px solid #4edce2 ;" @change="updateProvinces">
                         <option value="">-- Select Region --</option>
                         <option v-for="(name, code) in regions" :key="code" :value="code">{{ name }}</option>
@@ -125,7 +125,7 @@
 
                 <div class="col-md-4 mb-3">
                     <label for="province" class="form-label">Province</label>
-                    <select id="province" v-model="selectedProvince" class="form-select "
+                    <select id="province" name="province" v-model="selectedProvince" class="form-select "
                         style="border: 2px solid #4edce2 ;" @change="updateCities">
                         <option value="">-- Select Province --</option>
                         <option v-if="provinces.length === 0" disabled>No provinces available</option>
@@ -138,7 +138,7 @@
 
                 <div class="col-md-4 mb-3">
                     <label for="city" class="form-label">City</label>
-                    <select id="city" v-model="selectedCity" class="form-select " style="border: 2px solid #4edce2 ;">
+                    <select id="city" name="city" v-model="selectedCity" class="form-select " style="border: 2px solid #4edce2 ;">
                         <option value="">-- Select City --</option>
                         <option v-if="cities.length === 0" disabled>No City available</option>
                         <option v-for="city in cities" :key="city" :value="city">{{ city }}</option>
@@ -160,7 +160,7 @@
                 <span class="error" v-if="errors.currentaddress">{{ errors.currentaddress[0] }}</span>
             </div>
             <div class="d-flex justify-content-center mb-4">
-                <button type="button" @click="openModal" class="btn  w-50 sign-in-style">Sign-in</button>
+                <button type="button" @click="openModal" class="btn  w-50 sign-in-style">Sign-up</button>
             </div>
 
 
@@ -371,16 +371,6 @@ export default {
             },
         }
     },
-
-    mounted() {
-
-        this.startTimer();
-    },
-    beforeUnmount() {
-        this.stopTimer();
-    },
-
-
     methods: {
         formattedTime() {
 
@@ -434,6 +424,7 @@ export default {
         },
         mounted() {
             this.startTimer();
+            
         },
         beforeUnmount() {
             this.stopTimer();
@@ -656,7 +647,7 @@ export default {
             }
         },
         getOtpCode() {
-            return this.otpDigits.join('');
+            return this.otpdigits.join('');
         },
 
         startOtpTimer(timerValue) {

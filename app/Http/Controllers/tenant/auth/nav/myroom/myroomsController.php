@@ -74,10 +74,9 @@ class myroomsController extends Controller
 public function extendRent(Request $request)
 {
         $paymentOption = $request->input('paymentOption');
-                $approveID = $request->input('approveID');
-
- $approve = approvetenantsModel::with('room.landlord')->find($request->approveID);
-
+        $approveID = $request->input('approveID');
+       $approve = approvetenantsModel::with('room.landlord','payments')->find($request->approveID);
+        $payment = $approve->payments()->where('fkapprovedID',$request->approveID);
 $landlord = $approve->room->landlord;
      $tenant = approvetenantsModel::with('room.landlord','room.dorm')->find($request->approveID);
         if ($paymentOption === 'online') {
@@ -119,22 +118,20 @@ $landlord = $approve->room->landlord;
    
     approvepaymentModel::create([
         'fkapprovedID' => $request->approveID,
-        'paymentType'  => $request->paymentType,
+        'paymentType'  => $request->paymentOption,
         'amount'       => $request->amount,
+        'status'       => 'pending',
         'paymentImage' => $mainImageUrl,
     ]);
-   approvetenantsModel::where('approvedID', $request->approveID)->update([
-    'moveInDate'  => now(),
-    'moveOutDate' => now()->addDays(30)
-]);
-
-
     if (!$tenant) {
         return response()->json(['status' => 'error', 'message' => 'Tenant not found']);
     }
-        $tenant->notifyRent = false; 
-        $tenant->extension_decision = 'pending'; 
+
         $tenant->paymentOption = $paymentOption;
+        $payment->update(['status' => 'pending']);
+        $tenant->extension_decision = 'pending';
+        $tenant->notifyRent = 1; 
+        $tenant->extension_payment_status = 'pending';
         $tenant->save();
 
 $notifications = notificationModel::create([
@@ -157,9 +154,12 @@ $notifications = notificationModel::create([
 else if($paymentOption === 'onsite')
 {
     $tenant->paymentOption = $paymentOption;
-     $tenant->notifyRent = false; 
-        $tenant->extension_decision = 'pending'; 
-    $tenant->save();
+    
+        $tenant->extension_decision = 'pending';
+        $tenant->notifyRent = 1; 
+        $tenant->extension_payment_status = 'pending';
+        $payment->update(['status' => 'pending']);
+        $tenant->save();
    $notifications = notificationModel::create([
     'senderID'     => $approve->fktenantID,
     'senderType'   => 'tenant',
@@ -177,6 +177,7 @@ else if($paymentOption === 'onsite')
         'message' => 'You selected On-site Payment. Please proceed to your landlord to complete the payment.'
     ]);
 }
+
 }
 public function generateReceipt($id)
     {
@@ -330,15 +331,15 @@ public function notifyrentUpdate(Request $request)
         'decision'    => 'required|string',
     ]);
 
-    $tenant = approvetenantsModel::with('room.landlord','room.dorm')->find($request->approveID);
-
+    $tenant = approvetenantsModel::with('room.landlord','room.dorm','payments')->find($request->approveID);
+    $payment = $tenant->payments()->where('fkapprovedID',$request->approveID)->first();
     if (!$tenant) {
         return response()->json(['status' => 'error', 'message' => 'Tenant not found']);
     }
 
     // Update status
     $tenant->notifyRent = false; // or 0
-        $tenant->extension_decision = $request->decision; // <-- expects string, e.g. "approved" or "rejected"
+        $tenant->extension_decision = $request->decision; 
         $tenant->save();
 
     // Send notification to landlord

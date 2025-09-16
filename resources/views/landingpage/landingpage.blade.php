@@ -90,30 +90,33 @@
                 </div>
 
                 <!-- Card 4 -->
-                <div class="col-md-4">
-                    <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
-                        <div class="icon-wrapper mb-3">
-                            ⚡
-                        </div>
-                        <h5 class="fw-bold text-gradient">Fast Booking</h5>
-                        <p class="text-muted">
-                            Reserve your dorm instantly with our seamless booking system.
-                        </p>
-                    </div>
+              <div class="col-md-4">
+            <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
+                <div class="icon-wrapper mb-3">
+                    🏠
                 </div>
+                <h5 class="fw-bold text-gradient">Booking & Reservation</h5>
+                <p class="text-muted">
+                    Easily reserve your preferred dorm room or instantly book and confirm your stay 
+                    with our hassle-free system.
+                </p>
+            </div>
+        </div>
+
 
                 <!-- Card 5 -->
-                <div class="col-md-4">
-                    <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
-                        <div class="icon-wrapper mb-3">
-                            📱
-                        </div>
-                        <h5 class="fw-bold text-gradient">User-Friendly</h5>
-                        <p class="text-muted">
-                            Enjoy a simple and easy-to-use platform on both mobile and desktop.
-                        </p>
+                        <div class="col-md-4">
+                <div class="card shadow-lg border-0 rounded-4 h-100 hover-card text-center p-4">
+                    <div class="icon-wrapper mb-3">
+                        🌐
                     </div>
+                    <h5 class="fw-bold text-gradient">User-Friendly</h5>
+                    <p class="text-muted">
+                        Experience a clean and easy-to-use web platform accessible anytime on your browser.
+                    </p>
                 </div>
+            </div>
+
 
                 <!-- Card 6 -->
                 <div class="col-md-4">
@@ -397,7 +400,7 @@
             <div class="row justify-content-center mb-4">
                 <div class="col-md-6 text-center">
                     <p class="mb-2"><i class="bi bi-envelope-fill me-2 text-primary"></i><strong>Email:</strong>
-                        support@dormhub.com</p>
+                      supportdormhub@gmail.com</p>
                     <p class="mb-2"><i class="bi bi-telephone-fill me-2 text-primary"></i><strong>Phone:</strong>
                         +63 912 345 6789</p>
                     <p><i class="bi bi-clock-fill me-2 text-primary"></i><strong>Hours:</strong> Mon – Fri, 9:00 AM –
@@ -406,29 +409,31 @@
             </div>
 
             <!-- Contact Form -->
-            <form class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <input type="text" name="name" class="form-control rounded-3 shadow-sm"
-                                placeholder="Your Name" required />
-                        </div>
-                        <div class="col-md-6">
-                            <input type="email" name="email" class="form-control rounded-3 shadow-sm"
-                                placeholder="Email Address" required />
-                        </div>
-                        <div class="col-12">
-                            <textarea name="message" class="form-control rounded-3 shadow-sm" rows="5" placeholder="Your Message..."
-                                required></textarea>
-                        </div>
-                        <div class="col-12 text-center">
-                            <button type="submit" class="btn  px-5 py-2 rounded-pill shadow">
-                                <i class="bi bi-send-fill me-2"></i>Send Message
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+           <form action="{{ route('send.email') }}" method="GET" class="row justify-content-center">
+    @csrf
+    <div class="col-md-8">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="name" class="form-control rounded-3 shadow-sm"
+                    placeholder="Your Name" required />
+            </div>
+            <div class="col-md-6">
+                <input type="email" name="email" class="form-control rounded-3 shadow-sm"
+                    placeholder="Email Address" required />
+            </div>
+            <div class="col-12">
+                <textarea name="message" class="form-control rounded-3 shadow-sm" rows="5"
+                    placeholder="Your Message..." required></textarea>
+            </div>
+            <div class="col-12 text-center">
+                <button type="submit" class="btn px-5 py-2 rounded-pill shadow">
+                    <i class="bi bi-send-fill me-2"></i>Send Message
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
         </div>
     </section>
 
@@ -617,7 +622,7 @@
             <div class="col-12 col-md-4 text-center">
                 <h5 class="text-dark fw-bold">Follow Us</h5>
                 <div class="d-flex justify-content-center gap-4 mt-3">
-                    <a href="#" class="text-dark" target="_blank"><i class="fab fa-facebook fa-lg"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61580194851438" class="text-dark" target="_blank"><i class="fab fa-facebook fa-lg"></i></a>
                     <a href="#" class="text-dark" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
                 </div>
             </div>
@@ -628,8 +633,8 @@
                 <p class="mb-1 text-dark">
                     DormHub, Lapu-Lapu & Mandaue City, Philippines
                 </p>
-                <p class="mb-0 text-dark">Email: <a href="mailto:support@dormhub.com"
-                        class="text-dark text-decoration-none">support@dormhub.com</a></p>
+                <p class="mb-0 text-dark">Email: <a href="mailto:supportdormhub@gmail.com"
+                        class="text-dark text-decoration-none">supportdormhub@gmail.com</a></p>
             </div>
         </div>
 

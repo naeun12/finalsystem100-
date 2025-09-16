@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('age');
             $table->string('gender');
             $table->string('status')->default('pending')->change(); // Revert to original default
-            $table->string('status')->default('pending'); // pending, approved, for-confirmation, certified
+            $table->string('status')->default('pending');
+            $table->boolean('isDeleted')->default(false);
             $table->string('pictureID')->nullable();
             $table->date('moveInDate')->nullable();
             $table->timestamps();

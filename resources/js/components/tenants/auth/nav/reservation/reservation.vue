@@ -100,10 +100,10 @@
 
                                 <p><strong>📌 Reservation Status: </strong>
                                     <StatusBadge :status="reservationDetails.status" />
-                                    
+
                                 </p>
-                                
-                                
+
+
 
                                 <p><strong>👤 Name:</strong> {{ reservationDetails.firstname }} {{
                                     reservationDetails.lastname }}</p>
@@ -136,17 +136,17 @@
 
                                         <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
                                             <strong>🛏️ Occupancy Type:</strong> {{
-                                                reservationDetails.room?.genderPreference
+                                            reservationDetails.room?.genderPreference
                                             }}
                                         </p>
                                         <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
                                             <strong>🔢 Room No#:</strong> {{
-                                                reservationDetails.room?.roomNumber
+                                            reservationDetails.room?.roomNumber
                                             }}
                                         </p>
                                         <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
                                             <strong>🛋️ Area Sqm:</strong> {{
-                                                reservationDetails.room?.areaSqm
+                                            reservationDetails.room?.areaSqm
                                             }}
                                         </p>
 
@@ -154,17 +154,17 @@
                                     <div class="col-md-6">
                                         <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
                                             <strong>📍 Address:</strong> {{
-                                                reservationDetails.room?.dorm.address
+                                            reservationDetails.room?.dorm.address
                                             }}
                                         </p>
                                         <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
                                             <strong>💵 Monthly Rate:</strong> ₱{{
-                                                reservationDetails.room?.price
+                                            reservationDetails.room?.price
                                             }}
                                         </p>
                                         <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
                                             <strong>🛋️ Room Type:</strong> {{
-                                                reservationDetails.room?.roomType
+                                            reservationDetails.room?.roomType
                                             }}
                                         </p>
                                         <p style="border:1px solid #4edce2; padding: 8px; border-radius: 6px;">
@@ -172,8 +172,7 @@
                                         </p>
 
 
-                                        <input type="hidden" v-model="moveInDateLocal" />
-                                        <input type="hidden" v-model="moveOutDateLocal" />
+
                                     </div>
                                 </div>
 
@@ -200,7 +199,8 @@
                                             <i class="bi bi-calendar2-check-fill text-primary me-2"></i> Move In Date
                                         </label>
                                         <input type="date" class="form-control form-control-lg shadow-sm rounded-3"
-                                            id="moveInDate" v-model="moveInDate" :min="moveOutDateLocal" />
+                                            id="moveInDate" v-model="moveInDate" :min="moveInDate" />
+
                                     </div>
 
                                     <!-- Gcash Number -->
@@ -238,14 +238,15 @@
                                     </div>
 
                                     <!-- Preview -->
-                                    <div v-if="PaymentPicturePreview" class="text-center mb-4">
+                                    <div v-if="PaymentPicturePreview" class="text-center mb-2">
                                         <img :src="PaymentPicturePreview" alt="Uploaded Payment Image"
                                             class="img-fluid rounded-3 shadow-sm mb-3" style="max-height: 250px;" />
-                                        <button type="button" @click="removePaymentPicture"
-                                            class="btn btn-outline-danger btn-sm">
-                                            <i class="bi bi-x-circle me-1"></i> Remove Uploaded Image
-                                        </button>
+
                                     </div>
+                                    <button type="button" @click="removePaymentPicture"
+                                        class="btn btn-outline-danger btn-sm text-center mb-3 align-items-center d-flex justify-content-center mx-auto">
+                                        <i class="bi bi-x-circle me-1"></i> Remove Uploaded Image
+                                    </button>
                                     <div class="justify-content-center d-flex mb-3">
                                         <span v-if="errors.payment_image" class="text-danger small">
                                             <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.payment_image[0]
@@ -314,7 +315,7 @@ export default {
             PaymentPicturePreview: '',
             PaymentPictureFile: null,
             isPaymentImage: true,
-            payment_type: 'Gcash',
+            payment_type: 'online',
             moveInDateLocal: '',
             moveOutDateLocal: '',
             notifications: [],
@@ -360,11 +361,7 @@ export default {
             }
         },
 
-        formatDate(date) {
-            if (!date) return '';
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            return new Date(date).toLocaleDateString('en-US', options);
-        },
+      
 
 
         toggleView() {
@@ -384,6 +381,7 @@ export default {
                 if (response.data.status === 'success') {
                     this.showModal = true;
                     this.reservationDetails = response.data.data;
+                    this.moveInDate = this.reservationDetails.room?.current_tenant?.moveOutDate.split(' ')[0] || '';
                 }
 
             } catch (error) {
@@ -507,6 +505,21 @@ export default {
 
             }
         },
+        formatDate(date) {
+            if (!date) return "N/A";
+            return new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        },
+        nextDay(date) {
+            if (!date) return null;
+            let d = new Date(date);
+            d.setDate(d.getDate() + 1);
+            return d.toISOString().split('T')[0]; // format YYYY-MM-DD
+        }
+
 
     },
     computed: {
@@ -526,7 +539,7 @@ export default {
         visibleReservation() {
             return this.showAll ? this.reservations : this.reservations.slice(0, 5);
         },
-
+       
     },
     mounted() {
         const el = document.getElementById('myReservation');
@@ -539,14 +552,7 @@ export default {
 
     },
     watch: {
-        reservationDetails: {
-            handler(newVal) {
-                this.moveInDateLocal = newVal.room?.current_tenant?.moveInDate || '';
-                this.moveOutDateLocal = newVal.room?.current_tenant?.moveOutDate || '';
-            },
-            immediate: true,
-            deep: true
-        }
+       
     }
 };
 </script>

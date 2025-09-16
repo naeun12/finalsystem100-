@@ -45,7 +45,7 @@
                 <div class="w-100">
 
                     <select id="dormSelect" style="border:2px solid #4edce2;"
-                        class="form-select form-select-sm rounded-3 shadow-sm" @change="filterApplicationStatus"
+                        class="form-select w-100 form-select-sm rounded-3 shadow-sm" @change="filterApplicationStatus"
                         v-model="selectedapplicationStatus">
                         <option value="" disabled> Select Application Status</option>
                         <option value="all"> All Application Status</option>
@@ -63,20 +63,28 @@
                 </div>
             </div>
         </div>
-
+        <div v-if="!reservations.length" class="d-flex flex-column justify-content-center align-items-center"
+            style="height: 200px;">
+            <i class="bi bi-emoji-frown mb-2" style="font-size: 2rem; color: #6c757d;"></i>
+            <p class="text-muted fw-bold">No Reservation found.</p>
+        </div>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 rounded-3 g-4" style="">
-            <div class="col" v-for="reservation in reservations" :key="reservation.reservationID">
-                <div class="card shadow-sm rounded-4 border-0 h-100">
-                    <div class="card-body p-4 rounded-4" style="border:2px solid #4edce2;">
-                        <!-- Header -->
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h5 class="fw-bold text-primary mb-0">Reservation #{{ reservation.reservationID }}</h5>
-                            <StatusBadge :status="reservation.status" />
 
-                        </div>
+            <div class="col" v-for="reservation in reservations" :key="reservation.reservationID">
+                <div class="card shadow-sm rounded-4 border-2 h-100" style="border:2px solid #4edce2;">
+                    <div class="d-flex justify-content-between align-items-start card-header rounded-3 bg-info">
+                        <h5 class="fw-bold text-dark mb-0">Reservation #{{ reservation.reservationID }}</h5>
+                        <button class="btn btn-outline-dark btn-sm px-3"
+                            @click="deleteReservation(reservation.reservationID)" title="Delete Reservation">
+                            <i class="bi bi-x me-1"></i>
+                        </button>
+                    </div>
+                    <div class="card-body  rounded-4">
+                        <!-- Header -->
 
                         <!-- Body Content -->
                         <ul class="list-unstyled text-secondary small">
+
                             <li class="mb-2">
                                 <i class="bi bi-person-fill me-2 text-dark"></i>
                                 <strong>Name:</strong> {{ reservation.firstname }} {{ reservation.lastname }}
@@ -90,6 +98,12 @@
                                 <strong>Dorm:</strong> {{ reservation.room?.dorm?.dormName ?? 'N/A' }}
                             </li>
                             <li class="mb-2">
+                                <i class="bi bi-info-circle-fill me-2 text-dark"></i>
+                                <strong>Status: </strong>
+                                <StatusBadge :status="reservation.status" />
+
+                            </li>
+                            <li class="mb-2">
                                 <i class="bi bi-door-open-fill me-2 text-dark"></i>
                                 <strong>Room:</strong> {{ reservation.room?.roomNumber ?? 'N/A' }}
                             </li>
@@ -97,15 +111,12 @@
 
                         <!-- Actions -->
                         <div class="d-flex justify-content-center gap-2 mt-3">
-                            <button class="btn btn-outline-primary btn-sm px-3"
+                            <button class="btn btn-outline-primary btn-sm w-100 px-3"
                                 @click="displayReservationInformation(reservation.reservationID)"
                                 title="View Reservation">
-                                <i class="bi bi-eye-fill me-1"></i> View
+                                <i class="bi bi-eye-fill me-1"></i>
                             </button>
-                            <button class="btn btn-outline-danger btn-sm px-3"
-                                @click="deleteReservation(reservation.reservationID)" title="Delete Reservation">
-                                <i class="bi bi-trash-fill me-1"></i> Delete
-                            </button>
+
                         </div>
                     </div>
                 </div>
@@ -247,8 +258,10 @@
 
                                 </div>
 
-                                <label><strong>📅 Current Tenant End of Lease: </strong> {{
-                                    selectedReservation.room.current_tenant.moveOutDate }}</label>
+                                <label>
+                                    <strong>📅 Current Tenant End of Lease: </strong>
+                                    {{ formatDate(selectedReservation.room?.current_tenant?.moveOutDate) }}
+                                </label>
 
 
                             </div>
@@ -256,8 +269,8 @@
                         </div>
                         <ReservationStatusAlert :status="selectedReservation.status" role="landlord" class="mt-4" />
                         <div v-if="selectedReservation.status === 'paid' || selectedReservation.status === 'approved'">
-                            <label class="mb-2"> <strong>📅 Reservation Start of Lease:</strong>{{
-                                selectedReservation.moveInDate }}</label>
+                            <label class="mb-2"> <strong>📅 Reservation Start of Lease: </strong>{{
+                                formatDate(selectedReservation.moveInDate) }}</label>
 
                             <p class="text-success fw-bold mt-3" v-if="selectedReservation.status === 'paid'">
                                 ✅ Reservation has been paid. You can now accept or reject this reservation.
@@ -638,7 +651,15 @@ export default {
 
             const url = `/api/select/landlord/conversations/${this.landlord_id}?tenant_id=${tenantID}`;
             window.location.href = url;
-        }
+        },
+        formatDate(date) {
+            if (!date) return "N/A";
+            return new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        },
 
 
     },
@@ -709,7 +730,8 @@ export default {
                 this.filterMode = 'room';
                 this.handlePagination(1);
             }
-        }
+        },
+      
     }
 }
 </script>

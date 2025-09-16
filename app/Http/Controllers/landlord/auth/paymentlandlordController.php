@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\notificationModel;
 use App\Models\landlord\landlordModel;
 use App\Models\tenant\tenantModel;
+use App\Models\landlord\paymentVerifiedModel;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+
 
 class paymentlandlordController extends Controller
 {
@@ -42,4 +46,81 @@ class paymentlandlordController extends Controller
         'unread_count' => $unreadCount,
     ]); 
 }
+public function verifyPaymentLandlord(Request $request)
+{
+    $landlord_id = $request->route('landlord_id');
+    // Validate input
+    $request->validate([
+            'paymentEmail' => 'required|email',
+            'amount' => 'required|numeric|min:1',
+        ]);
+  try {
+            $amountInCents = $request->amount * 100; // PayMongo requires amount in centavos
+
+            $response = Http::withBasicAuth(env('PAYMONGO_SECRET_KEY'), '')
+                ->post('https://api.paymongo.com/v1/checkout_sessions', [
+                    'data' => [
+                        'attributes' => [
+                            'line_items' => [[
+                                'name' => 'Dormhub Account Upgrade',
+                                'quantity' => 1,
+                                'currency' => 'PHP',
+                                'amount' => $amountInCents,
+                            ]],
+                            'payment_method_types' => ['gcash'],
+                            'success_url' => url('/landlord/payment-success'),
+                            'cancel_url' => url('/landlord/payment-cancel'),
+                            'customer_email' => $request->paymentEmail,
+                        ],
+                    ],
+                ]);
+
+            if ($response->failed()) {
+                return response()->json(['error' => $response->json()], 400);
+            }
+
+            $checkoutUrl = $response->json()['data']['attributes']['checkout_url'];
+
+            return response()->json([
+                'checkout_url' => $checkoutUrl
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    
+}
+public function paymentSuccess(Request $request)
+{
+    $landlord_id = session('landlord_id');
+    $landlord = landlordModel::find($landlord_id);
+    $landlord->isVerified = 1;
+    $landlord->save();
+    paymentVerifiedModel::create([
+        'fklandlordID' => $landlord_id,
+        'email' => $landlord->email,
+        'amount' => '500',
+        'paymongo_id' => null,
+        'status' => 'success',
+        'paymentMethod' => 'gcash',
+        'referenceNumber' => null,
+        'responsePayload' => json_encode($request->all()),
+    ]);
+    return response()->json([
+        'status' => 'success',
+        'message' => '✅ Payment Success! Your landlord account is now verified.',
+        'data' => $request->all()
+    ]);
+}
+public function paymentCancel(Request $request)
+{
+    return response()->json([
+        'status' => 'cancelled',
+        'message' => 'Payment was cancelled by the user.',
+        'data' => $request->all()
+    ]);
+}
+
+
 }

@@ -65,6 +65,12 @@ public function approvedTenant()
 {
     return $this->hasOne(approvetenantsModel::class, 'fkroomID', 'roomID');
 }
+public function latestApprovedTenant()
+{
+    return $this->hasOne(approvetenantsModel::class, 'fkroomID', 'roomID')
+                ->latest('approvedID'); // or latest('approvedID')
+}
+
 
 
 

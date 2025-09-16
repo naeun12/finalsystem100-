@@ -124,6 +124,8 @@ class landlordaccountprocessController extends Controller
             ]);
 
             $otpCode = rand(100000, 999999);
+                        // $otpCode = '123456';
+
             $expiresAt = now()->addMinutes(1);
 
              Mail::to($validated['email'])->send(new tenantEmailOtp($otpCode));
@@ -217,7 +219,7 @@ class landlordaccountprocessController extends Controller
                 'firstname' => $validated['firstname'],
                 'lastname' => $validated['lastname'],
                 'email' => $validated['email'],
-                'phonenumber' => $validated['phonenumber'],
+                'phoneNumber' => $validated['phonenumber'],
                 'gender' => $validated['gender'],
                 'password' => bcrypt($validated['password']),
                 'profilePicUrl' => $profilePicPath,
@@ -301,6 +303,12 @@ public function loginLandlord(Request $request)
         if (!$user || !\Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
         }
+          if ($user->is_deactivated == 1) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Your account has been deactivated. Please contact support.'
+            ], 403);
+        }
     Auth::guard('landlord')->login($user);
 
     session([
@@ -322,14 +330,14 @@ public function loginLandlord(Request $request)
     
         ]);
     }
-    catch(\Illuminate\Validation\ValidationException $e)
-    {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->errors(),
-        ], 422);
-
-    } catch (\Exception $e) {
+   catch(\Illuminate\Validation\ValidationException $e)
+{
+    return response()->json([
+        'status' => 'error',
+        'errors' => $e->errors(),  // use 'errors' key instead of 'message'
+    ], 422);
+}
+ catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
             'message' => $e->getMessage(),

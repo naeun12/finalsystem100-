@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('status')->default('pending')->nullable();
             $table->string('paymentType')->nullable();
             $table->string('paymentImage')->nullable();
+            $table->boolean('isDelete')->default(false);
             $table->string('pictureID')->nullable();
             $table->timestamps();
 

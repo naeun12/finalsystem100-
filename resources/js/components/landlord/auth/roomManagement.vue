@@ -79,27 +79,35 @@
         </div>
 
         <!-- Table -->
+        <div v-if="!rooms.length" class="d-flex flex-column justify-content-center align-items-center"
+            style="height: 200px;">
+            <i class="bi bi-emoji-frown mb-2" style="font-size: 2rem; color: #6c757d;"></i>
+            <p class="text-muted fw-bold">No Room found.</p>
+        </div>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-4 mb-3">
             <div class="col" v-for="room in rooms" :key="room.roomID">
                 <!-- Card Click = View Room -->
-                <div class="card h-100 border-0 shadow-lg rounded-4 position-relative" @click="ViewRoom(room.roomID)"
+                <div class="card h-100 border-2 shadow-lg rounded-4 position-relative"  @click="ViewRoom(room.roomID)" 
                     style="cursor: pointer; transition: 0.3s ease; border: 2px solid #4edce2;">
 
                     <!-- Floating Delete "X" Button -->
-                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle z-3"
-                        @click.stop="deleteRoom(room.roomID)" title="Delete Room">
-                        <i class="bi bi-x-lg small"></i>
-                    </button>
+                    <div class="card-header bg-info text-white rounded-top-4 position-relative">
+                        <h5 class="card-title fw-bold text-dark mb-3">Room #{{ room.roomNumber }}</h5>
+                        <button class="btn btn-sm btn-dark position-absolute top-0 end-0 m-2 rounded-circle z-3"
+                            @click.stop="deleteRoom(room.roomID)" title="Delete Room">
+                            <i class="bi bi-x-lg small"></i>
+                        </button>
+                    </div>
 
-                    <div class="card-body p-4 rounded-4" style="border:2px solid #4edce2;">
-                        <h5 class="card-title fw-bold text-primary mb-3">Room #{{ room.roomNumber }}</h5>
+
+                    <div class="card-body p-4 rounded-4" >
 
                         <ul class="list-unstyled text-secondary">
-                            <li class="mb-2"><i class="bi bi-hash text-dark me-2"></i><strong>Room ID:</strong> {{
-                                room.roomID }}</li>
+                            <li class="mb-2"><i class="bi bi-building text-dark me-2"></i><strong>Dormitory:</strong> {{
+                                room.dorm?.dormName }}</li>
                             <li class="mb-2"><i class="bi bi-door-open text-dark me-2"></i><strong>Type:</strong> {{
                                 room.roomType }}</li>
-                            <li class="mb-2"><i class="bi bi-cash text-dark me-2"></i><strong>Price:</strong> ₱{{
+                            <li class="mb-2"><i class="bi bi-cash text-dark me-2"></i><strong>Montly Rate:</strong> ₱{{
                                 room.price }}</li>
                             <li class="mb-2">
                                 <i class="bi bi-circle-fill text-dark me-2"></i><strong>Status:</strong>
@@ -110,18 +118,20 @@
                             </li>
                             <li class="mb-2"><i
                                     class="bi bi-gender-ambiguous text-dark me-2"></i><strong>Gender:</strong> {{
-                                        room.genderPreference }}</li>
+                                room.genderPreference }}</li>
                         </ul>
 
                         <hr class="my-3">
 
                         <!-- Optional Edit Button -->
                         <div class="d-flex justify-content-center gap-2">
-                            <button class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+                            <button
+                                class="btn btn-outline-primary w-100 btn-sm d-flex justify-content-center align-items-center p-2"
                                 @click.stop="editRoom(room.roomID)" title="Edit Room">
-                                Update Room
+                                <i class="bi bi-pencil-square" style="font-size: 1.2rem;"></i>
                             </button>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -302,7 +312,7 @@
                                 <div class="form-floating mb-2 rounded-4" style="border: 2px solid #4edce2;">
                                     <input type="number" class="form-control rounded-4" id="price" placeholder="Price"
                                         v-model="price" min="0" step="0.01">
-                                    <label for="price">Price (₱)</label>
+                                    <label for="price">Monthly Rate (₱)</label>
                                 </div>
                                 <span class="text-danger small" v-if="errors.price"> <i
                                         class="bi bi-exclamation-circle-fill"></i>
@@ -335,7 +345,7 @@
                                 <span class="text-danger small" v-if="errors.furnishing_status"> <i
                                         class="bi bi-exclamation-circle-fill"></i>
                                     {{
-                                        errors.furnishing_status[0]
+                                    errors.furnishing_status[0]
                                     }}</span>
 
                                 <div class="form-floating mb-2 mt-2 rounded-4" style="border: 2px solid #4edce2;">
@@ -351,7 +361,7 @@
                                 <span class="text-danger small" v-if="errors.gender_preference"> <i
                                         class="bi bi-exclamation-circle-fill"></i>
                                     {{
-                                        errors.gender_preference[0]
+                                    errors.gender_preference[0]
                                     }}</span>
 
 
@@ -512,7 +522,7 @@
                             </div>
                             <span class="text-danger small" style="border: 1px solid #4edce2;"
                                 v-if="errors.editData?.roomType">{{
-                                    errors.editData.roomType[0]
+                                errors.editData.roomType[0]
                                 }}</span>
                             <div class="form-floating mb-2">
                                 <select class="form-select" id="availability" style="border: 1px solid #4edce2;"

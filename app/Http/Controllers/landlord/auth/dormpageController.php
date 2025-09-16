@@ -50,6 +50,15 @@ class dormpageController extends Controller
             'unread_count' => $unreadCount
         ]);
     }
+    public function getlandlordVerifiedStatus()
+    {
+        $landlordId = session('landlord_id');
+        $landlord = landlordModel::where('landlordID', $landlordId)->first();
+        return response()->json([
+            'status' => 'success',
+            'isVerified' => $landlord->isVerified,
+        ]);
+    }
      public function searchDorms(Request $request)
     {
         $landlordId = session('landlord_id');

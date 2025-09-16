@@ -52,31 +52,44 @@
                 </select>
             </div>
         </div>
+        <div v-if="!tenants.length" class="d-flex flex-column justify-content-center align-items-center"
+            style="height: 200px;">
+            <i class="bi bi-emoji-frown mb-2" style="font-size: 2rem; color: #6c757d;"></i>
+            <p class="text-muted fw-bold">No Bookings found.</p>
+        </div>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 ">
+
             <div class="col" v-for="booking in tenants" :key="booking.bookingID">
-                <div class="card shadow-sm rounded-4 h-100 w-100 border-0">
-                    <div class="card-body p-4 rounded-4" style="border:2px solid #4edce2;">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h5 class="fw-bold text-primary mb-0">Booking #{{ booking.bookingID }}</h5>
-                            <statusMap :status="booking.status" />
+                <div class="card shadow-sm rounded-4 h-100 w-100 border-2" style="border:2px solid #4edce2;">
 
+                    <div class="d-flex justify-content-between  card-header rounded-3 bg-info" >
+                        <!-- Booking ID -->
+                        <h5 class="fw-bold text-dark mb-0">Booking #{{ booking.bookingID }}</h5>
 
-                        </div>
+                        <!-- Delete Button -->
+                        <button
+                            class="btn btn-outline-dark btn-sm d-flex align-items-center justify-content-center px-2"
+                            @click="deleteBooking(booking.bookingID)" title="Delete Booking">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
 
+                    <div class="card-body p-4 rounded-4">
+                        <statusMap :status="booking.status" />
                         <ul class="list-unstyled text-secondary">
-                            <li class="mb-2"><i class="bi bi-person-fill me-2 text-dark"></i><strong>Name:</strong> {{
+                            <li class="mb-2"><i class="bi bi-person-fill me-2 text-dark"></i><strong class="text-dark">Name:</strong> {{
                                 booking.firstname }} {{ booking.lastname }}</li>
-                            <li class="mb-2"><i class="bi bi-envelope-fill me-2 text-dark"></i><strong>Email:</strong>
+                            <li class="mb-2"><i class="bi bi-envelope-fill me-2 text-dark"></i><strong class="text-dark">Email:</strong>
                                 {{ booking.contactEmail }}</li>
-                            <li class="mb-2"><i class="bi bi-building me-2 text-dark"></i><strong>Dorm:</strong> {{
+                            <li class="mb-2"><i class="bi bi-building me-2 text-dark"></i><strong class="text-dark">Dorm:</strong> {{
                                 booking.room?.dorm?.dormName ?? 'N/A' }}</li>
-                            <li class="mb-2"><i class="bi bi-door-open-fill me-2 text-dark"></i><strong>Room:</strong>
+                            <li class="mb-2"><i class="bi bi-door-open-fill me-2 text-dark"></i><strong class="text-dark">Room:</strong>
                                 {{ booking.room?.roomNumber ?? 'N/A' }}</li>
-                            <li class="mb-2"><i class="bi bi-calendar-check-fill me-2 text-dark"></i><strong>Move-In
-                                    Date:</strong> {{ booking.moveInDate }}</li>
+                            <li class="mb-2"><i class="bi bi-calendar-check-fill me-2 text-dark"></i><strong class="text-dark">Move-In
+                                    Date:</strong> {{ formatDate(booking.moveInDate) }}</li>
                             <li class="mb-2">
                                 <i class="bi bi-credit-card-fill me-2 text-dark"></i>
-                                <strong>Payments:</strong>
+                                <strong class="text-dark">Payments: </strong>
                                 <span v-if="booking.payment.length">
                                     <span v-for="(pay, index) in booking.payment" :key="index">
                                         {{ pay.paymentType }}<span v-if="index !== booking.payment.length - 1">, </span>
@@ -88,13 +101,10 @@
                         </ul>
 
                         <div class="d-flex justify-content-center gap-2 mt-3">
-                            <button class="btn btn-outline-primary btn-sm px-3" @click="openTenant(booking.bookingID)">
-                                <i class="bi bi-eye-fill me-1"></i> View
+                            <button class="btn btn-primary btn-sm w-100 px-3" @click="openTenant(booking.bookingID)">
+                                <i class="bi bi-eye-fill me-1"></i>
                             </button>
-                            <button class="btn btn-outline-danger btn-sm px-3"
-                                @click="deleteBooking(booking.bookingID)">
-                                <i class="bi bi-trash-fill me-1"></i> Delete
-                            </button>
+
                         </div>
                     </div>
                 </div>
@@ -130,8 +140,8 @@
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content shadow-lg rounded-4 border-0">
                     <!-- Header -->
-                    <div class="modal-header bg-white border-bottom-0">
-                        <h5 class="modal-title text-primary fw-bold">
+                    <div class="modal-header bg-info border-bottom-0">
+                        <h5 class="modal-title text-white fw-bold">
                             🧾 Tenant Profile
                         </h5>
                         <button type="button" class="btn-close" @click="VisibleModalApproval = false"></button>
@@ -158,7 +168,7 @@
                                 <p><strong>📧 Email:</strong> {{ selectedtenant.contactEmail }}</p>
                                 <p><strong>📍 Address:</strong> {{ selectedtenant.room?.dorm?.address }}</p>
                                 <p><strong>🚪 Room #:</strong> {{ selectedtenant.room?.roomNumber }}</p>
-                                <p><strong>🚪 Move in date #:</strong> {{ selectedtenant.moveInDate }}</p>
+                                <p><strong>🚪 Move in date #:</strong> {{ formatDate(selectedtenant.moveInDate) }}</p>
 
                             </div>
                             <div class="col-md-6">
@@ -168,9 +178,10 @@
                                 <p><strong>🏠 Dorm:</strong> {{ selectedtenant.room?.dorm?.dormName || 'N/A' }}</p>
                                 <p><strong>💰 Price:</strong> ₱{{
                                     Number(selectedtenant.room?.price).toLocaleString(undefined, {
-                                        minimumFractionDigits: 2
+                                    minimumFractionDigits: 2
                                     }) }}</p>
-                                <p><strong>🚪 Move out date #:</strong> {{ selectedtenant?.moveOutDate }}</p>
+                                <p><strong>🚪 Move out date #:</strong> {{ formatDate(selectedtenant?.moveOutDate) }}
+                                </p>
 
                             </div>
                         </div>
@@ -188,7 +199,7 @@
                                 <option value="approved"
                                     v-if="['cancelled', 'rejected', 'paid'].includes(selectedtenant.status)">
                                     Approved
-                                    - Reservation Approved</option>
+                                    - Booking Approved</option>
                                 <option value="rejected">Rejected - User Initiated</option>
                             </select>
                         </div>
@@ -344,7 +355,6 @@ export default {
         },
         filterDorms(page = 1) {
             this.$refs.loader.loading = true;
-
             if (this.selectedDormId === 'all') {
                 this.bookingList();
                 this.$refs.loader.loading = false;
@@ -355,17 +365,18 @@ export default {
                 params: { page }
             })
                 .then(response => {
-                    this.$refs.loader.loading = false;
                     this.searchTerm = '';
                     this.selectedapplicationStatus = '';
                     this.selectedroomNumber = '';
-
-                    this.tenants = response.data.data ?? [];
-                    this.lastPage = response.data.last_page ?? 1;
+                    this.tenants = response.data.data;
+                    this.lastPage = response.data.last_page;
                 })
                 .catch(error => {
                     this.$refs.loader.loading = false;
                     console.error('Error fetching dorm tenants:', error);
+
+                }).finally(() => {
+                    this.$refs.loader.loading = false;
                 });
         },
 
@@ -564,6 +575,14 @@ export default {
         messagePage(fktenantID) {
             const url = `/api/select/landlord/conversations/${this.landlord_id}?tenant_id=${fktenantID}`;
             window.location.href = url;
+        },
+        formatDate(date) {
+            if (!date) return "N/A";
+            return new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
         },
 
 

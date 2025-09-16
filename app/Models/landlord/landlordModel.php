@@ -24,12 +24,15 @@ class landlordModel extends Authenticatable
         'lastname',
         'password',
         'email',
-        'phonenumber',
+        'phoneNumber',
         'gender',
         'profilePicUrl',
         'govermentID',
         'businessPermit',
         'role',
+        'is_deactivated',
+        'isVerified'
+
     ];
 
     public function getAuthPassword()

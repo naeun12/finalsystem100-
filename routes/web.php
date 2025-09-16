@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\landingPageController;
 use App\Http\Middleware\AfterRegistrationMiddleware;
+//tenant
+use App\Http\Controllers\tenant\auth\tenantupdateaccountController;
+
 use App\Http\Middleware\TenantAuth;
 use App\Http\Controllers\tenant\tenantController;
 use App\Http\Controllers\tenant\auth\homepageController;
@@ -30,8 +33,14 @@ use App\Http\Controllers\tenant\auth\nav\myroom\myroomsController;
 use App\Http\Controllers\tenant\auth\nav\reservations\myreservationController;
 use App\Http\Controllers\tenant\auth\reviewandfeedbackController;
 use App\Http\Controllers\tenant\auth\nav\notificationsController;
+use App\Http\Controllers\landlord\landlordupdateAccountController;
+//admin 
 
-
+use App\Http\Middleware\AdminAuth;
+use App\Http\Controllers\admin\adminaccountController;
+use App\Http\Controllers\admin\admindashboardController;
+use App\Http\Controllers\admin\admintenantManagementController;
+use App\Http\Controllers\admin\adminlandlordManagementController;
 use App\Models\tenant\messageModel;
 use App\Events\NewNotificationEvent;
 
@@ -43,6 +52,7 @@ use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Illuminate\Support\Facades\Auth;
 //view landingpage, login and register for landlord and tenant
 Route::get('/', [landingPageController::class, 'landingPage'])->name('landingpage');
+Route::get('/send-email', [landingPageController::class, 'sendEmail'])->name('send.email');
 Route::get('/tenantLogin', [tenantController::class, 'login'])->name('login-tenant');
 Route::get('/tenantRegister', [tenantController::class, 'register'])->name('register-tenant');
 Route::get('/landlordLogin', [landlordaccountprocessController::class, 'landlordLogin'])->name('landlord-Login');
@@ -98,12 +108,13 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/get/reservation-list/{landlord_id}', [dashboardController::class, 'getReservationList']);
     Route::get('/get/booking-list/{landlord_id}', [dashboardController::class, 'getBookingList']);
     Route::get('/get/dorm-profits/{landlord_id}', [dashboardController::class, 'getDormProfits']);
-    Route::get('/get/booking-profits/{landlord_id}', [dashboardController::class, 'getBookingProfits']);
+    Route::get('/get/all-profits/{landlord_id}', [dashboardController::class, 'getallprofits']);
     Route::get('/generate-full-report/{landlordID}', [dashboardController::class, 'generateFullReport']);
 
 
 
     //functions for landlord dorm management
+    Route::get('/getlandlordVerifiedStatus', [dormpageController::class, 'getlandlordVerifiedStatus'])->name('getlandlordVerifiedStatus');
     Route::post('/AddDorm', [dormpageController::class, 'AddDorm'])->name('AddDorm');
     Route::post('/UpdateDorm/{id}', [dormpageController::class, 'UpdateDorm']);
     Route::delete('/DeleteDorm/{id}', [dormpageController::class, 'DeleteDorm'])->name('DeleteDorm');
@@ -169,6 +180,9 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/search/movein/tenant',[alltenantsController::class,'searchMoveInTenant']);
     Route::get('/movein/tenant',[alltenantsController::class,'moveInTenant']);
     Route::get('/view/tenant/payment/{tenantID}',[alltenantsController::class,'viewTenantPayment']);
+    Route::post('/update/extension/{id}',[alltenantsController::class,'updateTenantExtension']);
+    Route::post('/update/tenant/payment/extension/{id}',[alltenantsController::class,'updateTenantPaymentExtension']);
+    Route::post('/soft-delete/tenant/{id}',[alltenantsController::class,'softDelete']);
     //functions for messaging landlord
     Route::get('/api/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'getConversations']);
     Route::get('/api/select/landlord/conversations/{landlord_id}', [messagelandlordController::class, 'selecttenantToMessage']);
@@ -182,16 +196,21 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::post('/clear/notifications', [notificationslandlordController::class, 'clearAll']);
     //functions for payment landlord 
      Route::get('/paymentLandlord/{landlord_id}', [paymentlandlordController::class, 'paymentLandlordindex'])->name('payment.landlord');
-
-
-
-
+    Route::post('/landlord/verify-payment', [paymentlandlordController::class, 'verifyPaymentLandlord'])->name('verify.payment.landlord');
+    Route::get('/landlord/payment-success', [paymentlandlordController::class, 'paymentSuccess']);
+    Route::get('/landlord/payment-cancel', [paymentlandlordController::class, 'paymentCancel']);
+    //functions for landlord account update 
+    Route::get('/landlord/account/update/{landlordId}', [landlordupdateAccountController::class, 'updateAccountIndex'])->name('landlord.account.update');
+    Route::get('/get/landlord/data/{id}', [landlordupdateAccountController::class, 'getlandlordData']);
+    Route::post('/update/landlord/data/{id}', [landlordupdateAccountController::class, 'updatelandlordAccount']);
+    Route::post('/update/landlord/documents/{landlord_id}', [landlordupdateAccountController::class, 'updateDocuments']);
 });
 //tenant auth
 //tenant account process
 Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/homepage/{tenant_id}', [homepageController::class, 'homepage'])->name('homepage');
-   
+    Route::get('/tenant/update/account/{tenant_id}', [tenantupdateaccountController::class, 'tenantaccountUpdate'])->name('tenant.update');
+ 
     Route::get('/room-details/{dormitory_id}/{tenant_id}', [dormdetailscontroller::class, 'roomDetails'])->name('room.details');
     Route::get('/room-selection/{dormitoryID}/{tenantID}', [selectionRoomController::class, 'SelectionRoom'])->name('room.selection');
     Route::get('/available-room/{dormitoryID}', [selectionRoomController::class, 'availableRooms'])->name('available.room');
@@ -276,8 +295,49 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::post('/mark/read/tenant/{tenant_id}', [notificationsController::class, 'markAsRead']);
     Route::post('/notifications/mark-all-as-read/tenant', [notificationsController::class, 'markAllAsRead']);
     Route::post('/clear/notifications/tenant', [notificationsController::class, 'clearAll']);
+// tenant update 
+   Route::get('/get/tenant/data/{id}', [tenantupdateaccountController::class, 'getTenantData']);
+    Route::post('/update/tenant/data/{id}', [tenantupdateaccountController::class, 'updatetenantAccount']);
 
 });
+Route::get('/login-admin', [adminaccountController::class, 'adminIndex'])->name('admin.login');
+Route::post('/login-admin', [adminaccountController::class, 'adminLogin']);
+Route::post('/admin/logout', [adminaccountController::class, 'logoutlandlord'])
+    ->name('admin.logout');
+Route::get('/admin/create', [adminaccountController::class, 'createAdmin'])->name('admin.create');
+Route::middleware(['web', AdminAuth::class])->group(function () {
+    Route::get('/admin/dashboard/{admin_id}', [admindashboardController::class, 'adminDashboardIndex'])
+        ->name('admin.dashboard');
+    Route::get('/admin/get/total',[admindashboardController::class,'getTotals']);
+    Route::get('/subscriptions-per-month', [admindashboardController::class, 'getSubscribersPerMonth']);
+    Route::get('/generate-subscription-report', [admindashboardController::class, 'generateSubscriptionReport'])
+    ->name('generate.subscription.report');
+
+    Route::get('/admin/tenantManagement/{admin_id}', [admintenantManagementController::class, 'admintenantManagemnentIndex'])
+        ->name('admin.tenantmanagemnt');
+    Route::get('/admin/get-tenants', [admintenantManagementController::class, 'getTenants']);
+    Route::get('/admin/view-tenants/{id}', [admintenantManagementController::class, 'viewTenantProfile']);
+    Route::get('/admin/deact-tenant/{id}', [admintenantManagementController::class, 'deactivatetenantAccount']);
+    Route::get('/admin/active-tenant/{id}', [admintenantManagementController::class, 'reactivetenantAccount']);
+    Route::post('/admin/tenant/send/email', [admintenantManagementController::class, 'sendTenantEmail']);
+    Route::get('/generate-tenant-report', [admintenantManagementController::class, 'downloadTenantReport'])
+    ->name('generate.tenant.report');
+    Route::get('/admin/search-tenants', [admintenantManagementController::class, 'searchTenants']);
+
+
+    Route::get('/admin/LandlordManangement/{admin_id}', [adminlandlordManagementController::class, 'landlordManagementIndex'])
+        ->name('admin.landlordmanagement');
+    Route::get('/admin/get-landlord', [adminlandlordManagementController::class, 'getLandlords']);
+        Route::get('/admin/view-landlord/{id}', [adminlandlordManagementController::class, 'viewLandlordProfile']);
+  Route::get('/admin/deact-landlord/{id}', [adminlandlordManagementController::class, 'deactivateLandlordAccount']);
+    Route::get('/admin/active-landlord/{id}', [adminlandlordManagementController::class, 'reactivelandlordAccount']);
+    Route::post('/admin/landlord/send/email', [adminlandlordManagementController::class, 'sendLandlordEmail']);
+    Route::get('/generate-landlord-report', [adminlandlordManagementController::class, 'downloadLandlordReport'])
+    ->name('generate.landlord.report');
+    Route::get('/admin/search-landlords', [adminlandlordManagementController::class, 'searchLandlords']);
+
+});
+
 Route::get('/test-auth', function () {
     return auth('landlord')->check() ? 'Authenticated as landlord' : 'NOT authenticated';
 });

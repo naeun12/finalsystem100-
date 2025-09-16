@@ -32,7 +32,7 @@
                                         <span v-else-if="history.type === 'Extension Payment'">Extension Payment</span>
                                         <span v-else>{{ history.type }}</span>
                                         #{{ history.reservation?.room?.roomID || history.booking?.room?.roomID ||
-                                            history.approved_tenant?.room?.roomID || 'N/A' }}
+                                        history.approved_tenant?.room?.roomID || 'N/A' }}
                                     </p>
 
                                     <p class="mb-0 text-muted small">
@@ -48,11 +48,20 @@
                                 <!-- Payment Method -->
                                 <div class="text-end">
                                     <span class="badge rounded-pill px-3 py-2" :class="{
-                                        'bg-success text-white': history.paymentType === 'Gcash',
-                                        'bg-primary text-white': history.paymentType === 'PayPal',
+                                        'bg-success text-white': history.paymentType === 'online',
+                                        'bg-primary text-white': history.paymentType === 'onsite',
                                         'bg-secondary text-white': !history.paymentType
                                     }">
                                         {{ history.paymentType || 'N/A' }}
+                                    </span>
+                                </div>
+                                <div class="text-center">
+                                    <span class="badge rounded-pill px-3 py-2" :class="{
+                                        'bg-success text-white': history.status === 'approved',
+                                        'bg-danger text-white': history.status === 'rejected',
+                                        'bg-secondary text-white': history.status === 'pending'
+                                    }">
+                                        {{ history.status || 'N/A' }}
                                     </span>
                                 </div>
                             </div>
@@ -103,9 +112,16 @@
                         <!-- Payment Methods -->
                         <p class="fw-semibold text-secondary mb-2">💳 Payment Method:</p>
                         <div class="form-check border rounded-3 px-3 py-2 shadow-sm mb-2" style="cursor:pointer;">
-                            <input class="form-check-input" type="radio" v-model="paymentMethod" value="gcash"
+                            <input class="form-check-input" type="radio" v-model="paymentMethod" value="online"
                                 id="gcash" @change="paymentHistory()">
-                            <label class="form-check-label fw-semibold ms-2" for="gcash">GCash</label>
+                            <label class="form-check-label fw-semibold ms-2" for="gcash">online</label>
+
+                        </div>
+                        <div class="form-check border rounded-3 px-3 py-2 shadow-sm mb-2" style="cursor:pointer;">
+                            <input class="form-check-input" type="radio" v-model="paymentMethod" value="onsite"
+                                id="onsite" @change="paymentHistory()">
+                            <label class="form-check-label fw-semibold ms-2" for="onsite">Onsite</label>
+
                         </div>
 
                         <!-- Optional Future Add-ons -->

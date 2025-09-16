@@ -31,8 +31,16 @@ import myReservation from './components/tenants/auth/nav/reservation/reservation
 import paymentLandlord from './components/landlord/auth/paymentlandlord.vue';
 import reviewandrating from './components/tenants/auth/reviewandrating.vue';
 import notificationsTenant from './components/tenants/auth/nav/notificationstenant.vue';
+import landlordaccountUpdated from './components/landlord/landlordupdate.vue';
+import tenantupdateaccount from './components/tenants/auth/tenantupdateaccount.vue';
 
+//tenant
 
+//admin
+import adminlogin from './components/admin/adminlogin.vue';
+import AdminDashboard   from './components/admin/auth/admindashboard.vue';
+import adminlandlordManagement  from './components/admin/auth/landlordmanagement.vue';
+import admintenantManagement  from './components/admin/auth/tenantmanagement.vue';
 
 
 import AOS from 'aos';
@@ -182,6 +190,33 @@ const notificationsTenantController = document.querySelector('#notificationsTena
 
 if (notificationsTenantController) {
     createApp(notificationsTenant).mount('#notificationsTenant');
+}
+const landlordaccountUpdatedController = document.querySelector('#landlordaccountUpdated');
+if (landlordaccountUpdatedController) {
+    createApp(landlordaccountUpdated).mount('#landlordaccountUpdated');
+}
+//tenant
+const tenantupdateaccountController = document.querySelector("#tenantupdateaccount")
+if (tenantupdateaccountController) { 
+    createApp(tenantupdateaccount).mount("#tenantupdateaccount");
+}
+//admin
+const adminloginController = document.querySelector("#adminlogin")
+if (adminloginController) { 
+        createApp(adminlogin).mount('#adminlogin');
+}
+
+const admindashboardController = document.querySelector("#admindashboard")
+if (admindashboardController) { 
+    createApp(AdminDashboard ).mount("#admindashboard");
+}
+const adminlandlordManagementController = document.querySelector("#adminlandlordManagement")
+if (adminlandlordManagementController) { 
+    createApp(adminlandlordManagement).mount("#adminlandlordManagement");
+}
+const admintenantManagementController = document.querySelector("#admintenantManagement")
+if (admintenantManagementController) { 
+    createApp(admintenantManagement).mount("#admintenantManagement");
 }
 
 

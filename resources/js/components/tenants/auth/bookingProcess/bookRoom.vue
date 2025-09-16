@@ -2,6 +2,7 @@
     <Toastcomponents ref="toast" />
     <Modalconfirmation ref="modal" />
     <Loader ref="loader" />
+    <NotificationList ref="toastRef" />
 
     <div class="container py-3">
         <h2 class="fw-bold text-center mb-4 p-2 bg-light text-dark  -2 rounded" style="border:1px solid #4edce2">
@@ -67,7 +68,7 @@
         </div>
         <div class="mb-3">
             <label class="form-label fw-bold">
-                <i class="bi bi-cash-coin text-primary me-2"></i>Price:
+                <i class="bi bi-cash-coin text-primary me-2"></i>Monthly Rate:
             </label>
             <div class="p-2  rounded bg-light text-break" style="border:1px solid #4edce2">
                 ₱{{ Number(roomsDetail?.price).toLocaleString() || '0.00' }}
@@ -80,7 +81,7 @@
                     <i class="bi bi-calendar-event me-2 text-primary"></i>Move-in Date
                 </label>
                 <input type="date" style="border:1px solid #4edce2" class="form-control shadow-sm" v-model="moveInDate"
-                    @change="setMoveOutDate" id="move_in_date" />
+                    @change="setMoveOutDate" id="move_in_date" :min="today" />
                 <span v-if="errors.moveInDate" style="border:1px solid #4edce2"
                     class="error text-danger small mt-1 d-block">
                     <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.moveInDate[0] }}
@@ -135,8 +136,9 @@ export default {
             selectedRoomId: '',
             roomsDetail: {},
             errors: {},
-            moveInDate: '',
+            moveInDate: this.getTodayLocal(),
             moveOutDate: '',
+            today: this.getTodayLocal(),
             paymentIcon: '/images/tenant/allimagesResouces/paymentIcon.jpg',
             id_picture: '/images/tenant/allimagesResouces/vector-id-card-icon.jpg',
             openPaymentModel: false,
@@ -232,18 +234,30 @@ export default {
         },
         setMoveOutDate() {
             if (this.moveInDate) {
-                const date = new Date(this.moveInDate);
+                // Parse YYYY-MM-DD manually
+                const [year, month, day] = this.moveInDate.split('-').map(Number);
+                const date = new Date(year, month - 1, day); // Local date
+
+                // Add 1 month
                 date.setMonth(date.getMonth() + 1);
 
-                // Adjust if date goes beyond valid month days (e.g., Feb 30)
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
+                // Format back to YYYY-MM-DD
+                const outYear = date.getFullYear();
+                const outMonth = String(date.getMonth() + 1).padStart(2, '0');
+                const outDay = String(date.getDate()).padStart(2, '0');
 
-                this.moveOutDate = `${year}-${month}-${day}`;
+                this.moveOutDate = `${outYear}-${outMonth}-${outDay}`;
             } else {
                 this.moveOutDate = '';
             }
+        },
+
+        getTodayLocal() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`; // YYYY-MM-DD
         },
     },
     mounted() {

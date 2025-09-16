@@ -14,9 +14,7 @@
             </div>
         </transition-group>
     </div>
-
 </template>
-
 <script>
 export default {
     name: 'NotificationPopup',
@@ -56,18 +54,19 @@ export default {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     opacity: 0;
     pointer-events: none;
-    animation: slideUpBounce 0.4s ease forwards;
+    animation: slideInLeft 0.4s ease forwards;
+    /* NEW animation */
 }
 
-/* Slide-up animation */
-@keyframes slideUpBounce {
+/* Slide-in from left bottom */
+@keyframes slideInLeft {
     0% {
-        transform: translateY(20px);
+        transform: translateX(-30px) translateY(20px);
         opacity: 0;
     }
 
     100% {
-        transform: translateY(0);
+        transform: translateX(0) translateY(0);
         opacity: 1;
         pointer-events: auto;
     }

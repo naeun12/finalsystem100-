@@ -94,7 +94,8 @@
                                     <strong>For:</strong> {{ tenant.room?.genderPreference }}
                                 </li>
                             </ul>
-                            <div class="text-center"  v-if="getDaysStayed(tenant.moveInDate) >= 3 && tenant.status === 'active' " >
+                            <div class="text-center"
+                                v-if="getDaysStayed(tenant.moveInDate) >= 3 && tenant.status === 'active' ">
                                 <!-- If not yet reviewed -->
                                 <div v-if="alreadyReviewed === tenant.has_rated">
                                     <h5 class="mb-3 text-primary fw-bold border-bottom pb-2">
@@ -126,7 +127,8 @@
                             </div>
 
                             <!-- If less than 3 days -->
-                            <div v-else v-if="tenant.status != 'pending' && tenant.status != 'moved_out'"  class="alert alert-warning text-center shadow-sm p-3 mt-3">
+                            <div v-else v-if="tenant.status != 'pending' && tenant.status != 'moved_out'"
+                                class="alert alert-warning text-center shadow-sm p-3 mt-3">
                                 <i class="bi bi-hourglass-split me-2"></i>
                                 Please wait at least <strong>3 days</strong> before you can rate your Dorm.
                             </div>
@@ -153,11 +155,11 @@
                             <ul class="list-group list-group-flush text-start small">
                                 <li class="list-group-item">
                                     <i class="bi bi-calendar-event text-primary me-2"></i>
-                                    <strong>Lease Start:</strong> {{ tenant.moveInDate }}
+                                    <strong>Lease Start:</strong> {{ formatDate(tenant.moveInDate) }}
                                 </li>
                                 <li class="list-group-item">
                                     <i class="bi bi-calendar2-check-fill text-success me-2"></i>
-                                    <strong>Lease End:</strong> {{ tenant.moveOutDate }}
+                                    <strong>Lease End:</strong> {{ formatDate(tenant.moveOutDate) }}
                                 </li>
                                 <li class="list-group-item">
                                     <i class="bi bi-currency-peso text-info me-2"></i>
@@ -172,9 +174,18 @@
                                         tenant.moveOutDate) }}
                                     </span>
                                 </li>
-                            
+
                             </ul>
-                            <div  class="mt-2 mb-4 p-3 border rounded shadow-sm bg-light small"
+                            <div v-if="tenant.extension_payment_status === 'done' "
+                                class="alert alert-info text-center p-3 rounded shadow-sm">
+                                <p class="mb-0 fw-semibold">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    Your rent extension has been successfully paid and approved. You may view the
+                                    details in your payment history.
+                                </p>
+                            </div>
+
+                            <div class="mt-2 mb-4 p-3 border rounded shadow-sm bg-light small"
                                 v-if="tenant.notifyRent == 1">
                                 <h6 class="fw-bold text-primary text-center mb-3">
                                     💰 Please choose an option for the rent extension request
@@ -192,11 +203,16 @@
                                 </button>
 
                             </div>
+                            <div class="mt-2 mb-4 p-3 border rounded shadow-sm bg-light small"
+                                v-if="tenant.extension_decision === 'not_extending'">
+                                <h6 class="fw-bold text-primary text-center mb-3">
+                                    ❌ You have chosen not to extend your lease.
+                                </h6>
+                                <p class="text-muted">
+                                    Please be reminded that your lease will end on
+                                    <strong>{{ formatDate(tenant.moveOutDate) }}</strong>. Kindly coordinate with your
+                                    landlord for the move-out process.</p>
 
-                            <div v-else v-if="tenant.status != 'pending'" class="alert alert-info text-center p-3 rounded shadow-sm">
-                                <p class="mb-0 fw-semibold">
-                                    ⏳ Wait for your landlord to notify you if you can extend your stay.
-                                </p>
                             </div>
                             <div class="mt-2 mb-4 p-3 border rounded shadow-sm bg-light small"
                                 v-if="tenant.extension_decision === 'extend'">
@@ -207,12 +223,12 @@
                                 <p>
                                     <i class="bi bi-calendar-event text-secondary"></i>
                                     <strong> Billing Period:</strong>
-                                    {{ tenant.moveInDate }} – {{ tenant.moveOutDate }}
+                                    {{ formatDate(tenant.moveInDate) }} – {{ formatDate(tenant.moveOutDate) }}
                                 </p>
 
                                 <p>
                                     <i class="bi bi-cash-coin text-success"></i>
-                                    <strong> Amount Due:</strong>
+                                    <strong> Room Monthly Rate:</strong>
                                     <span class="text-danger fw-bold">₱{{ tenant.room.price }}</span>
                                 </p>
 
@@ -228,9 +244,9 @@
                                 <p v-if="tenant.paymentOption === 'online'">
                                     Payment Status:
                                     <span class="badge" :class="{
-                                        'bg-success': tenant.payments[0]?.status === 'Approved',
-                                        'bg-warning text-dark': tenant.payments[0]?.status === 'Pending',
-                                        'bg-danger': tenant.payments[0]?.status === 'Rejected'
+                                        'bg-success': tenant.payments[0]?.status === 'approved',
+                                        'bg-warning text-dark': tenant.payments[0]?.status === 'pending',
+                                        'bg-danger': tenant.payments[0]?.status === 'rejected'
                                     }">
                                         {{ tenant.payments[0]?.status || 'No Payment' }}
                                     </span>
@@ -239,9 +255,9 @@
                                     Rent
                                 </button>
                             </div>
-
-
-
+                            <div class="text-center mt-3">
+                                
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -253,40 +269,42 @@
 
                         <div class="modal-header bg-info text-white">
                             <h5 class="modal-title text-white">Extend Payment </h5>
-                            <button type="button" class="btn-close text-white" @click="extendRateModal = false"></button>
+                            <button type="button" class="btn-close text-white"
+                                @click="extendRateModal = false"></button>
                         </div>
 
                         <div class="modal-body">
                             <!-- Payment Option (Online or On-site) -->
-<div class="card shadow-sm border-0 rounded-4 mb-3">
-    <div class="card-body">
-        <h6 class="fw-bold text-primary mb-2">
-            <i class="bi bi-wallet2 me-2"></i> Choose Payment Option
-        </h6>
-        <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
-            <!-- Online Option -->
-            <div class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
-                 style="cursor: pointer; width: 120px; height: 120px;"
-                 @click="paymentOption('online')">
-                <i class="bi bi-globe2 fs-1 text-info mb-2"></i>
-                <small class="fw-semibold text-capitalize">Online</small>
-            </div>
+                            <div class="card shadow-sm border-0 rounded-4 mb-3">
+                                <div class="card-body">
+                                    <h6 class="fw-bold text-primary mb-2">
+                                        <i class="bi bi-wallet2 me-2"></i> Choose Payment Option
+                                    </h6>
+                                    <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
+                                        <!-- Online Option -->
+                                        <div class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
+                                            style="cursor: pointer; width: 120px; height: 120px;"
+                                            @click="paymentOption('online')">
+                                            <i class="bi bi-globe2 fs-1 text-info mb-2"></i>
+                                            <small class="fw-semibold text-capitalize">Online</small>
+                                        </div>
 
-            <!-- On-site Option -->
-            <div class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
-                 style="cursor: pointer; width: 120px; height: 120px;"
-                 @click="paymentOption('onsite')">
-                <i class="bi bi-house-door fs-1 text-success mb-2"></i>
-                <small class="fw-semibold text-capitalize">On-site</small>
-            </div>
-        </div>
-        <div class="justify-content-center d-flex mt-2">
-            <span v-if="errors.payment_option" class="text-danger small mt-1 d-block">
-                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.payment_option[0] }}
-            </span>
-            </div>
-        </div>
-    </div>
+                                        <!-- On-site Option -->
+                                        <div class="text-center p-3 border rounded shadow-sm d-flex flex-column align-items-center justify-content-between"
+                                            style="cursor: pointer; width: 120px; height: 120px;"
+                                            @click="paymentOption('onsite')">
+                                            <i class="bi bi-house-door fs-1 text-success mb-2"></i>
+                                            <small class="fw-semibold text-capitalize">On-site</small>
+                                        </div>
+                                    </div>
+                                    <div class="justify-content-center d-flex mt-2">
+                                        <span v-if="errors.payment_option" class="text-danger small mt-1 d-block">
+                                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{
+                                            errors.payment_option[0] }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="container py-4 mb-4" v-if="payment_option === 'online'">
                                 <div class="card shadow-sm border-0 rounded-4 mb-3">
                                     <div class="card-body">
@@ -323,40 +341,41 @@
                                         <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.paymentType[0] }}
                                     </span>
                                 </div>
-                            <div class="border border-secondary rounded-3 p-4 mb-3 text-center" style="cursor: pointer;"
-                                v-if="isPaymentImage" @click="triggerPaymentImage">
-                                <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
-                                    @change="handlePaymentPicture" />
-                                <div class="d-flex flex-column align-items-center text-center mb-3">
-                                    <img :src="paymentIcon" alt="Payment Icon" style="max-width: 60px; height: auto;"
-                                        class="mb-2" />
-                                    <h5 class="text-secondary mt-2">Upload Payment Image</h5>
-                                    <small class="text-muted">Click to browse and select an image file</small>
+                                <div class="border border-secondary rounded-3 p-4 mb-3 text-center"
+                                    style="cursor: pointer;" v-if="isPaymentImage" @click="triggerPaymentImage">
+                                    <input ref="PaymentPicturesInput" class="d-none" type="file" accept="image/*"
+                                        @change="handlePaymentPicture" />
+                                    <div class="d-flex flex-column align-items-center text-center mb-3">
+                                        <img :src="paymentIcon" alt="Payment Icon"
+                                            style="max-width: 60px; height: auto;" class="mb-2" />
+                                        <h5 class="text-secondary mt-2">Upload Payment Image</h5>
+                                        <small class="text-muted">Click to browse and select an image file</small>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="justify-content-center d-flex mb-2">
-                                <span v-if="errors.PaymentPictureFile" class="text-danger small mt-1 d-block">
-                                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ errors.PaymentPictureFile[0]
-                                    }}
-                                </span>
-                            </div>
-                            <div v-if="PaymentPicturePreview" class="text-center mb-3">
-                                <img :src="PaymentPicturePreview" alt="Uploaded Payment Image"
-                                    class="img-fluid rounded mb-2" style="max-height: 250px;" />
-                                <div>
-                                    <button type="button" @click="removePaymentPicture"
-                                        class="btn btn-danger shadow-sm">
-                                        Remove Uploaded Image
-                                    </button>
+                                <div class="justify-content-center d-flex mb-2">
+                                    <span v-if="errors.PaymentPictureFile" class="text-danger small mt-1 d-block">
+                                        <i class="bi bi-exclamation-circle-fill me-1"></i>{{
+                                        errors.PaymentPictureFile[0]
+                                        }}
+                                    </span>
+                                </div>
+                                <div v-if="PaymentPicturePreview" class="text-center mb-3">
+                                    <img :src="PaymentPicturePreview" alt="Uploaded Payment Image"
+                                        class="img-fluid rounded mb-2" style="max-height: 250px;" />
+                                    <div>
+                                        <button type="button" @click="removePaymentPicture"
+                                            class="btn btn-danger shadow-sm">
+                                            Remove Uploaded Image
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <div v-if="payment_option === 'onsite'" class="alert alert-warning mt-3 shadow-sm">
+                            <i class="bi bi-cash-stack me-2"></i>
+                            You chose <strong>On-Site Payment</strong>.
+                            Kindly meet your landlord to complete the payment process.
                         </div>
-                   <div v-if="payment_option === 'onsite'" class="alert alert-warning mt-3 shadow-sm">
-                    <i class="bi bi-cash-stack me-2"></i>
-                    You chose <strong>On-Site Payment</strong>.  
-                    Kindly meet your landlord to complete the payment process.
-                </div>
 
 
                         <div class="modal-footer">
@@ -463,7 +482,7 @@ export default {
             },
             currentIndex: 0,
             errors: {},
-            payment_type: 'gcash',
+            payment_type: 'online',
             payment: '',
             animate: false,
             isPaymentImage: true,
@@ -669,7 +688,6 @@ export default {
             formdata.append('amount', tenant.room?.price);
             formdata.append('paymentImage', this.PaymentPictureFile);
             formdata.append('paymentOption',this.payment_option);
-            console.log(this.payment_option)
             try {
                 const response = await axios.post('/extend-rent', formdata,
                     {
@@ -748,6 +766,7 @@ export default {
                 if (!confirmed) {
                     return;
                 }
+                this.$refs.loader.loading = true;
 
                 const formdata = new FormData();
                 formdata.append('approveID', tenant.approvedID);
@@ -760,6 +779,8 @@ export default {
                         `The request has been successfully ${decision}.`,
                         'success'
                     );
+                    this.roomsList();
+                    
                 } else {
                     this.$refs.toast.showToast('Something went wrong.', 'error');
                 }
@@ -768,11 +789,22 @@ export default {
                 console.error(error);
                 this.$refs.toast.showToast('Server error, please try again later.', 'error');
             }
+            finally {
+                this.$refs.loader.loading = false;
+            }
         },
         paymentOption(payment_option)
         {
             this.payment_option = payment_option;
-        }
+        },
+        formatDate(date) {
+            if (!date) return "N/A";
+            return new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        },
 
 
     },

@@ -3,6 +3,7 @@
     <NotificationList ref="toastRef" />
 
     <div class="container mt-5">
+
         <div class="d-flex justify-content-end align-items-center mb-4">
             <div class="d-flex gap-2 flex-wrap">
                 <!-- View Rooms Button -->
@@ -14,12 +15,32 @@
 
                 <!-- Add Dorm Button -->
                 <button class="btn btn-outline-primary shadow-sm px-4 rounded-pill d-flex align-items-center gap-2"
-                    @click="VisibleAddModal = true">
+                    @click="VisibleAddModal = true" :disabled="!isVerified" :title="isVerified
+                        ? 'Add Dormitory'
+                        : 'Your account is not verified. Please verify your account to add dormitories.'">
                     <i class="bi bi-plus-circle"></i>
                     Add Dorm
                 </button>
+
+
+            </div>
+
+        </div>
+        <div v-if="!isVerified"
+            class="alert alert-warning border-0 shadow-sm rounded-3 p-4 mb-4 d-flex align-items-center gap-3">
+            <i class="bi bi-shield-lock-fill fs-3 text-warning"></i>
+            <div>
+                <h6 class="fw-bold text-dark mb-1">Account Not Verified</h6>
+                <p class="mb-2 small text-muted">
+                    Please verify your account to unlock all features including adding dormitories.
+                    Verification ensures security and trust within the platform.
+                </p>
+                <button class="btn btn-warning btn-sm rounded-pill shadow-sm px-3" @click="goToVerificationPage">
+                    🔒 Verify Now
+                </button>
             </div>
         </div>
+
 
         <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden" style="border:2px solid #4edce2;">
             <span class="input-group-text bg-white border-0">
@@ -199,10 +220,12 @@
                                     {{ errors.address[0] }}
                                 </span>
                                 <div class="form-floating mt-3">
-                                    <textarea class="form-control bg-light text-muted" id="description"
-                                        v-model="description" placeholder="Description"
-                                        style="height: 120px; cursor: not-allowed; resize: vertical; font-size: 1rem; padding: 1rem;"></textarea>
+
+                                    <textarea class="form-control  text-muted" id="description" v-model="description"
+                                        placeholder="Description"
+                                        style="height: 120px; resize: vertical; font-size: 1rem; padding: 1rem;"></textarea>
                                     <label for="description" class="fw-semibold">Description</label>
+
                                 </div>
 
                                 <span class="mb-3 text-danger" v-if="errors.description">
@@ -234,7 +257,7 @@
 
                                 <span class="mb-3 text-danger mt-3" v-if="errors.contact_email"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
-                                            errors.contact_email[0] }}</span>
+                                    errors.contact_email[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
                                     <input type="tel" class="form-control border-primary shadow-sm" id="contact_phone"
                                         placeholder="Contact Phone" v-model="contact_phone"
@@ -244,7 +267,7 @@
 
                                 <span class="text-danger mb-3" v-if="errors.contact_phone"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
-                                            errors.contact_phone[0] }}</span>
+                                    errors.contact_phone[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
                                     <input type="tel" class="form-control border-primary shadow-sm" id="contact_phone"
                                         placeholder="Gcash Number" v-model="gcashNumber"
@@ -253,7 +276,7 @@
                                 </div>
                                 <span class="text-danger mb-3" v-if="errors.gcashNumber"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
-                                            errors.gcashNumber[0] }}</span>
+                                    errors.gcashNumber[0] }}</span>
 
                                 <div class="form-floating mb-3 mt-3">
                                     <input type="text" class="form-control border-primary shadow-sm" id="building_type"
@@ -264,7 +287,7 @@
 
                                 <span class="text-danger mb-3" v-if="errors.building_type"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
-                                            errors.building_type[0] }}</span>
+                                    errors.building_type[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
                                     <select class="form-select border-primary shadow-sm" id="availability"
                                         v-model="availability" style="height: 48px; font-size: 1rem;">
@@ -278,7 +301,7 @@
 
                                 <span class="text-danger mb-3" v-if="errors.availability">
                                     <i class="fa-solid fa-circle-exclamation"></i> {{
-                                        errors.availability[0] }}</span>
+                                    errors.availability[0] }}</span>
                                 <div class="form-floating mb-3 mt-3">
                                     <select class="form-select border-primary shadow-sm" id="occupancy_type"
                                         v-model="occupancy_type" style="height: 48px; font-size: 1rem;">
@@ -294,7 +317,7 @@
 
                                 <span class="text-danger mb-3" v-if="errors.occupancy_type"> <i
                                         class="fa-solid fa-circle-exclamation"></i> {{
-                                            errors.occupancy_type[0] }}</span>
+                                    errors.occupancy_type[0] }}</span>
 
 
                                 <div class="d-grid">
@@ -396,7 +419,7 @@
                                 placeholder="Enter rule or policy" />
                             <label :for="'rule' + index">Rule/Policy {{ index + 1 }}</label>
                             <span class="text-danger mb-3 " v-if="errors.rules">{{ errors.rules[0]
-                            }}</span>
+                                }}</span>
 
                         </div>
 
@@ -1346,12 +1369,25 @@ export default {
             newrules: "",
             notifications: [],
             currentMainImage: null,
+            isVerified: false,
 
 
         };
     },
     methods: {
-        //modal confirmation 
+        async getlandlordVerifiedStatus()
+        {
+            const res = await axios.get('/getlandlordVerifiedStatus');
+            if (res.data.status === 'success') {
+                this.isVerified = res.data.isVerified;
+            } else {
+                console.error('Failed to fetch landlord verified status');
+                this.isVerified = false;
+            }
+        },  
+        goToVerificationPage() {
+            window.location.href = '/paymentLandlord/' + this.landlord_id;
+        },
         modalconfirmation() {
             this.$refs.modal.visible = true;
 
@@ -2802,6 +2838,7 @@ export default {
 
         this.fetchDorms();
         this.subscribeToNotifications();
+        this.getlandlordVerifiedStatus();
 
     },
 

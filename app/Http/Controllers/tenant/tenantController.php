@@ -152,7 +152,6 @@ class tenantController extends Controller
     try {
         // Generate OTP
         $otpCode = rand(100000, 999999);
-
         // Send OTP via email
         Mail::to($validated['email'])->send(new tenantEmailOtp($otpCode));
 
@@ -246,6 +245,12 @@ public function loginTenant(Request $request)
     
         if (!$user || !\Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
+        }
+          if ($user->is_deactivated == 1) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Your account has been deactivated. Please contact support.'
+            ], 403);
         }
     Auth::guard('tenant')->login($user);
 

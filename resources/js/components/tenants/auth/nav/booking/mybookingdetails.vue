@@ -206,7 +206,7 @@ export default {
             bookingID: '',
             notifications: [],
             receiverID: '',
-            payment_type: 'Gcash',
+            payment_type: 'online',
             tenantid: '',
 
         };

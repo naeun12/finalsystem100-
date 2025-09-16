@@ -62,7 +62,7 @@ class reservationController extends Controller
     $query = reservationModel::with(['room.dorm', 'room.landlord', 'tenant'])
         ->whereHas('room', function ($q) use ($landlordId) {
             $q->where('fklandlordID', $landlordId);
-        });
+        })->where('isDeleted', false);
 
     if ($searchTerm) {
         $query->where(function ($q) use ($searchTerm) {
@@ -90,7 +90,7 @@ class reservationController extends Controller
         $reservation = reservationModel::with(['room.dorm', 'room.landlord','tenant'])
         ->whereHas('room', function ($query) use ($landlordId) {
             $query->where('fklandlordID', $landlordId);
-        })
+        })->where('isDeleted', false)
         ->orderBy('updated_at', 'desc')
         ->paginate(6);
     
@@ -111,13 +111,19 @@ class reservationController extends Controller
         }
     
         $reservation = reservationModel::with([
-            'room.dorm','room.currentTenant','tenant' , 'payment'
-        ])
-        ->where('reservationID', $id)
-        ->whereHas('room', function ($query) use ($landlordId) {
+        'room.dorm',
+        'tenant',
+        'payment',
+        'room.currentTenant' => function ($query) {
+            $query->where('status', 'active');
+        },
+    ])
+    ->where('reservationID', $id)
+    ->whereHas('room', function ($query) use ($landlordId) {
         $query->where('fklandlordID', $landlordId);
-        })
-        ->first();
+    })
+    ->first();
+
 
     
         if (!$reservation) {
@@ -143,7 +149,8 @@ class reservationController extends Controller
                 'message' => 'Tenant reservation record not found.'
             ], 404);
         }
-        $reservation->delete();
+        $reservation->isDeleted = true;
+        $reservation->save();
 
         return response()->json([
             'status' => 'success',
@@ -169,7 +176,7 @@ public function getTenantsByDorm($dormId)
     $tenants = reservationModel::whereHas('room.dorm', function ($query) use ($dormId) {
         $query->where('dormID', $dormId);
     })->with(['room.dorm'])
-     ->orderBy('created_at', 'desc')
+     ->orderBy('created_at', 'desc')->where('isDeleted', false)
       ->paginate(6);
 
     return response()->json($tenants);
@@ -182,7 +189,7 @@ public function getRoomsNumber(Request $request)
     $query = reservationModel::with(['room.dorm', 'room.landlord', 'tenant'])
         ->whereHas('room', function ($q) use ($landlordId) {
             $q->where('fklandlordID', $landlordId);
-        });
+        })->where('isDeleted', false);
 
         if ($searchTerm) {
             $query->whereHas('room', function ($q) use ($searchTerm) {
@@ -202,7 +209,7 @@ public function getApplications(Request $request)
     $query = reservationModel::with(['room.dorm', 'room.landlord', 'tenant'])
         ->whereHas('room', function ($q) use ($landlordId) {
             $q->where('fklandlordID', $landlordId);
-        });
+        })->where('isDeleted', false);
 
     if ($searchStatus) {
         $query->where('status', '=', $searchStatus);

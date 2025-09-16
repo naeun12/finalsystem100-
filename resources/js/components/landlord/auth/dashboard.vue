@@ -92,7 +92,9 @@
                     <!-- Right Chart Container -->
                     <div class="chart-container p-3 border rounded shadow-sm"
                         style="flex: 1 1 45%; max-width: 45%; min-width: 250px;">
-                        <h6 class="fw-bold mb-2">🍩 Booking Profits Per Dorm</h6>
+                        <h6 class="fw-bold mb-2">
+                            <i class="bi bi-cash-stack me-2"></i> Profits Per Dorm
+                        </h6>
                         <DoughnutChart v-if="bookingChartData && bookingChartData.labels && bookingChartData.datasets"
                             :chart-data="bookingChartData" :chart-options="bookingChartOptions" />
 
@@ -111,10 +113,10 @@
                                 <span class="flex-grow-1 small">{{ label }}</span>
                                 <span class="small">
                                     {{
-                                        calculatePercentage(
-                                            bookingChartData.datasets[0].data[index],
-                                            bookingChartData.datasets[0].data
-                                        )
+                                    calculatePercentage(
+                                    bookingChartData.datasets[0].data[index],
+                                    bookingChartData.datasets[0].data
+                                    )
                                     }}%
                                 </span>
                             </div>
@@ -309,7 +311,7 @@ export default
                         this.getTenantsList(),
                         this.getBookingList(),
                         this.getDormProfits(),
-                        this.getBookingProfits()
+                        this.getAllprofits()
                     ]);
 
                 }
@@ -388,35 +390,58 @@ export default
                     console.error('Error fetching dorm profits:', error);
                 }
             },
-            async getBookingProfits() {
+            async getAllprofits() {
+                // Optional: show loading state
+                this.loadingProfits = true;
                 try {
-                    const response = await axios.get(`/get/booking-profits/${this.landlord_id}`, {
+                    const response = await axios.get(`/get/all-profits/${this.landlord_id}`, {
                         params: { date: this.newDate }
                     });
 
-                    const bookings = response.data.data;
+                    // ✅ Safe guard — make sure we always have an array
+                    const bookings = Array.isArray(response.data?.data) ? response.data.data : [];
 
-                    const labels = bookings.map(item => item.dormName);
-                    const data = bookings.map(item => item.totalProfit);
-                    const backgroundColors = ['#2196f3', '#9c27b0', '#ff9800', '#4caf50']; // Add more if needed
+                    if (bookings.length === 0) {
+                        // If no data, reset chart
+                        this.bookingChartData = { labels: [], datasets: [] };
+                        this.totalDormProfit = 0;
+                        return;
+                    }
+
+                    const labels = bookings.map(item => item.dormName ?? "Unknown Dorm");
+                    const data = bookings.map(item => Number(item.totalProfit) || 0);
+
+                    const backgroundColors = [
+                        "#2196f3", "#9c27b0", "#ff9800", "#4caf50", "#e91e63", "#00bcd4",
+                        "#795548", "#607d8b", "#ffc107", "#8bc34a"
+                    ];
 
                     this.bookingChartData = {
-                        labels: labels,
+                        labels,
                         datasets: [
                             {
-                                data: data,
+                                label: "Profits",
+                                data,
                                 backgroundColor: backgroundColors.slice(0, data.length),
                                 hoverOffset: 4
                             }
                         ]
                     };
 
+                    // ✅ Always calculate safely
                     this.totalDormProfit = data.reduce((acc, val) => acc + val, 0);
 
                 } catch (error) {
-                    console.error('❌ Failed to fetch booking profits:', error);
+                    console.error("❌ Failed to fetch booking profits:", error);
+                    // Reset state on error
+                    this.bookingChartData = { labels: [], datasets: [] };
+                    this.totalDormProfit = 0;
+                } finally {
+                    // Optional: hide loading state
+                    this.loadingProfits = false;
                 }
             },
+
             calculatePercentage(value, dataArray) {
                 const total = dataArray.reduce((sum, val) => sum + val, 0);
                 if (total === 0) return 0;

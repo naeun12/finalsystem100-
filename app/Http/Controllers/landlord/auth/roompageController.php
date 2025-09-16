@@ -234,8 +234,8 @@ class roompageController extends Controller
                 'message' => 'Unauthorized action. Please log in as a landlord.'
             ], 403);
         }
-    
-        $rooms = roomModel::where('fklandlordID', $landlordId)
+
+        $rooms = roomModel::with(['dorm', 'features'])->where('fklandlordID', $landlordId)
         ->orderBy('created_at', 'desc')
         ->paginate(6);    
         return response()->json([

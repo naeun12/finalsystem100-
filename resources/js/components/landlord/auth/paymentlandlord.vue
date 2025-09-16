@@ -1,4 +1,6 @@
 <template>
+    <Loader ref="loader" />
+    <NotificationList ref="toastRef" />
     <div class="d-flex bg-light" style="min-height: 90vh;">
         <!-- Left Side: Benefits -->
         <div class="p-4 text-white bg-info shadow-lg rounded-4" style="width: 320px;">
@@ -39,7 +41,6 @@
         <!-- Right Side: Payment Form -->
         <div class="flex-fill d-flex align-items-center justify-content-center">
             <div class="card shadow-lg border-0 rounded-4 p-4" style="width: 100%; max-width: 420px;">
-
                 <!-- Title -->
                 <h4 class="text-center fw-bold mb-4 text-primary">Upgrade Your Account</h4>
 
@@ -54,32 +55,76 @@
                 <!-- Email -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Email Address</label>
-                    <input type="email" class="form-control form-control-lg" placeholder="you@email.com" />
-                </div>
-
-                <!-- GCash Number -->
-                <div v-if="selectedMethod === 'gcash'" class="mb-3">
-                    <label class="form-label fw-semibold">GCash Number</label>
-                    <input type="text" class="form-control form-control-lg" placeholder="09XXXXXXXXX" />
+                    <input type="email" class="form-control form-control-lg" placeholder="you@email.com"
+                        v-model="email" />
+                        <p class="text-danger mt-1" v-if="error.email">{{ error.email[0] }}</p>
                 </div>
 
                 <!-- Pay Button -->
-                <button class="btn btn-primary btn-lg w-100 py-2 shadow-sm">
-                    <i class="bi bi-wallet2 me-2"></i> Pay ₱500
+                <button class="btn btn-primary btn-lg w-100 py-2 shadow-sm" @click="payWithGCash" :disabled="loading">
+                    <i class="bi bi-wallet2 me-2"></i>
+                    <span v-if="loading">Processing...</span>
+                    <span v-else>Pay ₱{{ amount }}</span>
                 </button>
-
             </div>
         </div>
-
     </div>
+    <Toastcomponents ref="toast" />
 </template>
 
 <script>
+import axios from "axios";
+import Loader from '@/components/loader.vue';
+import Modalconfirmation from '@/components/modalconfirmation.vue';
+import NotificationList from '@/components/notifications.vue';
 export default {
+     components: {
+        Loader,
+        Modalconfirmation,
+        NotificationList
+    },
     data() {
         return {
-            selectedMethod: 'gcash',
+            email: "",
+            amount: 500, 
+            loading: false,
+            error: {},
         };
+    },
+    methods: {
+        async payWithGCash() {
+
+            if (!this.email) {
+                this.error.email = ['Email is required.'];
+                return;
+            }
+            
+            try {
+                this.$refs.loader.loading = true;
+
+                const res = await axios.post(
+                    `/landlord/verify-payment`,
+                    {
+                        paymentEmail: this.email,
+                        amount: this.amount,
+                    }
+                );
+                window.location.href = res.data.checkout_url;
+                this.error = {};
+
+            } catch (err) {
+                console.error(err.response?.data || err);
+                alert("Something went wrong. Please try again.");
+            } finally {
+                this.$refs.loader.loading = false;
+            }
+        },
+        async cancelAnimationFrame() {
+            const response = await axios.get('/landlord/{landlord_id}/payment-cancel');
+            if(response.data.status === 'cancelled') {
+                alert('Payment was cancelled. Please try again.');
+            }
+        }
     },
 };
 </script>

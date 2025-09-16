@@ -66,7 +66,7 @@ class bookingpageController extends Controller
     $query = bookingModel::with(['room.dorm', 'room.landlord', 'tenant'])
         ->whereHas('room', function ($q) use ($landlordId) {
             $q->where('fklandlordID', $landlordId);
-        });
+        })->where('isDeleted', false); 
 
     if ($searchTerm) {
         $query->where(function ($q) use ($searchTerm) {
@@ -98,6 +98,7 @@ class bookingpageController extends Controller
             $query->where('fklandlordID', $landlordId);
         })
         ->orderBy('updated_at', 'desc')
+        ->where('isDeleted', false)
         ->paginate(6);
     
         return response()->json([
@@ -116,10 +117,8 @@ public function getTenantsByDorm($dormId)
 {
     $tenants = bookingModel::whereHas('room.dorm', function ($query) use ($dormId) {
         $query->where('dormID', $dormId);
-    })->with(['room.dorm'])
-      ->paginate(6);
-
-    return response()->json($tenants);
+    })->with(['room.dorm']);
+    return response()->json($tenants->paginate(6));
 }
 public function getRooms(Request $request)
 {
@@ -129,7 +128,9 @@ public function getRooms(Request $request)
     $query = bookingModel::with(['room.dorm', 'room.landlord', 'tenant','payment'])
         ->whereHas('room', function ($q) use ($landlordId) {
             $q->where('fklandlordID', $landlordId);
-        });
+        })
+        ->where('isDeleted', false)
+        ->orderBy('updated_at', 'desc');
 
         if ($searchTerm) {
             $query->whereHas('room', function ($q) use ($searchTerm) {
@@ -138,7 +139,7 @@ public function getRooms(Request $request)
         }
         
 
-    return response()->json($query->paginate(5));
+    return response()->json($query->paginate(6));
 }
 
 
@@ -151,14 +152,16 @@ public function getApplications(Request $request)
     'payment'])
         ->whereHas('room', function ($q) use ($landlordId) {
             $q->where('fklandlordID', $landlordId);
-        });
+        })
+         ->where('isDeleted', false)
+         ->orderBy('updated_at', 'desc');
 
     if ($searchStatus && strtolower($searchStatus) !== 'all') {
     $query->where('status', '=', strtolower($searchStatus));
 }
 
 
-    return response()->json($query->paginate(5));
+    return response()->json($query->paginate(6));
 }
     public function ViewTenant($id)
 {
@@ -256,7 +259,7 @@ public function handletenantBooking(Request $request)
                     'contactEmail'      => $booking->contactEmail,
                     'age'               => $booking->age,
                     'gender'            => $booking->gender,
-                    'status'            => 'active',
+                    'status'            => 'pending',
                     'pictureID'        => $booking->pictureID,
                 ]);
                 $message = "Hi {$tenantName}, 👋 Your booking for Room {$room->roomNumber} at {$room->dorm->dormName} has been approved 🎉.";
@@ -270,7 +273,7 @@ public function handletenantBooking(Request $request)
                     'isRead'       => false,
                 ]);
 
-                $room->availability = 'Occupied';
+                $room->availability = 'Reserved';
                 $room->updated_at = now();
                 $room->save();
                 break;
@@ -329,18 +332,19 @@ public function deleteBooking($id)
         if (!$booking) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Tenant screening record not found.'
+                'message' => 'Tenant Booking record not found.'
             ], 404);
         }
-        $booking->delete();
+        $booking->isDeleted = true;
+        $booking->save();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Tenant screening record deleted successfully.'
+            'message' => 'Tenant Booking record temporary deleted successfully.'
         ]);
 
     } catch (\Exception $e) {
-        \Log::error('Error deleting screening: ' . $e->getMessage());
+        \Log::error('Error deleting booking: ' . $e->getMessage());
 
         return response()->json([
             'status' => 'error',

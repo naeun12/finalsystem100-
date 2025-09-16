@@ -40,7 +40,7 @@
                 aria-controls="tenantManagementMenu">
                 <div class="text-dark">
                     <i class="bi bi-calendar2-fill me-2 text-primary fs-5"></i>
-                    Booking and Approval
+                    Booking & Reservation Approval
                 </div>
                 <i class="bi bi-caret-down-fill text-secondary"></i>
             </a>
@@ -79,7 +79,7 @@
                 class="text-decoration-none d-flex align-items-center gap-2 px-2 py-1 rounded hover-effect
                     {{ request()->routeIs('message.landlord') ? 'active-item' : 'text-dark' }}">
                 <i class="bi bi-chat-dots-fill text-success fs-5"></i>
-                Messaging Center
+                Messages
             </a>
         </li>
 

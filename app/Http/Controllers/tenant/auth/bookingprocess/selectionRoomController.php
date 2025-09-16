@@ -43,22 +43,24 @@ return view('tenant.auth.bookingProcess.roomSelection', [
         ->get();
         return response()->json(['rooms' => $rooms]);
     }
-    public function occupiedRooms($dormitoryID)
-    {
-         $reservedRoomIDs = reservationModel::where('fkdormitoryID', $dormitoryID)
-        ->whereIn('status', ['approved', 'paid']) 
-        ->pluck('fkroomID');
-       $rooms = roomModel::with('currentTenant','dorm')
+  public function occupiedRooms($dormitoryID)
+{
+    $rooms = roomModel::with('latestApprovedTenant')
         ->where('fkdormID', $dormitoryID)
-        ->where(function ($query) use ($reservedRoomIDs) {
-            $query->where('availability', 'Occupied')
-                  ->orWhereIn('roomID', $reservedRoomIDs);
+        ->where('availability', 'Occupied') // room is occupied
+        ->get()
+        ->filter(function($room) {
+            // Check if there is a tenant with status 'Reserved'
+            if($room->latestApprovedTenant && $room->latestApprovedTenant->status === 'pending'){
+                return false; // hide reserved rooms
+            }
+            return true; // show only rooms occupied but not reserved
         })
-        ->get();
+        ->values(); // reindex collection
 
+    return response()->json(['rooms' => $rooms]);
+}
 
-        return response()->json(['rooms' => $rooms]);
-    }
    
     public function selectedPriceRange(Request $request, $dormitoryID)
 {
@@ -87,16 +89,18 @@ public function filterGender(Request $request, $dormitoryID)
 }
     public function viewRoomDetails($id)
     {
-        $room = roomModel::with('approvedTenant','dorm')->where('roomID',$id)->first();
-        return response()->json([
+            $room = roomModel::with(['latestApprovedTenant','dorm'])
+                 ->where('roomID',$id)
+                 ->first();        
+            return response()->json([
             'status' => 'success',
             'room' => $room,
         ]);
     }
-   public function reservation(Request $request)
+public function reservation(Request $request)
 {
     try {
-          $validatedData = $request->validate([
+        $validatedData = $request->validate([
             'dormitory_id'      => 'required|integer|exists:dorms,dormID',
             'room_id'           => 'required|integer|exists:rooms,roomID',
             'tenant_id'         => 'required|string|exists:tenants,tenantID',
@@ -108,8 +112,9 @@ public function filterGender(Request $request, $dormitoryID)
             'gender'            => 'required|in:Male,Female',
             'studentpicture_id' => 'required|string',
         ]);
-        // 1. Get the room with landlord and tenant
-        $room = roomModel::with('landlord','currentTenant')->find($request->room_id);
+
+        // 1. Get the room with landlord and all tenants
+        $room = roomModel::with(['landlord', 'currentTenant'])->find($request->room_id);
 
         if (!$room) {
             return response()->json([
@@ -119,26 +124,27 @@ public function filterGender(Request $request, $dormitoryID)
         }
 
         $landlord = $room->landlord;
-        $currentTenant = $room->currentTenant;
 
-        // 2. Check tenant extension decision
-       if ($currentTenant && $currentTenant->extension_decision === 'extending') {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'The current tenant has decided to extend their stay. Reservation is not allowed at the moment.',
-        ]);
-    } elseif ($currentTenant && $currentTenant->extension_decision === 'pending') {
-        return response()->json([
-            'status' => 'error',
-             'message' => 'The current tenant’s extension request is still pending. Reservation is not allowed at the moment. Please message the landlord for request.'
-        ]);
-    }
+        // 2. Check ALL tenants’ extension decision
+        $tenants = $room->currentTenant()->where('status', 'active')->get();
 
+        foreach ($tenants as $tenant) {
+            if ($tenant->extension_decision === 'extend') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'One of the tenants has decided to extend their stay. Reservation is not allowed at the moment.',
+                ]);
+            }
 
-        // 3. Validate input
-      
+            if ($tenant->extension_decision === 'pending') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'A tenant’s extension request is still pending. Reservation is not allowed at the moment. Please message the landlord for request.'
+                ]);
+            }
+        }
 
-        // 4. Save reservation
+        // 3. If no blocking tenants → create reservation
         $reservation = reservationModel::create([
             'fkdormitoryID' => $request->dormitory_id,
             'fkroomID'      => $request->room_id,
@@ -153,7 +159,7 @@ public function filterGender(Request $request, $dormitoryID)
             'status'        => 'pending',
         ]);
 
-        // 5. Send email to tenant (optional wrap in try/catch to avoid breaking flow if mail fails)
+        // 4. Send email to tenant
         try {
             $tenantName = $request->firstname . ' ' . $request->lastname;
             $tenantMessage = "Hi $tenantName, your room reservation has been submitted successfully and is currently pending confirmation.";
@@ -162,7 +168,7 @@ public function filterGender(Request $request, $dormitoryID)
             \Log::warning('Failed to send reservation email: ' . $mailException->getMessage());
         }
 
-        // 6. Create landlord notification
+        // 5. Create landlord notification
         $notifications = notificationModel::create([
             'senderID'     => $request->tenant_id,
             'senderType'   => 'tenant',
@@ -176,7 +182,6 @@ public function filterGender(Request $request, $dormitoryID)
 
         broadcast(new \App\Events\NewNotificationEvent($notifications));
 
-        // 7. Success response
         return response()->json([
             'status'  => 'success',
             'message' => 'Room reserved successfully. Waiting for landlord confirmation.',

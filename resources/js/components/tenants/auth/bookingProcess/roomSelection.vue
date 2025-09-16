@@ -2,6 +2,7 @@
     <Loader ref="loader" />
     <Toastcomponents ref="toast" />
     <Modalconfirmation ref="modal" />
+    <NotificationList ref="toastRef" />
 
     <div class="container-fluid py-3 m-0">
 
@@ -32,6 +33,11 @@
             </select>
 
 
+        </div>
+        <div v-if="!rooms.length" class="text-center p-5 bg-light rounded shadow-sm">
+            <i class="bi bi-door-closed text-secondary" style="font-size: 3rem;"></i>
+            <h5 class="mt-3 text-dark">No Rooms Available</h5>
+            <p class="text-muted">Please check back later or explore other dormitories.</p>
         </div>
         <div class="card shadow-lg rounded-4 overflow-hidden p-3 m-2" v-for="(room, index) in visibleRooms"
             :key="room.room_id">
@@ -111,7 +117,7 @@
                 <div class="modal-content shadow-lg rounded-4 overflow-hidden">
 
                     <!-- Modal Header -->
-                    <div class="modal-header  text-white">
+                    <div class="modal-header bg-info  text-white">
                         <h5 class="modal-title">Room Details</h5>
                         <button type="button" class="btn-close" @click="CloseRoomDetails()"></button>
                     </div>
@@ -143,7 +149,7 @@
 
                                 <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
                                     <label class="form-label fw-semibold text-secondary">
-                                        <i class="bi bi-cash-coin me-2 text-primary"></i> Price
+                                        <i class="bi bi-cash-coin me-2 text-primary"></i> Monthly Rate
                                     </label>
                                     <div class="text-dark fw-medium">₱{{ Number(roomsDetail?.price).toLocaleString() ||
                                         '0' }}</div>
@@ -169,20 +175,27 @@
                                     <label class="form-label fw-semibold text-secondary">
                                         <i class="bi bi-people-fill me-2 text-primary"></i>Current Tenant Name
                                     </label>
-                                    <div class="text-dark fw-medium">{{ roomsDetail.approved_tenant?.firstname }} {{
-                                        roomsDetail.approved_tenant?.lastname }}
-
-
+                                    <div class="text-dark fw-medium">
+                                        <template v-if="roomsDetail.latest_approved_tenant">
+                                            {{ roomsDetail.latest_approved_tenant.firstname }} {{
+                                            roomsDetail.latest_approved_tenant.lastname }}
+                                        </template>
+                                        <template v-else>
+                                            <span class="text-muted fst-italic">No tenant yet</span>
+                                        </template>
                                     </div>
                                 </div>
+
 
                                 <div class="bg-light border rounded-3 p-3 shadow-sm mb-3">
                                     <label class="form-label fw-semibold text-secondary">
                                         <i class="bi bi-calendar-event-fill me-2 text-primary"></i> Lease Expiration
                                         Date
                                     </label>
-                                    <div class="text-dark fw-medium">{{ roomsDetail.approved_tenant?.moveOutDate }}
+                                    <div class="text-dark fw-medium">
+                                        {{ formatDate(roomsDetail.latest_approved_tenant?.moveOutDate) }}
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -488,6 +501,8 @@ export default {
                 if (response.data.status === 'success') {
                     this.roomsDetail = response.data.room;
                     this.openRoomDetailsModal = true;
+                    console.log(this.roomsDetail);
+
                 }
             }
             catch (error) {
@@ -528,8 +543,8 @@ export default {
 
                 if (!genderAllowed || !occupancyAllowed) {
                     this.$refs.toast.showToast('You are not eligible to reserve this room.', 'warning');
-                    return;
                     this.reservationDetails = false;
+                    return;
                 }
 
                 // Confirm reservation
@@ -629,6 +644,14 @@ export default {
         },
         toggleShowMore() {
             this.showAll = !this.showAll;
+        },
+        formatDate(date) {
+            if (!date) return "N/A";
+            return new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
         },
 
 

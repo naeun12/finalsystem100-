@@ -26,7 +26,8 @@ class bookingModel extends Model
         'age',
         'gender',
         'status',
-        'pictureID'
+        'pictureID',
+        'isDeleted',
     ];
    
 

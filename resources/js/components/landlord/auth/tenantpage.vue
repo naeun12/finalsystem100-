@@ -156,7 +156,11 @@
             </div>
         </div>
 
-
+        <div v-if="!tenants.length" class="d-flex flex-column justify-content-center align-items-center"
+            style="height: 200px;">
+            <i class="bi bi-emoji-frown mb-2" style="font-size: 2rem; color: #6c757d;"></i>
+            <p class="text-muted fw-bold">No Bookings found.</p>
+        </div>
         <div class="container bg-white rounded shadow-sm "
             style="border:1px solid #4edce2; border-radius: 0.375rem; max-height: 700px; overflow-y: auto;">
             <div class="row fw-bold bg-info text-white text-center py-3 rounded">
@@ -195,8 +199,7 @@
                     </button>
 
                     <!-- Delete Button -->
-                    <button class="btn btn-sm btn-outline-danger ms-2" @click="deleteReservation(tenant.approvedID)"
-                        title="Delete">
+                    <button class="btn btn-sm btn-outline-danger ms-2" @click="softDelete(tenant)" title="Delete">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
@@ -420,11 +423,11 @@
                             💬 Message Tenant
                         </button>
 
-                        <button v-if="selectedtenant.notifyRent === 1" @click="notifyTenant(selectedtenant)"
+                        <button v-if="selectedtenant.notifyRent === 0" @click="notifyTenant(selectedtenant)"
                             class="btn btn-outline-success px-4">
                             📩 Notify Tenant about Rent Extension
                         </button>
-                        <button v-else-if="selectedtenant.notifyRent === 0"
+                        <button v-else-if="selectedtenant.notifyRent === 1"
                             @click="btnViewTenantPaymentModal(selectedtenant)"
                             class="btn btn-outline-primary px-3 d-flex align-items-center gap-2">
                             <i class="bi bi-receipt"></i>
@@ -580,77 +583,75 @@
                             @click="viewtenantpaymentModal = false"></button>
                     </div>
                     <div class="modal-body">
-    <!-- Online Payment -->
-    <div class="p-4" v-if="tenantpayment.paymentOption === 'onsite'">
-        <h5 class="fw-semibold text-primary mb-3">
-            <i class="bi bi-wallet2 me-2"></i> Online Payment
-        </h5>
-        <p class="small text-muted mb-4">
-            The tenant has submitted an online payment. Please review the details and verify.
-        </p>
+                        <!-- Online Payment -->
+                        <div class="p-4" v-if="tenantpayment.paymentOption === 'online'">
+                            <h5 class="fw-semibold text-primary mb-3">
+                                <i class="bi bi-wallet2 me-2"></i> Online Payment
+                            </h5>
+                            <p class="small text-muted mb-4">
+                                The tenant has submitted an online payment. Please review the details and verify.
+                            </p>
 
-        <!-- Payment Proof (QR / Screenshot) -->
-        <div class="text-center mb-4">
-            <img :src="tenantpayment.paymentProof || 'default-placeholder.png'" 
-                 alt="Payment Proof" 
-                 class="img-fluid rounded shadow-sm border" 
-                 style="max-width: 220px;">
-            <p class="mt-2 small text-muted">Payment Screenshot / GCash Receipt</p>
-        </div>
+                            <!-- Payment Proof (QR / Screenshot) -->
+                            <div class="text-center mb-4">
+                                <img :src="tenantpayment?.payments?.[0]?.paymentImage || 'default-placeholder.png'"
+                                    alt="Payment Proof" class="img-fluid rounded shadow-sm border"
+                                    style="max-width: 400  px;">
+                                <p class="mt-2 small text-muted">Payment Screenshot / GCash Receipt</p>
+                            </div>
 
-        <!-- Payment Details -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <p class="mb-2">
-                    <i class="bi bi-person-circle text-primary me-2"></i>
-                    <strong>Tenant Name:</strong> {{ tenantpayment.firstname }} {{ tenantpayment.lastname }}
-                </p>
-                <p class="mb-2">
-                    <p>
-                        <i class="bi bi-currency-dollar text-success me-2"></i>
-                        <strong>Amount:</strong> ₱{{ tenantpayment?.payments?.[0]?.amount || 'N/A' }}
-                    </p>
-                </p>
-                
-            </div>
-        </div>
+                            <!-- Payment Details -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <p class="mb-2">
+                                        <i class="bi bi-person-circle text-primary me-2"></i>
+                                        <strong>Tenant Name:</strong> {{ tenantpayment.firstname }} {{
+                                        tenantpayment.lastname }}
+                                    </p>
+                                    <p class="mb-2">
+                                    <p>
+                                        <i class="bi bi-currency-dollar text-success me-2"></i>
+                                        <strong>Amount:</strong> ₱{{ tenantpayment?.payments?.[0]?.amount || 'N/A' }}
+                                    </p>
+                                    </p>
 
-        <!-- Extension Date -->
-        <div class="mb-3">
-                    <label class="form-label fw-semibold">
-                        <i class="bi bi-calendar-plus text-primary me-2"></i> Extend Move-Out Date
-                    </label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-primary text-white">
-                            <i class="bi bi-calendar-event"></i>
-                        </span>
-                      <input 
-                    type="date" 
-                    v-model="extensionMoveOutDate.split(' ')[0]" 
-                    :min="tenantpayment.moveOutDate.split(' ')[0]" 
-                    class="form-control"
-                />
+                                </div>
+                            </div>
 
-                    </div>
-                    <small class="text-muted">
-                        Please select a new date later than the current move-out date.
-                    </small>
-                </div>
+                            <!-- Extension Date -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-plus text-primary me-2"></i> Extend Date
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-primary text-white">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </span>
+                                    <input type="date" v-model="extensionDate.split(' ')[0]"
+                                        :min="tenantpayment.moveOutDate.split(' ')[0]" class="form-control" />
 
-        <!-- Action Buttons -->
-        <div class="d-flex gap-2">
-            <button class="btn btn-success w-50 shadow-sm">
-                <i class="bi bi-check-circle me-2"></i> Approve Payment
-            </button>
-            <button class="btn btn-danger w-50 shadow-sm">
-                <i class="bi bi-x-circle me-2"></i> Reject Payment
-            </button>
-        </div>
-    </div>
+                                </div>
+                                <small class="text-muted">
+                                    Please select a new date later than the current move-out date.
+                                </small>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success w-50 shadow-sm"
+                                    @click="updateOnlinePayment(tenantpayment?.payments?.[0],tenantpayment.approvedID,'approved')">
+                                    <i class="bi bi-check-circle me-2"></i> Approve Payment
+                                </button>
+                                <button class="btn btn-danger w-50 shadow-sm"
+                                    @click="updateOnlinePayment(tenantpayment?.payments?.[0],tenantpayment.approvedID,'rejected')">
+                                    <i class="bi bi-x-circle me-2"></i> Reject Payment
+                                </button>
+                            </div>
+                        </div>
 
 
                         <!-- Onsite Payment -->
-                        <div class="p-4" v-if="tenantpayment.paymentOption === 'online'">
+                        <div class="p-4" v-if="tenantpayment.paymentOption === 'onsite'">
                             <h5 class="fw-semibold mb-4">
                                 <i class="bi bi-cash-coin me-2 text-success"></i> Onsite Payment
                             </h5>
@@ -675,26 +676,22 @@
                                 </div>
 
                             </div>
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">
-                        <i class="bi bi-calendar-plus text-primary me-2"></i> Extend Move-Out Date
-                    </label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-primary text-white">
-                            <i class="bi bi-calendar-event"></i>
-                        </span>
-                      <input 
-                    type="date" 
-                    v-model="extensionMoveOutDate.split(' ')[0]" 
-                    :min="tenantpayment.moveOutDate.split(' ')[0]" 
-                    class="form-control"
-                />
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-plus text-primary me-2"></i> Extend Date
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-primary text-white">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </span>
+                                    <input type="date" v-model="extensionDate.split(' ')[0]"
+                                        :min="tenantpayment.moveOutDate.split(' ')[0]" class="form-control" />
 
-                    </div>
-                    <small class="text-muted">
-                        Please select a new date later than the current move-out date.
-                    </small>
-                </div>
+                                </div>
+                                <small class="text-muted">
+                                    Please select a new date later than the current move-out date.
+                                </small>
+                            </div>
 
 
                             <!-- Notice -->
@@ -705,14 +702,15 @@
                                     (The landlord will verify the payment)
                                 </span>
                             </div>
-                                                    <button class="btn btn-success">Update Extension</button>
+                            <button class="btn btn-success w-100"
+                                @click="updateExtension(tenantpayment.approvedID)">Update Extension</button>
 
                         </div>
 
                     </div>
-                    
+
                 </div>
-               
+
             </div>
         </div>
 
@@ -778,7 +776,7 @@ export default {
             searchMoveIn: '',
             viewtenantpaymentModal: false,
             tenantpayment: [],
-            extensionMoveOutDate: '',
+            extensionDate: '',
 
 
         }
@@ -1137,9 +1135,13 @@ export default {
                     this.$refs.toast.showToast(response.data.message, 'success');
                     this.clickConfirmedMoveInTenantModal = false;
                     this.getTenantList();
+                } else if (response.data.status === 'error') {
+                    this.$refs.toast.showToast(response.data.message, 'danger');
+                    this.clickConfirmedMoveInTenantModal = false;
                 } else {
-                    this.$refs.toast.showToast('Failed to move in tenant.', 'error');
+                    this.$refs.toast.showToast('Failed to move in tenant.', 'danger');
                 }
+
             } catch (error) {
                 console.error("Error moving in tenant:", error);
             } finally {
@@ -1152,7 +1154,7 @@ export default {
                 const res = await axios.get(`/view/tenant/payment/${selectedtenant.approvedID}`);
                 this.$refs.loader.loading = true;
                 this.tenantpayment = res.data.tenant;
-                this.extensionMoveOutDate = this.tenantpayment.moveOutDate;
+                this.extensionDate = this.tenantpayment.moveOutDate;
                 this.viewtenantpaymentModal = true;
             }catch (error) {
                 console.error("Error viewing tenant payment:", error);
@@ -1161,6 +1163,119 @@ export default {
                 this.$refs.loader.loading = false;
             }
             
+        },
+        async updateExtension(approveID) {
+            try { 
+                const confirmed = await this.$refs.modal.show({
+                    title: 'Confirm Extension Update',
+                    message: `Are you sure you want to update the extension date to ${this.extensionDate.split(' ')[0]}?`,
+                    functionName: 'Update Extension'
+                });
+
+                if (confirmed) {
+                    this.$refs.loader.loading = true;
+
+                    const response = await axios.post(`/update/extension/${approveID}`, {
+                        extensionDate: this.extensionDate
+                    });
+                    
+                    if (response.data.status === 'success') {
+                        this.$refs.toast.showToast(response.data.message, 'success'); 
+                        this.viewtenantpaymentModal = false;
+                        this.VisibleTenantModal = false;
+
+                        this.getTenantList();
+                    } else {
+                        this.$refs.toast.showToast('Failed to update extension.', 'error');
+                    }
+                } else {
+                    if (this.rules && this.rules.length > 0) {
+                        this.rules.pop();
+                    }
+                    return;
+                }
+            }
+            catch(error) {
+                console.error("Error updating extension:", error);
+            }
+            finally {
+                this.$refs.loader.loading = false;
+            }
+        },
+        async updateOnlinePayment(tenantPayment, approvedID, status) { 
+            try { 
+                const confirmed = await this.$refs.modal.show({
+                    title: 'Confirm Payment {}'.replace('{}', status.charAt(0).toUpperCase() + status.slice(1)),
+                    message: `Are you sure you want to ${status} this payment?`,
+                    functionName: `${status.charAt(0).toUpperCase() + status.slice(1)} Payment`
+                });
+
+                if (confirmed) {
+                    this.$refs.loader.loading = true;
+
+                    const response = await axios.post(`/update/tenant/payment/extension/${approvedID}`, {
+                        status: status,
+                        paymentID: tenantPayment,
+                        extensionDate: this.extensionDate
+
+                    });
+                    
+                    if (response.data.status === 'success') {
+                        this.$refs.toast.showToast(response.data.message, 'success'); 
+                        this.viewtenantpaymentModal = false;
+                        this.VisibleTenantModal = false;
+
+                        this.getTenantList();
+                    } else {
+                        this.$refs.toast.showToast('Failed to approve payment.', 'error');
+                    }
+                } else {
+                    if (this.rules && this.rules.length > 0) {
+                        this.rules.pop();
+                    }
+                    return;
+                }
+            }
+            catch(error) {
+                console.error("Error approving payment:", error);
+            }
+            finally {
+                this.$refs.loader.loading = false;
+            }
+        },
+        async softDelete(tenant) {
+            const confirmed = await this.$refs.modal.show({
+                title: 'Delete Tenant',
+                message: `Are you sure you want to delete this tenant? This action cannot be undone.`,
+                functionName: 'Delete Tenant'
+            });
+            try {
+                if (confirmed) {
+                    this.$refs.loader.loading = true;
+
+                    const response = await axios.post(`/soft-delete/tenant/${tenant.approvedID}`);
+
+                    if (response.data.status === 'success') {
+                        this.$refs.toast.showToast(response.data.message, 'success');
+                        this.getTenantList();
+
+                    } else {
+                        this.$refs.toast.showToast('Failed to delete tenant.', 'error');
+                    }
+                } else {
+                    if (this.rules && this.rules.length > 0) {
+                        this.rules.pop();
+                    }
+                    return;
+                }
+            }
+            catch (error) {
+
+            }
+            finally { 
+                this.$refs.loader.loading = false;
+            }
+          
         },
         formatDate(date) {
             if (!date) return "N/A";

@@ -122,16 +122,36 @@ export default {
 
                 catch (error) {
                     this.toaster = true;
-                    this.toastColor = "danger";
 
-                    if (error.response && error.response.data && error.response.data.message) {
-                        this.messageToaster = error.response.data.message;
+                    if (error.response) {
+                        if (error.response.status === 422) {
+                            // Validation errors
+                            this.toastColor = "danger";
+                            this.messageToaster = "Please check your email and password.";
+                        }
+                        else if (error.response.status === 401) {
+                            // Wrong credentials
+                            this.toastColor = "danger";
+                            this.messageToaster = error.response.data.message || "Invalid login credentials.";
+                        }
+                        else if (error.response.status === 403) {
+                            // Deactivated account
+                            this.toastColor = "warning";
+                            this.messageToaster = error.response.data.message || "Your account is deactivated.";
+                        }
+                        else {
+                            // Other errors
+                            this.toastColor = "danger";
+                            this.messageToaster = error.response.data.message || "An error occurred during login.";
+                        }
                     } else {
-                        this.messageToaster = "An error occurred during login.";
+                        this.toastColor = "danger";
+                        this.messageToaster = "Network error. Please try again.";
                     }
 
                     this.toasterTimeOut();
                 }
+
 
             }
             else {

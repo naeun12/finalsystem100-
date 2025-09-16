@@ -31,10 +31,14 @@ class approvetenantsModel extends Model
         'moveOutDate',
         'notify-extend',
         'paymentType',
+        'deleted_at',
+        'isDeleted',
         'paymentImage',
         'pictureID',
         'status',
-        'paymentOption'
+        'paymentOption',
+        'extension_payment_status',
+        'extensionDate',
     ];
      public function room()
     {

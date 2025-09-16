@@ -29,12 +29,14 @@ return new class extends Migration
             $table->string('moveInDate');
             $table->string('moveOutDate');
             $table->string('status')->defualt('active');
-             $table->enum('payment_option', ['online', 'onsite'])
-              ->default('onsite');
+             $table->enum('paymentOption', ['online', 'onsite']);
              $table->boolean('notifyRent')->default(false);
-
+             $table->boolean('isDeleted')->default(false); 
+            $table->dateTime('extensionDate')->nullable();
     $table->enum('extension_decision', ['pending', 'extend', 'not_extending'])
           ->default('pending');
+           $table->enum('extension_payment_status', ['pending', 'done'])->default('pending')->after('extension_decision');
+
             $table->string('pictureID')->nullable();
             $table->timestamps();
             $table->softDeletes();

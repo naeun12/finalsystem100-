@@ -86,7 +86,7 @@
                             </p>
                         </div>
                     </div>
-                    <button class="btn btn-outline-primary btn-sm" @click="clickRatingandReview()">
+                    <button class="btn btn-warning btn-md" @click="clickRatingandReview()">
                         Rating and Review
                     </button>
 

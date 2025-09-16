@@ -195,38 +195,62 @@ public function getDormProfits(Request $request, $landlord_id)
         'data' => $dormProfits
     ]);
 }
-
-public function getBookingProfits(Request $request, $landlord_id)
+public function getallprofits(Request $request, $landlord_id)
 {
     $dateParam = $request->query('date');
     $date = $dateParam ? \Carbon\Carbon::parse($dateParam) : \Carbon\Carbon::today();
 
-    $bookings = bookingModel::with(['room.dorm' => function ($query) use ($landlord_id) {
-        $query->where('fklandlordID', $landlord_id);
-    }])
-    ->whereDate('created_at', '<=', $date)
-    ->get()
-    ->groupBy(function ($booking) {
-        return $booking->room->dorm->dormName ?? 'Unknown Dorm';
-    })
-    ->map(function ($group) {
-        $total = $group->sum(function ($booking) {
-            return $booking->room->price ?? 0;
-        });
+    // --- 1. Approved tenants payments ---
+    $approved = \App\Models\tenant\approvepaymentModel::with(['approvedTenant.room.dorm'])
+        ->whereHas('approvedTenant.room.dorm', fn($q) => $q->where('fklandlordID', $landlord_id))
+        ->whereDate('created_at', '<=', $date)
+        ->get()
+        ->groupBy(fn($p) => optional(optional(optional($p->approvedTenant)->room)->dorm)->dormName ?? 'Unknown Dorm')
+        ->map(fn($g) => [
+            'dormName' => optional(optional(optional($g->first()?->approvedTenant)->room)->dorm)->dormName ?? 'Unknown Dorm',
+            'totalProfit' => $g->sum(fn($x) => (float) $x->amount)
+        ]);
 
-        return [
-            'dormName' => $group->first()->room->dorm->dormName ?? 'Unknown Dorm',
-            'totalProfit' => $total
-        ];
-    })
-    ->values();
+    // --- 2. Reservation payments ---
+    $reservations = \App\Models\tenant\reservationpaymentModel::with(['reservation.room.dorm'])
+        ->whereHas('reservation.room.dorm', fn($q) => $q->where('fklandlordID', $landlord_id))
+        ->whereDate('created_at', '<=', $date)
+        ->get()
+        ->groupBy(fn($p) => optional(optional(optional($p->reservation)->room)->dorm)->dormName ?? 'Unknown Dorm')
+        ->map(fn($g) => [
+            'dormName' => optional(optional(optional($g->first()?->reservation)->room)->dorm)->dormName ?? 'Unknown Dorm',
+            'totalProfit' => $g->sum(fn($x) => (float) $x->amount)
+        ]);
 
-    $totalProfit = $bookings->sum('totalProfit');
+    // --- 3. Booking payments ---
+    $bookings = \App\Models\tenant\bookingpaymentModel::with(['booking.room.dorm'])
+        ->whereHas('booking.room.dorm', fn($q) => $q->where('fklandlordID', $landlord_id))
+        ->whereDate('created_at', '<=', $date)
+        ->get()
+        ->groupBy(fn($p) => optional(optional(optional($p->booking)->room)->dorm)->dormName ?? 'Unknown Dorm')
+        ->map(fn($g) => [
+            'dormName' => optional(optional(optional($g->first()?->booking)->room)->dorm)->dormName ?? 'Unknown Dorm',
+            'totalProfit' => $g->sum(fn($x) => (float) $x->amount)
+        ]);
+
+    // --- Merge all results ---
+    $profits = collect()
+        ->merge($approved)
+        ->merge($reservations)
+        ->merge($bookings)
+        ->groupBy('dormName')
+        ->map(fn($groups, $dormName) => [
+            'dormName' => $dormName,
+            'totalProfit' => $groups->sum('totalProfit')
+        ])
+        ->values();
+
+    $totalProfit = $profits->sum('totalProfit');
 
     return response()->json([
         'status' => 'success',
         'total_profit' => $totalProfit,
-        'data' => $bookings
+        'data' => $profits
     ]);
 }
 

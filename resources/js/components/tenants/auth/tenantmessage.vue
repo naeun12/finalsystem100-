@@ -5,7 +5,7 @@
             <!-- Sidebar -->
             <div class="col-md-3 bg-white border-end shadow-sm d-flex flex-column">
                 <div class="p-3">
-                    <h5 class="fw-bold text-primary mb-3">Conversations</h5>
+                    <h5 class="fw-bold text-primary mb-3">Inbox</h5>
                     <div class="list-group bg-transparent overflow-auto" style="max-height: 80vh;">
                         <a v-for="convo in conversations" :key="convo.conversation_id" href="#"
                             class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2 px-3 shadow-sm rounded mb-2 transition"

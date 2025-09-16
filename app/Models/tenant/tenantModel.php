@@ -36,8 +36,9 @@ class tenantModel extends Authenticatable
         'province',
         'region',
         'postalcode',
-        'currentaddress',
-        'profile_pic_url',
+        'currentAddress',
+        'profilePicUrl',
+        'is_deactivated',
     ];
     public function getAuthPassword()
     {

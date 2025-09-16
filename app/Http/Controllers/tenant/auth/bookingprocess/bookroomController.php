@@ -22,7 +22,7 @@ class bookroomController extends Controller
             $unreadCount = notificationModel::where('receiverID', $tenantID)
             ->where('isRead', false)
             ->count();
-        return view('tenant.auth.bookingProcess.roomBooking',['title'=>'Room Selection','cssPath'=>'','roomId' =>$roomId,'tenant_id'=>$tenantID,'notifications' => $notifications,
+        return view('tenant.auth.bookingProcess.roomBooking',['title'=>'Book Room','cssPath'=>'','roomId' =>$roomId,'tenant_id'=>$tenantID,'notifications' => $notifications,
              'unread_count' => $unreadCount,]);
     }
     public function getRoom($roomID)
