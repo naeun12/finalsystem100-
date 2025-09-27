@@ -52,7 +52,7 @@ class tenantmessageController extends Controller
     })->sortByDesc('sent_at')->values();
 
     return view('tenant.auth.tenantmessage', [
-        'title'      => 'My Conversations',
+        'title'      => 'DormHub Message',
         'cssPath'    => '',
         'demo'       => '',
         'tenant_id'  => $tenant_id,
@@ -99,7 +99,7 @@ class tenantmessageController extends Controller
             ->get();
     
         return view('tenant.auth.tenantmessage', [
-            'title' => 'Message',
+            'title' => 'DormHub Message',
             'cssPath' => '',
             'landlord' => $landlord,
             'tenant_id' => $tenant_id,
@@ -194,7 +194,7 @@ class tenantmessageController extends Controller
         'isRead'       => false,
         'readAt'       => null,
         ]);
-                broadcast(new \App\Events\NewNotificationEvent($notifications));
+        broadcast(new \App\Events\NewNotificationEvent($notifications));
 
 
 

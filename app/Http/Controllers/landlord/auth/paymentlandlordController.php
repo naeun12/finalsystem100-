@@ -49,6 +49,8 @@ class paymentlandlordController extends Controller
 public function verifyPaymentLandlord(Request $request)
 {
     $landlord_id = $request->route('landlord_id');
+    $paymentPageUrl = url()->previous();
+
     // Validate input
     $request->validate([
             'paymentEmail' => 'required|email',
@@ -107,19 +109,14 @@ public function paymentSuccess(Request $request)
         'referenceNumber' => null,
         'responsePayload' => json_encode($request->all()),
     ]);
-    return response()->json([
-        'status' => 'success',
-        'message' => '✅ Payment Success! Your landlord account is now verified.',
-        'data' => $request->all()
-    ]);
+    return redirect()->route('payment.landlord', ['landlord_id' => $landlord_id, 'status' => 'success']);
+
 }
 public function paymentCancel(Request $request)
 {
-    return response()->json([
-        'status' => 'cancelled',
-        'message' => 'Payment was cancelled by the user.',
-        'data' => $request->all()
-    ]);
+$landlord_id = session('landlord_id');
+    return redirect()->route('payment.landlord', ['landlord_id' => $landlord_id, 'status' => 'cancelled']);
+
 }
 
 

@@ -10,6 +10,7 @@ use App\Models\landlord\bookingModel;
 use App\Models\tenant\approvetenantsModel;
 use App\Models\tenant\reservationModel;
 use App\Models\notificationModel;
+use Carbon\Carbon;
 
 use App\Models\landlord\dormModel;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -208,7 +209,7 @@ public function getallprofits(Request $request, $landlord_id)
         ->groupBy(fn($p) => optional(optional(optional($p->approvedTenant)->room)->dorm)->dormName ?? 'Unknown Dorm')
         ->map(fn($g) => [
             'dormName' => optional(optional(optional($g->first()?->approvedTenant)->room)->dorm)->dormName ?? 'Unknown Dorm',
-            'totalProfit' => $g->sum(fn($x) => (float) $x->amount)
+            'totalProfit' => collect($g)->sum(fn($x) => (float) $x->amount) // ✅ wrap in collect()
         ]);
 
     // --- 2. Reservation payments ---
@@ -219,7 +220,7 @@ public function getallprofits(Request $request, $landlord_id)
         ->groupBy(fn($p) => optional(optional(optional($p->reservation)->room)->dorm)->dormName ?? 'Unknown Dorm')
         ->map(fn($g) => [
             'dormName' => optional(optional(optional($g->first()?->reservation)->room)->dorm)->dormName ?? 'Unknown Dorm',
-            'totalProfit' => $g->sum(fn($x) => (float) $x->amount)
+            'totalProfit' => collect($g)->sum(fn($x) => (float) $x->amount) // ✅ wrap in collect()
         ]);
 
     // --- 3. Booking payments ---
@@ -230,7 +231,7 @@ public function getallprofits(Request $request, $landlord_id)
         ->groupBy(fn($p) => optional(optional(optional($p->booking)->room)->dorm)->dormName ?? 'Unknown Dorm')
         ->map(fn($g) => [
             'dormName' => optional(optional(optional($g->first()?->booking)->room)->dorm)->dormName ?? 'Unknown Dorm',
-            'totalProfit' => $g->sum(fn($x) => (float) $x->amount)
+            'totalProfit' => collect($g)->sum(fn($x) => (float) $x->amount) // ✅ wrap in collect()
         ]);
 
     // --- Merge all results ---
@@ -241,11 +242,12 @@ public function getallprofits(Request $request, $landlord_id)
         ->groupBy('dormName')
         ->map(fn($groups, $dormName) => [
             'dormName' => $dormName,
-            'totalProfit' => $groups->sum('totalProfit')
+            'totalProfit' => collect($groups)->sum('totalProfit') // ✅ wrap in collect()
         ])
-        ->values();
+        ->values()
+        ->toArray();
 
-    $totalProfit = $profits->sum('totalProfit');
+    $totalProfit = collect($profits)->sum('totalProfit');
 
     return response()->json([
         'status' => 'success',
@@ -253,35 +255,56 @@ public function getallprofits(Request $request, $landlord_id)
         'data' => $profits
     ]);
 }
-
-public function generateFullReport($landlordID)
+public function generateFullReport($landlordID,Request $request)
 {
-    // Fetch reservations with related dorm info
-    $reservations = reservationModel::with(['room.dorm'])
+        $selectedDate = $request->query('date'); // gets ?date=YYYY-MM-DD
+
+    // Fetch reservations with related dorm info and payment
+    $reservations = reservationModel::with(['room.dorm','payment'])
+        ->where('status', 'approved')
         ->whereHas('room', fn($query) => $query->where('fklandlordID', $landlordID))
+        ->whereHas('payment')
+        ->when($selectedDate, fn($q) => $q->whereDate('created_at', '<=', $selectedDate))
         ->get();
 
-    // Fetch bookings with related dorm info
-    $bookings = bookingModel::with(['room.dorm'])
+    // Add total amount per reservation
+    $reservations->each(function($r) {
+        $r->total_amount = $r->payment->sum('amount');
+    });
+
+    // Fetch bookings with related dorm info and payment
+    $bookings = bookingModel::with(['room.dorm','payment'])
+        ->where('status', 'approved')
         ->whereHas('room', fn($query) => $query->where('fklandlordID', $landlordID))
+        ->whereHas('payment')
+        ->when($selectedDate, fn($q) => $q->whereDate('created_at', '<=', $selectedDate))
+
         ->get();
 
-    // Calculate total income from all bookings
-    $totalIncome = $bookings->sum(fn($booking) => $booking->room->price ?? 0);
+    // Add total amount per booking
+    $bookings->each(function($b) {
+        $b->total_amount = $b->payment->sum('amount');
+    });
 
-    // Prepare report data array for PDF
+    // Calculate total income from reservations + bookings
+    $totalIncome = $reservations->sum('total_amount') + $bookings->sum('total_amount');
+    $logoPath = public_path('images/Logo/logo.png');
+
+    // Prepare report data array
     $reportData = [
         'reservations' => $reservations,
         'bookings'     => $bookings,
         'totalIncome'  => $totalIncome,
         'landlordID'   => $landlordID,
-        'reportDate'   => now()->format('F d, Y h:i A'),
+'reportDate' => Carbon::now('Asia/Manila')->format('F d, Y h:i A'),
+        'logoPath'     => $logoPath,
     ];
 
     // Generate and stream PDF
     $pdf = PDF::loadView('landlord.reports.full-report', $reportData);
     return $pdf->stream("landlord-full-report-{$landlordID}.pdf");
 }
+
 
 
 

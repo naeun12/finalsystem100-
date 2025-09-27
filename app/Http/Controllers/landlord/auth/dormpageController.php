@@ -513,33 +513,52 @@ class dormpageController extends Controller
         ]);
     }
 
-    public function ViewDorm($id)
-    {
-        $landlordId = session('landlord_id');
-        if (!$landlordId) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthorized action. Please log in as a landlord.'
-            ], 403);
-        }
-        // Fetch the dorm by ID
-        $dorm = dormModel::with('amenities','images','rulesAndPolicy')
-            ->where('dormID', $id)
-            ->where('fklandlordID', $landlordId)
-            ->first();
-            
-        if (!$dorm) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Dorm not found.'
-            ], 404);
-        }
+   public function ViewDorm($id)
+{
+    $landlordId = session('landlord_id');
+    if (!$landlordId) {
         return response()->json([
-            'status' => 'success',
-            'dorm' => $dorm
-        ]);
-
+            'status' => 'error',
+            'message' => 'Unauthorized action. Please log in as a landlord.'
+        ], 403);
     }
+
+    $dorm = dormModel::with(['amenities','images','rulesAndPolicy','reviews.tenant'])
+        ->where('dormID', $id)
+        ->where('fklandlordID', $landlordId)
+        ->first();
+
+    if (!$dorm) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Dorm not found.'
+        ], 404);
+    }
+
+    $totalReviews = $dorm->reviews->count();
+
+    $reviews = $dorm->reviews->map(function ($review) {
+        $stars = str_repeat('⭐', (int)$review->rating); // convert rating to stars
+        return [
+            'id' => $review->id,
+            'rating' => $review->rating,
+            'stars' => $stars, // e.g., ⭐⭐⭐⭐
+            'comment' => $review->review,
+            'created_at' => $review->created_at->format('F d, Y h:i A'),
+            'firstname' => $review->tenant->firstname ?? 'Anonymous',
+            'lastname' => $review->tenant->lastname ?? '',
+            'profileImage' => $review->tenant->pictureID ?? null,
+        ];
+    });
+
+    return response()->json([
+        'status' => 'success',
+        'dorm' => $dorm,
+        'total_reviews' => $totalReviews,
+        'reviews' => $reviews
+    ]);
+}
+
 
     public function ListDorms()
     {

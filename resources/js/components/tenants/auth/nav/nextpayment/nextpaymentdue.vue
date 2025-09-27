@@ -55,15 +55,7 @@
                                         {{ history.paymentType || 'N/A' }}
                                     </span>
                                 </div>
-                                <div class="text-center">
-                                    <span class="badge rounded-pill px-3 py-2" :class="{
-                                        'bg-success text-white': history.status === 'approved',
-                                        'bg-danger text-white': history.status === 'rejected',
-                                        'bg-secondary text-white': history.status === 'pending'
-                                    }">
-                                        {{ history.status || 'N/A' }}
-                                    </span>
-                                </div>
+                               
                             </div>
                             <!-- End Payment Item -->
 

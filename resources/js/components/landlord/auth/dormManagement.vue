@@ -960,10 +960,53 @@
                                 </div>
 
 
+
+                            </div>
+
+                        </div>
+                        <div class="card shadow-sm p-3 mb-4 border-0" @click="showReviews = !showReviews"
+                            style="cursor:pointer;">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-chat-left-text-fill text-primary fs-2"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-primary mb-1">Review & Feedback</h6>
+                                    <p class="mb-0 text-dark fw-semibold fs-5">
+                                        {{ totalReviews }} Reviews
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                        <!-- end row -->
-                    </div> <!-- end modal-body -->
+
+                        <!-- Reviews Section -->
+                        <div v-if="showReviews" class="card shadow-sm p-3 mb-4 border-0">
+                            <div v-for="review in reviews" :key="review.id"
+                                class="d-flex mb-3 align-items-start gap-3 p-3 rounded-3 shadow-sm"
+                                style="background-color: #f9f9f9; border-left: 4px solid #3498db;">
+
+                                <!-- Profile Image -->
+                                <img v-if="review.profileImage" :src="review.profileImage" class="rounded-circle"
+                                    style="width:50px; height:50px; object-fit:cover;">
+
+                                <div class="flex-fill">
+                                    <!-- Name & Stars -->
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span class="fw-bold">{{ review.firstname }} {{ review.lastname }}</span>
+                                        <small class="text-muted">{{ review.created_at }}</small>
+                                    </div>
+                                    <div class="text-warning mb-1">{{ review.stars }}</div>
+
+                                    <!-- Comment -->
+                                    <p class="text-muted mb-0">{{ review.comment }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -1285,7 +1328,8 @@ export default {
         return {
             landlord_id: '',
             searchTerm: '',
-            debouncedSearchTearm: '',
+           
+            debouncedSearchTerm: '',
             selectedLocation: '',
             selectedAvailability: '',
             VisibleAddModal: false,
@@ -1370,6 +1414,15 @@ export default {
             notifications: [],
             currentMainImage: null,
             isVerified: false,
+            firstname: '',
+            lastname: '',
+            profilePic: '',
+            averageRating: 0,
+            average_rating: 0,
+            average_stars: '',
+            reviews: [],       // load from API
+            totalReviews: 0,
+            showReviews: false,
 
 
         };
@@ -1512,9 +1565,16 @@ export default {
                     this.$refs.loader.loading = false;
                     this.selectedDorm = response.data.dorm;
                     this.VisibleDisplayDataModal = true;
+                    this.totalReviews = response.data.total_reviews;
+
+                    // Add these lines
+                    this.average_rating = response.data.average_rating;
+                    this.average_stars = response.data.average_stars;
+                    this.reviews = response.data.reviews;
                 } else {
                     console.error("Failed to fetch dorm details:", response.data.message);
                 }
+
             } catch (error) {
                 console.error("Error fetching dorm details:", error);
             } finally {

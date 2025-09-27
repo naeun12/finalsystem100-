@@ -19,25 +19,25 @@
                 <ul class="navbar-nav align-items-center gap-3 me-3">
                     <!-- Home -->
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold text-dark" href="#home">
+                        <a class="nav-link fw-semibold text-dark"href="{{ route('landingpage') }}">
                             <i class="bi bi-house-door-fill me-2"></i> Home
                         </a>
                     </li>
 
                     <!-- About Us Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle fw-semibold text-dark" href="#about-us" id="aboutUsDropdown"
+                        <a class="nav-link dropdown-toggle fw-semibold text-dark" href="{{ route('landingpage') }}" id="aboutUsDropdown"
                             role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-info-circle-fill me-2"></i> About Us
                         </a>
                         <ul class="dropdown-menu border-0 shadow-sm" aria-labelledby="aboutUsDropdown">
                             <li>
-                                <a class="dropdown-item text-dark" href="#about-us">
+                                <a class="dropdown-item text-dark" href="{{ route('landingpage') }}">
                                     <i class="bi bi-building-fill me-2"></i> About Us
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item text-dark" href="#ourteam" onclick="showOurTeam()">
+                                <a class="dropdown-item text-dark"href="{{ route('landingpage') }}"onclick="showOurTeam()">
                                     <i class="bi bi-people-fill me-2"></i> Our Team
                                 </a>
                             </li>
@@ -46,14 +46,14 @@
 
                     <!-- Contact -->
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold text-dark" href="#contact-us">
+                        <a class="nav-link fw-semibold text-dark" href="{{ route('landingpage') }}">
                             <i class="bi bi-telephone-fill me-2"></i> Contact Us
                         </a>
                     </li>
 
                     <!-- FAQs -->
                     <li class="nav-item">
-                        <a class="nav-link fw-semibold text-dark" href="#faqs">
+                        <a class="nav-link fw-semibold text-dark" href="{{ route('landingpage') }}">
                             <i class="bi bi-question-circle-fill me-2"></i> FAQs
                         </a>
                     </li>

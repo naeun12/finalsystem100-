@@ -143,6 +143,9 @@ Route::middleware([LandlordAuth::class])->group(function () {
     Route::get('/get-rooms-by-room-type', [roompageController::class, 'getRoomsByRoomType'])->name('get.rooms.by.room.type');
     Route::get('/ViewRoom/{id}', [roompageController::class, 'ViewRoom'])->name('ViewRoom');
     Route::get('/SearchRooms', [roompageController::class, 'searchRooms'])->name('SearchRooms');
+    Route::post('/rooms/allow-reserve/{id}', [roompageController::class, 'allowReserve'])
+     ->name('rooms.allowReserve');
+
     //functions for booking approval
     Route::get('/booking-list', [bookingpageController::class, 'bookingList']);
     Route::get('/booking-tenant-view/{id}', [bookingpageController::class, 'ViewTenant']);
@@ -211,7 +214,7 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/homepage/{tenant_id}', [homepageController::class, 'homepage'])->name('homepage');
     Route::get('/tenant/update/account/{tenant_id}', [tenantupdateaccountController::class, 'tenantaccountUpdate'])->name('tenant.update');
  
-    Route::get('/room-details/{dormitory_id}/{tenant_id}', [dormdetailscontroller::class, 'roomDetails'])->name('room.details');
+    Route::get('/room-details/{dormitory_id}/{tenant_id}', [dormdetailscontroller::class, 'dormDetailsIndex'])->name('room.details');
     Route::get('/room-selection/{dormitoryID}/{tenantID}', [selectionRoomController::class, 'SelectionRoom'])->name('room.selection');
     Route::get('/available-room/{dormitoryID}', [selectionRoomController::class, 'availableRooms'])->name('available.room');
     Route::get('/occupied-room/{dormitoryID}', [selectionRoomController::class, 'occupiedRooms'])->name('occupied.room');
@@ -235,6 +238,8 @@ Route::middleware([TenantAuth::class])->group(function () {
     Route::get('/dorm-details', [dormdetailscontroller::class, 'ViewDorms'])->name('dorm.details');
     Route::get('/get/dorm/askai/{id}', [dormdetailscontroller::class, 'getdormAskAI']);
     Route::post('/send/ai', [dormdetailscontroller::class, 'askAI']);
+            Route::get('/roomDetail/{room_id}',[dormdetailscontroller::class,'roomDetails']);
+
 
     
     //map dormitories page

@@ -45,20 +45,27 @@ return view('tenant.auth.bookingProcess.roomSelection', [
     }
   public function occupiedRooms($dormitoryID)
 {
-    $rooms = roomModel::with('latestApprovedTenant')
+    
+        $rooms = roomModel::with('latestApprovedTenant')
         ->where('fkdormID', $dormitoryID)
-        ->where('availability', 'Occupied') // room is occupied
+        ->where('availability', 'Occupied')
+        ->where('isReservable', 1)
         ->get()
         ->filter(function($room) {
-            // Check if there is a tenant with status 'Reserved'
             if($room->latestApprovedTenant && $room->latestApprovedTenant->status === 'pending'){
-                return false; // hide reserved rooms
+                return false; 
             }
             return true; // show only rooms occupied but not reserved
         })
-        ->values(); // reindex collection
+        ->values();
+       
+            return response()->json(['rooms' => $rooms]);
 
-    return response()->json(['rooms' => $rooms]);
+
+    
+   
+        
+
 }
 
    

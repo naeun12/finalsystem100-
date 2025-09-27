@@ -9,10 +9,7 @@ use App\Models\conversationModel;
 use App\Models\tenant\tenantModel;
 use App\Events\MessageSent;
 use App\Models\landlord\landlordModel;
- use App\Models\notificationModel;
-
-
-
+use App\Models\notificationModel;
 class messagelandlordController extends Controller
 {
    public function landlordmessageIndex($landlord_id)
@@ -27,6 +24,7 @@ class messagelandlordController extends Controller
             ->count();
     $conversations = conversationModel::where('initiatorID', $landlord_id)
         ->where('initiatorRole', 'landlord')
+        ->orderBy('updated_at','desc')
         ->get();
     $history = $conversations->map(function ($convo) {
         preg_match('/tenant_([a-z0-9\-]+)/', $convo->topic, $matches);
@@ -41,15 +39,15 @@ class messagelandlordController extends Controller
         return [
             'conversation_id'   => $convo->id,
             'receiver_name'     => $tenant ? $tenant->firstname . ' ' . $tenant->lastname : 'Unknown',
-            'receiver_profile'  => $tenant->profile_pic_url ?? 'default-profile.png',
+            'receiver_profile'  => $tenant->profilePicUrl ?? 'default-profile.png',
             'last_message'      => $lastMessage->message ?? '',
             'sent_at'           => $lastMessage->sentAt ?? null,
         ];
     })->sortByDesc('sent_at')->values();
 
     return view('landlord.auth.messagingCenter', [
-        'title'        => 'My Conversations',
-        'headerName'   => 'Message',
+        'title'        => 'DormHub Message',
+        'headerName'   => 'DormHub Message',
         'landlord_id'  => $landlord_id,
         'history'      => $history,
          'notifications' => $notifications,
@@ -95,15 +93,17 @@ public function selecttenantToMessage(Request $request, $landlord_id)
         [
             'conversation_id'   => $conversation->id,
             'receiver_name'     => $tenant->firstname . ' ' . $tenant->lastname,
-            'receiver_profile'  => $tenant->profile_pic_url ?? 'default-profile.png',
+            'receiver_profile'  => $tenant->profilePicUrl 
+                                ? '/' . $tenant->profilePicUrl 
+                                : '/default-profile.png',
             'last_message'      => $lastMessage->message ?? '(No messages yet)',
             'sent_at'           => $lastMessage->sentAt ?? null,
         ]
     ]);
 
     return view('landlord.auth.messagingCenter', [
-        'title'        => 'My Conversations',
-        'headerName'   => 'Message',
+        'title'        => 'DormHub Message',
+        'headerName'   => 'DormHub Message',
         'landlord_id'  => $landlord_id,
         'history'      => $history,
         'notifications' => $notifications,
@@ -128,7 +128,13 @@ public function selecttenantToMessage(Request $request, $landlord_id)
         return [
             'conversation_id'   => $convo->id,
             'receiver_name'     => $tenant ? $tenant->firstname . ' ' . $tenant->lastname : 'Unknown Tenant',
-            'receiver_profile'  => $tenant->profile_pic_url ?? 'default-profile.png',
+            'receiver_profile' => $tenant->profilePicUrl
+            ? asset('storage/' . $tenant->profilePicUrl)
+            : asset('storage/uploads/profilePic/default-profile.png'),
+
+
+
+
             'last_message'      => $lastMessage->message ?? '(No messages yet)',
             'sent_at'           => $lastMessage->sentAt ?? null,
         ];

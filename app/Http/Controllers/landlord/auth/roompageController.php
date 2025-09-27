@@ -94,11 +94,11 @@ class roompageController extends Controller
         ]);
     }
 
-    public function addRoom(Request $request)
+   public function addRoom(Request $request)
 {
     $validator = Validator::make($request->all(), [
         'dormsId' => 'required|integer',
-        'roomNumber' => ['required','string','max:255',],
+        'roomNumber' => ['required','string','max:255'],
         'roomType' => 'required|string|max:255',
         'availability' => 'required|string|max:255',
         'listing_type' => 'required|string|max:255',
@@ -111,50 +111,39 @@ class roompageController extends Controller
         // Custom error messages
         'dormsId.required' => 'Please select a dormitory.',
         'dormsId.integer' => 'Invalid dormitory selection.',
-
         'roomNumber.required' => 'Please enter the room number.',
         'roomNumber.string' => 'Room number must be text.',
         'roomNumber.max' => 'Room number must be 255 characters or fewer.',
-
         'roomType.required' => 'Please select a room type.',
         'roomType.string' => 'Room type must be text.',
         'roomType.max' => 'Room type must be 255 characters or fewer.',
-
         'availability.required' => 'Please select availability status.',
         'availability.string' => 'Availability must be text.',
         'availability.max' => 'Availability must be 255 characters or fewer.',
-
         'listing_type.required' => 'Please select a bed type.',
         'listing_type.string' => 'Bed type must be text.',
         'listing_type.max' => 'Bed type must be 255 characters or fewer.',
-
         'area_sqm.required' => 'Please enter the room area in square meters.',
         'area_sqm.string' => 'Room area must be text.',
         'area_sqm.max' => 'Room area must be 255 characters or fewer.',
-
         'gender_preference.required' => 'Please select a gender preference.',
         'gender_preference.string' => 'Gender preference must be text.',
         'gender_preference.max' => 'Gender preference must be 255 characters or fewer.',
-
         'furnishing_status.required' => 'Please specify the furnishing status.',
         'furnishing_status.string' => 'Furnishing status must be text.',
         'furnishing_status.max' => 'Furnishing status must be 255 characters or fewer.',
-
         'roomImageFile.required' => 'Please upload a room image.',
         'roomImageFile.image' => 'The uploaded file must be an image.',
         'roomImageFile.mimes' => 'Accepted image formats: jpg, jpeg, png, webp.',
         'roomImageFile.max' => 'Image size must not exceed 2MB.',
-
         'price.required' => 'Please enter the room price.',
         'price.numeric' => 'Price must be a valid number.',
         'price.min' => 'Price cannot be negative.',
-
-            ]);
+    ]);
 
     if ($validator->fails()) {
         return response()->json([
             'status' => 'error',
-            'message' => 'Validation failed.',
             'errors' => $validator->errors()
         ], 422);
     }
@@ -167,13 +156,27 @@ class roompageController extends Controller
                 'message' => 'Unauthorized action. Please log in as a landlord.'
             ], 403);
         }
+
         $dorm = dormModel::find($request->input('dormsId'));
-        if ($dorm->totalRooms <= 0) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'No available capacity for new rooms in this dormitory.'
-        ], 422);
-    }
+        if (!$dorm) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Dormitory not found.'
+            ], 404);
+        }
+        $existingRoom = roomModel::where('fkdormID', $request->input('dormsId'))
+    ->where('roomNumber', $request->input('roomNumber'))
+    ->first();
+
+                if (!$existingRoom && $dorm->totalRooms <= 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No available capacity for new rooms in this dormitory.'
+            ], 422);
+        }
+
+        // Check if the room number already exists in this dorm
+       
 
         $room = new roomModel();
         $room->fkdormID = $request->input('dormsId');
@@ -186,22 +189,24 @@ class roompageController extends Controller
         $room->areaSqm = $request->input('area_sqm');
         $room->genderPreference = $request->input('gender_preference');
         $room->price = round($request->input('price'), 2);
+
         if ($request->hasFile('roomImageFile')) {
             $image1 = $request->file('roomImageFile');
             $image1Name = time() . '_1.' . $image1->getClientOriginalExtension();
-            $image1Path = $image1->storeAs('public/uploads/roomImages', $image1Name);
+            $image1->storeAs('public/uploads/roomImages', $image1Name);
             $mainImageUrl = asset('storage/uploads/roomImages/' . $image1Name);
         } else {
             $mainImageUrl = null;
         }
         $room->roomImages = $mainImageUrl;
-           $dorm = dormModel::find($request->input('dormsId'));
-       $room->save();
 
-        $dorm->totalRooms = max(0, $dorm->totalRooms - 1);
-        $dorm->save();
+        $room->save();
 
-        
+        // Decrease totalRooms only if it's a new room number
+        if (!$existingRoom) {
+            $dorm->totalRooms = max(0, $dorm->totalRooms - 1);
+            $dorm->save();
+        }
 
         return response()->json([
             'status' => 'success',
@@ -213,17 +218,16 @@ class roompageController extends Controller
     } catch (\Illuminate\Database\QueryException $e) {
         return response()->json([
             'status' => 'error',
-            'message' => 'Database error: ' . $e->getMessage(),
             'input' => $request->all()
         ], 500);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
-            'message' => 'An unexpected error occurred: ' . $e->getMessage(),
             'input' => $request->all()
         ], 500);
     }
 }
+
     public function ListRooms(Request $request)
     {
         $landlordId = session('landlord_id');
@@ -515,6 +519,17 @@ public function deleteRoomFeatures($pivotId)
             ], 500);
         }
     }
+    public function allowReserve($id)
+{
+    $room = roomModel::findOrFail($id);
+    $room->isReservable = true;
+    $room->save();
+
+ return response()->json([
+        'success' => true,
+        'message' => 'The room has been set as available for reservations.'
+    ]);}
+
     
     
 }

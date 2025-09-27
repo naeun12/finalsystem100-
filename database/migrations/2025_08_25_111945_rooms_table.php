@@ -30,6 +30,9 @@ return new class extends Migration
             $table->string('areaSqm');
             $table->string('genderPreference');
             $table->string('roomImages');
+              $table->boolean('isReservable')
+                  ->default(false)
+                  ->comment('1 = can be reserved even if occupied, 0 = cannot');
             $table->timestamps();
             $table->foreign('fkdormID')->references('dormID')->on('dorms')->onDelete('cascade');
             $table->foreign('fklandlordID')->references('landlordID')->on('landlords')->onDelete('cascade');

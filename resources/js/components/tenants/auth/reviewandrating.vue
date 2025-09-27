@@ -42,7 +42,7 @@
             <div v-for="review in reviews" :key="review.reviewID" class="col-md-6">
                 <div class="card shadow-sm h-100 border-0 rounded-4 review-card">
                     <div class="card-body d-flex gap-3 p-4">
-                        <img :src="review.tenant?.studentpictureId || 'https://via.placeholder.com/60'"
+                        <img :src="review.tenant?.pictureID || 'https://via.placeholder.com/60'"
                             alt="User Avatar" class="rounded-circle border border-2 border-warning"
                             style="width: 60px; height: 60px; object-fit: cover;" />
                         <div class="flex-grow-1">

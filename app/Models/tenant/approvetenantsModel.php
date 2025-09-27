@@ -35,6 +35,7 @@ class approvetenantsModel extends Model
         'isDeleted',
         'paymentImage',
         'pictureID',
+        'has_rated',
         'status',
         'paymentOption',
         'extension_payment_status',

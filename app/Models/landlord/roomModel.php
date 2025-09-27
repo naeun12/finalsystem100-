@@ -31,6 +31,7 @@ class roomModel extends Model
         'genderPreference',
         'roomImages',
         'created_at',
+        'isReservable'
         
     ];
  public function landlord()

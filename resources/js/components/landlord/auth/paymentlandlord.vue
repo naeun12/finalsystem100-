@@ -107,6 +107,7 @@ export default {
                     {
                         paymentEmail: this.email,
                         amount: this.amount,
+
                     }
                 );
                 window.location.href = res.data.checkout_url;
@@ -126,5 +127,16 @@ export default {
             }
         }
     },
+    mounted() { 
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get('status');
+
+        if (status === 'success') {
+            this.$refs.toast.show('✅ Payment Success! Your account is now verified.');
+            // Optional: call backend to save payment info
+        } else if (status === 'cancelled') {
+            this.$refs.toast.show('⚠️ Payment was cancelled.');
+        }
+    }
 };
 </script>

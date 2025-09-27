@@ -87,8 +87,9 @@
                     <div class="dropdown">
                         <a class="d-flex align-items-center text-black text-decoration-none dropdown-toggle"
                             href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{ asset(session('profilePicUrl')) }}" alt="User Avatar" width="40"
-                                height="40" class="rounded-circle me-2">
+                           <img src="{{ asset('storage/' . session('profilePicUrl')) }}" 
+                             alt="User Avatar" width="40" height="40" class="rounded-circle me-2">
+
                             <span class="fw-semibold d-none d-md-inline">
                                 {{ session('tenant_firstname') }} {{ session('tenant_lastname') }}
                             </span>

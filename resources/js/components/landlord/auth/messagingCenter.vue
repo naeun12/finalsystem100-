@@ -10,36 +10,44 @@
                     <div class="list-group bg-transparent overflow-auto" style="max-height: 80vh;">
                         <a v-for="convo in conversations" :key="convo.conversation_id" href="#"
                             class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2 px-3 shadow-sm rounded mb-2 transition"
-                            :class="isActiveConversation(convo.conversation_id) ? 'bg-primary text-white' : 'bg-light text-dark'"
-                            @click.prevent="selectConversation(convo)" style="border: none; cursor: pointer;">
+                            :class="[
+                                convo.is_read === 0
+                                    ? 'bg-primary text-white'   // 👈 unread
+                                    : 'bg-info text-dark'       // 👈 read
+                            ]" @click.prevent="selectConversation(convo)" style="border: none; cursor: pointer;">
 
+                            <!-- Profile Picture -->
                             <img :src="convo.receiver_profile || 'default-profile.png'" alt="Profile"
                                 class="rounded-circle border" style="width: 48px; height: 48px; object-fit: cover;" />
 
+                            <!-- Conversation Details -->
                             <div class="flex-grow-1">
                                 <h6 class="mb-0 fw-semibold text-truncate">
                                     {{ convo.receiver_name }}
                                 </h6>
-                                <small
-                                    :class="isActiveConversation(convo.conversation_id) ? 'text-white-50' : 'text-muted'">
+                                <small :class="convo.is_read === 0 ? 'fw-bold text-white-50' : 'text-dark'">
                                     {{ convo.last_message }}
                                 </small>
                             </div>
                         </a>
                     </div>
                 </div>
+
+
             </div>
 
             <!-- Chat Area -->
             <div class="col-md-9 d-flex flex-column p-3 bg-light">
                 <!-- Header -->
                 <div class="d-flex align-items-center bg-white shadow-sm rounded p-3 mb-3 border">
-                    <img :src="activeLandlord.profile_pic_url || 'default-profile.png'" alt="Landlord"
-                        class="rounded-circle me-3 border" style="width: 50px; height: 50px; object-fit: cover;" />
+                    <img :src="activeLandlord.profilePicUrl" alt="Landlord" class="rounded-circle me-3 border"
+                        style="width: 50px; height: 50px; object-fit: cover;" />
+
+
                     <div>
                         <h6 class="mb-0 fw-bold text-dark">
                             {{ activeLandlord.firstname ? activeLandlord.firstname + ' ' + activeLandlord.lastname :
-                                'Loading...' }}
+                            'Loading...' }}
                         </h6>
                         <small class="text-muted">Tenant</small>
                     </div>
@@ -109,7 +117,7 @@ export default {
             activeLandlord: {
                 firstname: '',
                 lastname: '',
-                profile_pic_url: ''
+                profilePicUrl: ''
             },
         };
     },
@@ -139,8 +147,10 @@ export default {
             this.activeLandlord = {
                 firstname: convo.receiver_name.split(' ')[0] || '',
                 lastname: convo.receiver_name.split(' ')[1] || '',
-                profile_pic_url: convo.receiver_profile || 'default-profile.png'
+                profilePicUrl: convo.receiver_profile
             };
+
+            console.log('sds',this.activeLandlord.profilePicUrl)
 
             this.fetchMessages(convo.conversation_id);
             if (this.messagePollInterval) {

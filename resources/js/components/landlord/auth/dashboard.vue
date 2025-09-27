@@ -28,8 +28,8 @@
                             📄 Generate Reports:
                         </label>
                         <!-- Button with icon -->
-                        <a :href="`/generate-full-report/${landlord_id}`" target="_blank"
-                            class="btn btn-outline-success btn-sm">
+                        <a :href="`/generate-full-report/${landlord_id}?date=${newDate}`" target="_blank"
+                            class="btn btn-outline-success btn-sm" :class="{ 'disabled': !newDate }">
                             📄 Download Full Report
                         </a>
 
@@ -95,8 +95,10 @@
                         <h6 class="fw-bold mb-2">
                             <i class="bi bi-cash-stack me-2"></i> Profits Per Dorm
                         </h6>
-                        <DoughnutChart v-if="bookingChartData && bookingChartData.labels && bookingChartData.datasets"
-                            :chart-data="bookingChartData" :chart-options="bookingChartOptions" />
+                        <DoughnutChart v-if="bookingChartData" :chart-data="bookingChartData"
+                            :chart-options="bookingChartOptions" />
+
+
 
                         <!-- Legend -->
                         <div class="legend mt-3"
@@ -392,8 +394,9 @@ export default
             },
             async getAllprofits() {
                 // Optional: show loading state
-                this.loadingProfits = true;
                 try {
+                    this.$refs.loader.loading = true;
+
                     const response = await axios.get(`/get/all-profits/${this.landlord_id}`, {
                         params: { date: this.newDate }
                     });
@@ -402,11 +405,22 @@ export default
                     const bookings = Array.isArray(response.data?.data) ? response.data.data : [];
 
                     if (bookings.length === 0) {
-                        // If no data, reset chart
-                        this.bookingChartData = { labels: [], datasets: [] };
+                        // Fallback data to show an empty chart
+                        this.bookingChartData = {
+                            labels: ["No Data"],
+                            datasets: [
+                                {
+                                    label: "Profits",
+                                    data: [1], // a dummy value so the chart renders
+                                    backgroundColor: ["#e0e0e0"],
+                                    hoverOffset: 4
+                                }
+                            ]
+                        };
                         this.totalDormProfit = 0;
                         return;
                     }
+
 
                     const labels = bookings.map(item => item.dormName ?? "Unknown Dorm");
                     const data = bookings.map(item => Number(item.totalProfit) || 0);
@@ -435,10 +449,10 @@ export default
                     console.error("❌ Failed to fetch booking profits:", error);
                     // Reset state on error
                     this.bookingChartData = { labels: [], datasets: [] };
-                    this.totalDormProfit = 0;
+                    this.data = 0;
                 } finally {
                     // Optional: hide loading state
-                    this.loadingProfits = false;
+                    this.$refs.loader.loading = false;
                 }
             },
 

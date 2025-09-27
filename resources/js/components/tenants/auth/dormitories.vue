@@ -4,179 +4,188 @@
 
     <div class="container-fluid py-4 bg-light min-vh-100 d-flex flex-column flex-lg-row gap-4">
         <!-- AI Question Sidebar -->
-        <aside class="ai-aside bg-white p-4 shadow-lg rounded-4 mx-auto" style="max-width: 500px; flex-shrink: 0;">
-            <div class="container text-center">
-                <h4 class="mb-4 fw-bold text-primary">💬 Ask AI about Dorms</h4>
+        <aside class="ai-aside bg-white p-4 shadow-lg rounded-4 mx-auto d-flex flex-column"
+            style="max-width: 500px; max-height: 150vh; overflow-y: auto;">
+            <div class="container text-center flex-shrink-0">
+                <h4 class="mb-4 fw-bold text-primary">💬 Looking for Rooms or Dorms? Ask AI!</h4>
 
+                <!-- Input -->
                 <div class="input-group input-group-lg mb-4 shadow-sm rounded-pill overflow-hidden border">
                     <input v-model="question" type="text" class="form-control border-0"
-                        placeholder="Type your question here..." @keyup.enter="aiQuestion" aria-label="Ask AI" />
+                        placeholder="Type your question here..." @keyup.enter="aiQuestion" />
                     <button @click="aiQuestion" class="btn btn-primary px-4 rounded-pill">
                         Ask
                     </button>
                 </div>
+            </div>
 
-                <!-- AI Response -->
+            <!-- Dorm Recommendations -->
+            <div class="flex-grow-1" style="overflow-y: auto; padding-right: 5px;">
                 <div class="card border-0 shadow-sm mb-4 ai-response">
                     <div class="card-body p-4">
-                        <h5 class="card-title text-start mb-3 fw-semibold">AI Response</h5>
-                        <p class="mb-0 text-muted text-start" style="white-space: pre-wrap;">
-                            {{ chatresponse }}
+                        💬 AI Response
+                        <p class="mb-0 text-muted" style="white-space: pre-wrap; line-height: 1.5;">
+                            {{ chatresponse || 'No response yet. Type your question above and hit Ask!' }}
                         </p>
                     </div>
                 </div>
+                <h5 class="card-title text-start mb-3 fw-semibold">AI Suggestions: Rooms & Dorms</h5>
 
-                <!-- Dorm Recommendations -->
-                <h5 class="card-title text-start mb-3 fw-semibold">Dorm Recommendations</h5>
-                <div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
-                    <div v-if="dormReccomend.length > 0" class="row g-3">
-                        <div class="row g-3 justify-content-center">
-                            <div v-for="(dorm, idx) in dormReccomend" :key="idx" class="col-12">
-                                <div class="card dorm-card mb-4 shadow-sm rounded-4 overflow-hidden">
-                                    <!-- <img :src="dorm.mainImage || 'https://via.placeholder.com/300x180?text=Dorm+Image'"
-                                        alt="Dorm Image" class="card-img-top"
-                                        style="height: 180px; object-fit: cover;" /> -->
-                                    <div class="card-body p-3">
-                                        <h5 class="card-title fw-bold mb-2">{{ dorm.dormName }}</h5>
-                                        <p class="mb-1 text-muted">
-                                            <i class="fas fa-user text-primary me-2"></i>{{ dorm.occupancyType  }}
+                <div v-if="dormReccomend.length > 0" class="row g-3 justify-content-center">
+                    <div v-for="(dorm, idx) in dormReccomend" :key="idx" class="col-12">
+                        <div class="card dorm-card mb-4 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body p-3">
+                                <h5 class="card-title fw-bold mb-2">{{ dorm.dormName }}</h5>
+                                <p class="mb-1 text-muted"><i class="fas fa-user text-primary me-2"></i>{{
+                                    dorm.occupancyType }}</p>
+                                <p class="mb-2 text-muted"><i class="fas fa-map-marker-alt text-primary me-2"></i>{{
+                                    dorm.address }}</p>
+
+                                <!-- Rooms -->
+                                <div v-if="dorm.rooms && dorm.rooms.length" class="rooms-scroll mb-2 border-top pt-2">
+                                    <div v-for="(room, rIdx) in dorm.rooms" :key="rIdx" class="mb-2 pb-2 border-bottom">
+                                        <p class="text-muted mb-1">
+                                            Room #: {{ room.roomNumber }} | Type: {{ room.type }}
                                         </p>
-                                        <p class="mb-2 text-muted">
-                                            <i class="fas fa-map-marker-alt text-primary me-2"></i>{{ dorm.address }}
+                                        <p class="text-muted mb-1">
+                                            Price: ₱{{ room.price }} | Availability: {{ room.availability }}
                                         </p>
-                                        <div v-if="dorm.amenities" class="mb-2">
-                                            <strong>Aminities: </strong>
-                                            <span v-for="(amenity, fidx) in dorm.amenities.split(',')" :key="fidx"
-                                                class="badge bg-info text-dark me-1">
-                                                {{ amenity }}
-                                            </span>
+                                        <div v-if="room.features && room.features.length" class="mb-2">
+                                            <strong class="d-block mb-1">Features:</strong>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <span v-for="(feature, index) in room.features" :key="index"
+                                                    class="badge bg-info text-dark rounded-pill">
+                                                    {{ feature }}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <a href="#" class="btn btn-primary w-100 rounded-pill mt-3">View Details</a>
+
+
+
                                     </div>
+                                </div>
+
+                                <a class="btn btn-primary w-100 rounded-pill mt-3"
+                                    @click="viewDormsDetails(dorm?.dormID)">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p v-else class="text-muted mb-0">No dorms or rooms available.</p>
+            </div>
+        </aside>
+
+
+        <!-- Main Content -->
+        <div class="flex-grow-1" style="overflow-x: hidden;">
+            <div class="container-fluid mt-3">
+                <h2 class="mb-4 text-primary fw-semibold text-center">
+                    Find Your Ideal Dorm in Mandaue and Lapu-Lapu City
+                </h2>
+            </div>
+
+            <!-- Most Watched Dorms Horizontal Scroll -->
+            <section class="text-primary mb-4">
+                <h5 class="mb-3 fw-bold">Most Watched Dormitories</h5>
+                <div style="overflow-x: auto; white-space: nowrap; padding-bottom: 1rem;"
+                    class="shadow-sm rounded-4 bg-light p-3">
+
+                    <div class="d-flex flex-row gap-3" style="width: max-content;">
+                        <div class="card dorm-card shadow-sm border-0 rounded-4 overflow-hidden"
+                            v-for="(dorm, index) in mostwatchdorm" :key="index"
+                            style="width: 20rem; flex-shrink: 0; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                            <div class="position-relative">
+                                <img :src="dorm?.images?.mainImage || dorm?.mainImage || 'https://via.placeholder.com/320x200'"
+                                    class="card-img-top" :alt="dorm.dormName"
+                                    style="height: 200px; object-fit: cover;" />
+                                <span
+                                    class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark rounded-pill shadow-sm px-3 py-2">
+                                    <i class="bi bi-eye-fill me-1"></i>{{ dorm.views || 0 }}
+                                </span>
+                            </div>
+                            <div class="card-body d-flex flex-column" style="height: 150px;">
+                                <h5 class="card-title text-primary fw-bold text-truncate">{{ dorm.dormName }}</h5>
+                                <p class="card-text text-muted small mb-2 text-truncate">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                    {{ dorm.address || 'No description available.' }}
+                                </p>
+                                <div class="mt-auto">
+                                    <button class="btn rounded-pill w-100" @click="viewDormsDetails(dorm.dormID)">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> View Details
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <p v-else class="text-muted mb-0">No dorms found.</p>
+                </div>
+            </section>
 
+            <!-- Search Bar -->
+            <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden border">
+                <span class="input-group-text bg-white border-0">
+                    <i class="bi bi-search text-primary"></i>
+                </span>
+                <input type="text" class="form-control border-0 shadow-none" placeholder="Search Locations"
+                    aria-label="Search Locations" v-model="searchQuery" @input="debouncedSearch" />
             </div>
-    </div>
-    </aside>
 
-    <!-- Main Content -->
-    <div class="flex-grow-1" style="overflow-x: hidden;">
-        <div class="container-fluid mt-3">
-            <h2 class="mb-4 text-primary fw-semibold text-center">
-                Find Your Ideal Dorm in Mandaue and Lapu-Lapu City
-            </h2>
-        </div>
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <select class="form-select shadow-sm" v-model="selectedPriceRange"
+                        @change="dropdownPriceRecommendations">
+                        <option disabled value="">Select Price Range (based on rooms)</option>
+                        <option value="all">All Prices</option>
+                        <option value="0-100">₱0 - ₱100</option>
+                        <option value="101-200">₱101 - ₱200</option>
+                        <option value="201-300">₱201 - ₱300</option>
+                        <option value="301+">₱301 and above</option>
+                    </select>
+                </div>
 
-        <!-- Most Watched Dorms Horizontal Scroll -->
-        <section class="text-primary mb-4">
-            <h5 class="mb-3 fw-bold">Most Watched Dormitories</h5>
-            <div style="overflow-x: auto; white-space: nowrap; padding-bottom: 1rem;"
-                class="shadow-sm rounded-4 bg-light p-3">
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <select class="form-select shadow-sm" v-model="selectedOccupancyType"
+                        @change="dropdownGenderRecommdations">
+                        <option disabled value="">Select Occupancy Type</option>
+                        <option value="all">All Types</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Mixed">Mixed</option>
+                    </select>
+                </div>
+            </div>
 
-                <div class="d-flex flex-row gap-3" style="width: max-content;">
-                    <div class="card dorm-card shadow-sm border-0 rounded-4 overflow-hidden"
-                        v-for="(dorm, index) in mostwatchdorm" :key="index"
-                        style="width: 20rem; flex-shrink: 0; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-
-                        <!-- Image -->
-                        <div class="position-relative">
-                            <img :src="dorm?.images?.mainImage || dorm?.mainImage || 'https://via.placeholder.com/320x200'"
-                                class="card-img-top" :alt="dorm.dormName" style="height: 200px; object-fit: cover;" />
-
-                            <!-- Views badge -->
-                            <span
-                                class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark rounded-pill shadow-sm px-3 py-2">
-                                <i class="bi bi-eye-fill me-1"></i>{{ dorm.views }}
-                            </span>
+            <!-- Dorm Listings Grid -->
+            <div class="row g-4">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3" v-for="(dorm, dormID) in dormitories" :key="dormID">
+                    <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden d-flex flex-column">
+                        <div class="image-wrapper">
+                            <img :src="dorm?.images?.mainImage || dorm?.mainImage" class="card-img-top"
+                                :alt="dorm.dormName" style="object-fit: cover; height: 180px;" />
                         </div>
-
-                        <!-- Body -->
-                        <div class="card-body d-flex flex-column" style="height: 150px;">
-                            <h5 class="card-title text-primary fw-bold text-truncate">{{ dorm.dormName }}</h5>
-
-                            <p class="card-text text-muted small mb-2 text-truncate">
-                                <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                                {{ dorm.address || 'No description available.' }}
-                            </p>
-
-                            <!-- Button at the bottom -->
-                            <div class="mt-auto">
-                                <button class="btn rounded-pill w-100" @click="viewDormsDetails(dorm.dormID)">
-                                    <i class="bi bi-box-arrow-up-right me-1"></i> View Details
+                        <div class="card-body d-flex flex-column justify-content-between flex-grow-1">
+                            <div>
+                                <h5 class="card-title text-dark fw-bold">{{ dorm.dormName }}</h5>
+                                <p class="text-muted small mb-1">
+                                    <i class="bi bi-person-fill"></i> {{ dorm.occupancyType }}
+                                </p>
+                                <p class="text-muted small mb-0">
+                                    <i class="bi bi-geo-alt-fill"></i> {{ dorm.address }}
+                                </p>
+                            </div>
+                            <div class="mt-4 d-flex justify-content-center">
+                                <button class="btn rounded-pill px-4 w-100" @click="viewDormsDetails(dorm.dormID)">
+                                    View Details
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
-        <!-- Search Bar -->
-        <div class="input-group mb-4 w-100 shadow-sm rounded-pill overflow-hidden border">
-            <span class="input-group-text bg-white border-0">
-                <i class="bi bi-search text-primary"></i>
-            </span>
-            <input type="text" class="form-control border-0 shadow-none" placeholder="Search Locations"
-                aria-label="Search Locations" v-model="searchQuery" @input="debouncedSearch" />
         </div>
-
-        <!-- Filters -->
-        <div class="row mb-4">
-            <div class="col-md-6 col-lg-4 mb-2">
-                <select class="form-select shadow-sm" v-model="selectedPriceRange"
-                    @change="dropdownPriceRecommendations">
-                    <option disabled value="">Select Price Range (based on rooms)</option>
-                    <option value="all">All Prices</option>
-                    <option value="0-100">₱0 - ₱100</option>
-                    <option value="101-200">₱101 - ₱200</option>
-                    <option value="201-300">₱201 - ₱300</option>
-                    <option value="301+">₱301 and above</option>
-                </select>
-            </div>
-
-            <div class="col-md-6 col-lg-4 mb-2">
-                <select class="form-select shadow-sm" v-model="selectedOccupancyType"
-                    @change="dropdownGenderRecommdations">
-                    <option disabled value="">Select Occupancy Type</option>
-                    <option value="all">All Types</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Mixed">Mixed</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Dorm Listings Grid: stays fully responsive and contained -->
-        <div class="row g-4">
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3" v-for="(dorm, dormID) in dormitories" :key="dormID">
-                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden d-flex flex-column">
-                    <div class="image-wrapper">
-                        <img :src="dorm?.images?.mainImage || dorm?.mainImage" class="card-img-top" :alt="dorm.dormName"
-                            style="object-fit: cover; height: 180px;" />
-                    </div>
-                    <div class="card-body d-flex flex-column justify-content-between flex-grow-1">
-                        <div>
-                            <h5 class="card-title text-dark fw-bold">{{ dorm.dormName }}</h5>
-                            <p class="text-muted small mb-1">
-                                <i class="bi bi-person-fill"></i> {{ dorm.occupancyType }}
-                            </p>
-                            <p class="text-muted small mb-0">
-                                <i class="bi bi-geo-alt-fill"></i> {{ dorm.address }}
-                            </p>
-                        </div>
-                        <div class="mt-4 d-flex justify-content-center">
-                            <button class="btn rounded-pill px-4 w-100" @click="viewDormsDetails(dorm.dormID)">
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     </div>
 </template>
 
@@ -365,20 +374,35 @@ export default {
             catch (error) {
                 this.$refs.loader.loading = false;
             }
-        },
-        async aiQuestion() {
+        }, async aiQuestion() {
             try {
                 this.$refs.loader.loading = true;
 
-                const response = await axios.post('ai/question/reccomendations', {
-                    question: this.question
-                });
+                // Send the user question to Laravel AI route
+                const response = await axios.post('ai/question/reccomendations', { question: this.question });
 
-                // AI message (displayed separately)
+                // AI text response
                 this.chatresponse = response.data.message || 'Walay tubag gikan sa AI';
 
-                // Recommended dorms (populate cards)
-                this.dormReccomend = response.data.recommendations || [];
+                // AI recommendations (dorms or rooms)
+                const recs = response.data.recommendations || [];
+
+        this.dormReccomend = recs.map(d => ({
+          dormID: d.dormID,
+          dormName: d.dormName,
+          address: d.address,
+          occupancyType: d.occupancyType,
+          amenities: d.amenities,
+          rules: d.rules || [],
+          rooms: (d.rooms || []).map(r => ({
+            roomNumber: r.roomNumber,
+            type: r.type || r.roomType || "Standard",
+            price: r.price,
+            availability: r.availability,
+              features: r.features ? r.features.split(',').map(f => f.trim()) : []
+          }))
+        }));
+
             } catch (error) {
                 console.error('Error sending AI question:', error);
                 this.chatresponse = 'Naa’y error sa pagkuha og recommendations.';
@@ -388,6 +412,10 @@ export default {
             }
         },
 
+
+
+
+        
         async mostWatchDorm() {
             try {
                 this.tenant_id = window.tenant_id;  // siguro naa ni sa global js
@@ -535,5 +563,26 @@ body {
     color: #fff;
     background-color: #0d6efd;
     border-color: #0d6efd;
+}
+.rooms-scroll {
+    max-height: 300px;
+    /* scroll only rooms if too many */
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Make aside scrollable nicely */
+.ai-aside::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ai-aside::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.ai-aside::-webkit-scrollbar-thumb {
+    background: #0d6efd;
+    border-radius: 3px;
 }
 </style>

@@ -225,13 +225,12 @@ class dormitories extends Controller
     $dorms = $query->with('rooms')->get();
 
     return $dorms;
-}
-public function getQuestionRecommendations(Request $request)
+} public function getQuestionRecommendations(Request $request)
 {
     $question = $request->input('question');
 
     try {
-        // Call Flask API
+        // Call Flask/OpenAI API
         $response = Http::post('http://127.0.0.1:5000/ask-ai/dormitories', [
             'question' => $question,
         ]);
@@ -243,23 +242,23 @@ public function getQuestionRecommendations(Request $request)
         // Raw AI message
         $aiRaw = $data['message'] ?? 'Walay tubag nakuha gikan sa AI';
 
-        // Extract only the textual message (remove JSON block if present)
+        // Extract AI message text (remove JSON block if any)
         $aiMessage = preg_replace('/```json.*```/s', '', $aiRaw);
         $aiMessage = trim($aiMessage);
 
-        // Extract recommendations from JSON block if present
+        // Extract AI JSON recommendations if present
         preg_match('/```json(.*?)```/s', $aiRaw, $matches);
-        $recommendations = [];
+        $aiRecommendations = [];
         if (isset($matches[1])) {
-            $recommendations = json_decode(trim($matches[1]), true) ?? [];
+            $aiRecommendations = json_decode(trim($matches[1]), true) ?? [];
         }
 
-        // Fallback if Flask didn't return JSON separately
-        if (empty($recommendations)) {
-            $recommendations = $data['recommendations'] ?? [];
+        // Fallback if Flask didn't return JSON
+        if (empty($aiRecommendations)) {
+            $aiRecommendations = $data['recommendations'] ?? [];
         }
 
-        // Ensure dorm objects have mainImage, amenities, rooms, and foreign keys
+        // Ensure each dorm has proper structure and rooms are included
         $recommendations = array_map(function ($dorm) {
             return [
                 'dormID' => $dorm['dormID'] ?? null,
@@ -274,18 +273,25 @@ public function getQuestionRecommendations(Request $request)
                 ],
                 'amenities' => isset($dorm['amenities']) ? implode(',', array_column($dorm['amenities'], 'aminityName')) : '',
                 'rules' => $dorm['rules'] ?? [],
-                'rooms' => $dorm['rooms'] ?? [],
+                // Ensure rooms are always set, fallback to AI or DB rooms
+                'rooms' => !empty($dorm['rooms']) 
+                    ? $dorm['rooms'] 
+                    : (isset($dorm['recommendationRooms']) ? $dorm['recommendationRooms'] : []),
                 'fklandlordID' => $dorm['fklandlordID'] ?? null,
                 'landlord' => $dorm['landlord'] ?? [],
             ];
-        }, $recommendations);
+        }, $aiRecommendations);
+
+        // If still empty, fallback entirely to DB result
+        if (empty($recommendations) && isset($data['result'])) {
+            $recommendations = $data['result'];
+        }
 
         return response()->json([
-            'message' => $aiMessage,           // just text, no JSON
+            'message' => $aiMessage,
             'dorms' => $data['result'] ?? [],
             'recommendations' => $recommendations,
         ]);
-
     } catch (\Exception $e) {
         \Log::error('AI Dorm Recommendation Error: ' . $e->getMessage());
 
@@ -296,7 +302,6 @@ public function getQuestionRecommendations(Request $request)
         ], 500);
     }
 }
-
 
 
 }

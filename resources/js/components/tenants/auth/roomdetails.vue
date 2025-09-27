@@ -46,6 +46,7 @@
                 </div>
             </div>
 
+
             <!-- Amenities and Room Features -->
             <div class="col-12 col-md-4">
                 <div class="bg-light rounded p-3 shadow-sm mb-3">
@@ -187,7 +188,8 @@
                             </p>
                             <p class="mb-4">
                                 <i class="bi bi-person-fill-check me-2 text-primary"></i>
-                                <strong>Total tenants currently residing:</strong> {{ totalCapacity }} tenant(s)
+                                <strong>Total tenants currently residing:</strong>
+                                {{ dorm.dorm.totalCapacity }} tenant(s)
                             </p>
                         </div>
 
@@ -212,7 +214,7 @@
 
                         <div v-else class="row g-3">
                             <div v-for="room in rooms" :key="room.roomID" class="col-md-6 col-lg-4">
-                                <div class="card h-100 border-primary shadow-sm">
+                                <div class="card h-100 border-primary shadow-sm" @click="roomDetails(room.roomID)">
                                     <div class="card-body">
                                         <h6 class="card-title fw-semibold">{{ room.roomType }}</h6>
                                         <p class="card-text fs-5 text-success">₱{{ room.price.toLocaleString() }}</p>
@@ -223,7 +225,9 @@
                     </div>
 
                 </div>
+
             </div>
+
 
             <!-- Booking Form -->
             <div class="col-12 col-md-4">
@@ -369,6 +373,7 @@
             </div>
         </div>
     </div>
+
     <div v-if="askAIModal" class="modal fade show d-block w-100" tabindex="-1"
         style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -407,6 +412,84 @@
             </div>
         </div>
     </div>
+    <div v-if="roomDetailsModal" class="modal fade show d-block w-100" tabindex="-1"
+        style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content shadow-lg rounded-4 overflow-hidden py-1">
+                <!-- Header -->
+                <div class="modal-header text-black border-bottom">
+                    <h5 class="modal-title">{{ selectedRoomDetails.roomType || 'Room Details' }}</h5>
+                    <button type="button" class="btn-close" @click="roomDetailsModal = false"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <div class="row g-4">
+                        <!-- Left: Room Images / Carousel -->
+                        <div class="col-md-6">
+                            <div v-if="selectedRoomDetails.roomImages" class="overflow-hidden rounded shadow-sm">
+                                <img :src="selectedRoomDetails.roomImages"
+                                    class="img-fluid w-100 h-100 object-fit-cover" alt="Room Image">
+                            </div>
+                            <div v-else
+                                class="border rounded d-flex align-items-center justify-content-center p-5 text-muted">
+                                No image available
+                            </div>
+                        </div>
+
+                        <!-- Right: Room Info -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h5 class="fw-bold mb-1">{{ selectedRoomDetails.roomType || 'Room Type' }}</h5>
+                                <p class="text-success fs-5 mb-0">₱{{ selectedRoomDetails.price?.toLocaleString() }}</p>
+                                <small class="text-muted">{{ selectedRoomDetails.furnishing_status || 'Furnishing info not available' }}</small>
+                            </div>
+
+                            <hr class="my-3">
+
+                            <div class="mb-3">
+                                <h6 class="fw-semibold">Area</h6>
+                                <p>{{ selectedRoomDetails.areaSqm }} sqm</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="fw-semibold">Features</h6>
+                                <div v-if="selectedRoomDetails.features && selectedRoomDetails.features.length > 0"
+                                    class="d-flex flex-wrap gap-2 overflow-auto" style="max-height: 150px;">
+                                    <span v-for="feature in selectedRoomDetails.features" :key="feature.id"
+                                        class="badge bg-success text-white">
+                                        {{ feature.featureName }}
+                                    </span>
+                                </div>
+                                <div v-else class="text-muted fst-italic">
+                                    No features
+                                </div>
+                            </div>
+
+
+                            <div class="mb-3">
+                                <h6 class="fw-semibold">Availability</h6>
+                                <span
+                                    :class="selectedRoomDetails.availability ? 'badge bg-success' : 'badge bg-danger'">
+                                    {{ selectedRoomDetails.availability ? 'Available' : 'Not Available' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary" @click="roomDetailsModal = false">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+
+
+
 
 
 
@@ -486,6 +569,8 @@ export default {
             aiQuestion: '',
             aiResponse: '',
             selectedDormAI: [],
+            roomDetailsModal: false,
+            selectedRoomDetails: '',
         };
     },
     mounted() {
@@ -829,6 +914,23 @@ export default {
                     this.$refs.loader.loading = false;
 
                 }
+            }
+        },
+        async roomDetails(id) {
+            try {
+                this.$refs.loader.loading = true;
+
+                const response = await axios.get(`/roomDetail/${id}`);
+                if (response.data.success) {
+                    this.selectedRoomDetails = response.data.roomDetail;
+                    this.roomDetailsModal = true;
+                }
+            } catch (error) {
+                console.error(error);
+            }
+            finally { 
+                this.$refs.loader.loading = false;
+
             }
         }
 

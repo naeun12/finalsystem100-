@@ -32,6 +32,7 @@ return new class extends Migration
              $table->enum('paymentOption', ['online', 'onsite']);
              $table->boolean('notifyRent')->default(false);
              $table->boolean('isDeleted')->default(false); 
+             $table->boolean('has_rated')->default(false);
             $table->dateTime('extensionDate')->nullable();
     $table->enum('extension_decision', ['pending', 'extend', 'not_extending'])
           ->default('pending');

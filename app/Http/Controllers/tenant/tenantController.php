@@ -55,13 +55,18 @@ class tenantController extends Controller
 
             // Handle the profile picture upload
             if ($request->hasFile('profile_pic')) {
-                $image = $request->file('profile_pic');
-                $imageName = time() . '.' . $image->getClientOriginalExtension();
-                $imagePath = $image->storeAs('public/uploads/profilePic', $imageName);
-                $profilePicUrl = asset('storage/uploads/profilePic/' . $imageName);
-            } else {
-                $profilePicUrl = null; // No image uploaded
-            }
+            $image = $request->file('profile_pic');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+
+            // Save sa storage/app/public/uploads/profilePic
+            $image->storeAs('public/uploads/profilePic', $imageName);
+
+            // Path nga i-store sa DB (without /storage prefix)
+            $profilePicUrl = 'uploads/profilePic/' . $imageName;
+        } else {
+            $profilePicUrl = null;
+             }
+
 
             $passwordHash = Hash::make($request->input('password'));
 
@@ -86,13 +91,13 @@ class tenantController extends Controller
                 'lastname' => $validated['lastname'],
                 'email' => $validated['email'],
                 'password' => $passwordHash,
-                'phonenumber' => $validated['phonenumber'],
+                'phoneNumber' => $validated['phonenumber'],
                 'gender' => $validated['gender'],
                 'region' => $validated['region'],
                 'city' => $validated['city'],
                 'province' => $validated['province'],
-                'postalcode' => $validated['postalcode'],
-                'currentaddress' => $validated['currentaddress'],
+                'postalCode' => $validated['postalcode'],
+                'currentAddress' => $validated['currentaddress'],
                 'profilePicUrl' => $profilePicUrl,
             ]);
             $verifyOtp->where('email',$validated['email'])->forceDelete();

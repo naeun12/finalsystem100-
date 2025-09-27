@@ -95,7 +95,7 @@
                                 </li>
                             </ul>
                             <div class="text-center"
-                                v-if="getDaysStayed(tenant.moveInDate) >= 3 && tenant.status === 'active' ">
+                                v-if="getDaysStayed(tenant.moveInDate) >= 2 && tenant.status === 'active' ">
                                 <!-- If not yet reviewed -->
                                 <div v-if="alreadyReviewed === tenant.has_rated">
                                     <h5 class="mb-3 text-primary fw-bold border-bottom pb-2">
@@ -211,7 +211,8 @@
                                 <p class="text-muted">
                                     Please be reminded that your lease will end on
                                     <strong>{{ formatDate(tenant.moveOutDate) }}</strong>. Kindly coordinate with your
-                                    landlord for the move-out process.</p>
+                                    landlord for the move-out process.
+                                </p>
 
                             </div>
                             <div class="mt-2 mb-4 p-3 border rounded shadow-sm bg-light small"
@@ -256,7 +257,7 @@
                                 </button>
                             </div>
                             <div class="text-center mt-3">
-                                
+
                             </div>
                         </div>
                     </div>

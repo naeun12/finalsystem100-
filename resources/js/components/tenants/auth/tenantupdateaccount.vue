@@ -1,14 +1,15 @@
 <template>
     <Loader ref="loader" />
     <NotificationList ref="toastRef" />
-    
+
     <div class="p-3">
         <!-- Profile Section -->
         <div class="text-center mb-5">
             <div class="position-relative d-inline-block">
-                <img :src="tenant.previewPicUrl || (tenant.profilePicUrl ? '/' + tenant.profilePicUrl : '/default-avatar.png')"
+                <img :src="tenant.previewPicUrl || (tenant.profilePicUrl ? '/storage/' + tenant.profilePicUrl : '/default-avatar.png')"
                     alt="Profile Preview" class="rounded-circle shadow-sm border border-3 border-light"
                     style="width: 140px; height: 140px; object-fit: cover;">
+
 
 
                 <!-- Upload Button -->

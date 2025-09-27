@@ -14,7 +14,7 @@ use App\Models\reviewandratingModel;
 
 class dormdetailscontroller extends Controller
 {
-    public function roomDetails($dormitory_id,$tenant_id)
+    public function dormDetailsIndex($dormitory_id,$tenant_id)
         {
             $sessionTenant_id = session('tenant_id');
              $notifications = notificationModel::where('receiverID', $sessionTenant_id)
@@ -40,8 +40,8 @@ class dormdetailscontroller extends Controller
             if (!$tenant) {
                 return redirect()->route('tenant-login')->with('error', 'Landlord not found.');
             }
-            $title = 'Tenant room Details - Dormhub';
-            return view('tenant.auth.roomdetails',['title' => 'Room Details',
+            $title = 'Tenant Dorm Details - Dormhub';
+            return view('tenant.auth.roomdetails',['title' => $title,
             'dormitory_id' => $dormitory_id,
             'tenant_id' => $tenant_id,
             'tenant' => $tenant,
@@ -50,32 +50,46 @@ class dormdetailscontroller extends Controller
              'unread_count' => $unreadCount,]);
         }
         public function ViewDorms(Request $request)
-        {
-            $dormitory_id = $request->query('dormitory_id');
-            $dorm = dormModel::with([
-                'amenities',
-                'images',
-                'rulesAndPolicy',
-                'landlord',
-                'rooms' => function ($query) {
-                    $query->where('availability', 'Available');
-                }
-            ])->where('dormID', $dormitory_id)->first(); 
-    
-            if (!$dorm) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Dorm not found',
-                ], 404);
-            }
-            return response()->Json([
-                'status' => 'success',
-                'dorm' => $dorm,
-                'landlord' => $dorm->landlord,
-                
-    
-            ]);
+{
+    $dormitory_id = $request->query('dormitory_id');
+
+    $dorm = dormModel::with([
+        'amenities',
+        'images',
+        'rulesAndPolicy',
+        'landlord',
+        // Only available rooms
+        'rooms' => function ($query) {
+            $query->where('availability', 'Available');
         }
+    ])
+    ->withCount([
+        // Count available rooms
+        'rooms as totalRooms' => function ($query) {
+            $query->where('availability', 'Available');
+        },
+        // Count rooms currently occupied (tenants residing)
+        'rooms as totalCapacity' => function ($query) {
+            $query->where('availability', 'Occupied');
+        }
+    ])
+    ->where('dormID', $dormitory_id)
+    ->first();
+
+    if (!$dorm) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Dorm not found',
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'dorm' => $dorm,
+        'landlord' => $dorm->landlord,
+    ]);
+}
+
            public function tenantInformation(Request $request)
 {
     $validatedData = $request->validate([
@@ -217,7 +231,17 @@ class dormdetailscontroller extends Controller
         'message' => 'AI request failed'
     ]);
 }
+ public function roomDetails($room_id)
+    {
+        $roomDetail = roomModel::with('features')
+            ->where('roomID', $room_id)
+            ->first();
 
+        return response()->json([
+            'success' => true,
+            'roomDetail' => $roomDetail
+        ]);
+    }
 
 
 }

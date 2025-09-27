@@ -320,13 +320,18 @@
             <!-- Project Manager -->
             <div class="text-center mb-5">
                 <div class="mb-3">
-                    <img src="{{ asset('images/ourteam/chloe-removebg-preview.png') }}" alt="Project Manager"
+                    <img src="{{ asset('images/ourteam/chloe.png') }}" alt="Project Manager"
                         class="rounded-circle shadow" style="width: 160px; height: 160px; object-fit: cover;">
                 </div>
                 <h5 class="fw-semibold mb-1">Project Manager</h5>
-                <p class="mb-1 text-muted">Avery Chloe Homoc</p>
-                <p><i class="bi bi-envelope-fill me-1"></i> <a href="mailto:Avery@gmail.com">Avery@gmail.com</a></p>
-                <p><i class="bi bi-telephone-fill me-1"></i> +123456789</p>
+                <p class="mb-1 text-muted">AVERY CHLOE P. HOMOC</p>
+                <p>
+                    <i class="bi bi-envelope-fill me-1"></i>
+                    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=homocavery@gmail.com" target="_blank">
+                        homocavery@gmail.com
+                    </a>
+                </p>
+                <p><i class="bi bi-telephone-fill me-1"></i> 09165688223</p>
             </div>
 
             <!-- Team Members Grid -->
@@ -336,30 +341,30 @@
                     $members = [
                         [
                             'role' => 'Hacker',
-                            'name' => 'Lance Monsanto',
-                            'email' => 'Lance@gmail.com',
-                            'phone' => '+123456789',
-                            'img' => 'lance.jpg',
+                            'name' => 'LANCE  S. MONSANTO',
+                            'email' => 'niiinaeun@gmail.com',
+                            'phone' => '09326754339',
+                            'img' => 'gwaps.png',
                         ],
                         [
                             'role' => 'Hipster',
                             'name' => 'Alyssa Sumile',
-                            'email' => 'Alyssa@gmail.com',
-                            'phone' => '+123456789',
+                            'email' => 'alyssa.sumile18@gmail.com',
+                            'phone' => '09686114788',
                             'img' => 'alyssa.jpg',
                         ],
                         [
                             'role' => 'Additional Member 1',
                             'name' => 'Leande May Soronio',
-                            'email' => 'Leande@gmail.com',
-                            'phone' => '+123456789',
+                            'email' => 'leandemays@gmail.com',
+                            'phone' => '09974672756',
                             'img' => 'lss-removebg-preview.png',
                         ],
                         [
                             'role' => 'Additional Member 2',
                             'name' => 'Giannne Isabelle Augusto',
-                            'email' => 'Giannne@gmail.com',
-                            'phone' => '+123456789',
+                            'email' => 'Gianneaisabelle@gmail.com',
+                            'phone' => '095670364107',
                             'img' => 'gianne-removebg-preview.png',
                         ],
                     ];
@@ -373,8 +378,13 @@
                                 style="width: 130px; height: 130px; object-fit: cover;">
                             <h6 class="fw-bold">{{ $member['role'] }}</h6>
                             <p class="mb-1 text-muted">{{ $member['name'] }}</p>
-                            <p class="mb-1"><i class="bi bi-envelope-fill me-1"></i> <a
-                                    href="mailto:{{ $member['email'] }}">{{ $member['email'] }}</a></p>
+                           <p class="mb-1">
+    <i class="bi bi-envelope-fill me-1"></i> 
+    <a href="https://mail.google.com/mail/?view=cm&fs=1&to={{ $member['email'] }}" target="_blank">
+        {{ $member['email'] }}
+    </a>
+</p>
+
                             <p><i class="bi bi-telephone-fill me-1"></i> {{ $member['phone'] }}</p>
                         </div>
                     </div>

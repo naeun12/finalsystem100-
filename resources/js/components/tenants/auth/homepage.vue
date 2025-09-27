@@ -95,7 +95,8 @@
                         <h4 class="fw-bold">{{ topDorms[0].dorm.dormName }}</h4>
                         <p class="mb-1">{{ topDorms[0].dorm.address }}</p>
                         <p class="mb-1">⭐ {{ Number(topDorms[0].avg_rating).toFixed(1) }}</p>
-                        <a :href="`/dorm/${topDorms[0].fkdormID}`" class="btn btn-outline-light btn-sm">View Details</a>
+                        <a @click="viewDorms(topDorms[0].dorm.dormID)" class="btn btn-outline-light btn-sm">View
+                            Details</a>
                     </div>
                 </div>
             </div>
@@ -117,7 +118,8 @@
                         <h5 class="fw-bold mb-1">{{ topDorms[1].dorm.dormName }}</h5>
                         <p class="mb-1">{{ topDorms[1].dorm.address }}</p>
                         <p class="mb-0">⭐ {{ Number(topDorms[1].avg_rating).toFixed(1) }}</p>
-                        <a :href="`/dorm/${topDorms[1].fkdormID}`" class="btn btn-outline-light btn-sm mt-1">View</a>
+                        <a @click="viewDorms(topDorms[0].dorm.dormID)"
+                            class="btn btn-outline-light btn-sm mt-1">View</a>
                     </div>
                 </div>
 
@@ -139,7 +141,8 @@
                                 <h6 class="fw-bold mb-0">{{ dorm.dorm.dormName }}</h6>
                                 <p class="mb-0 text-truncate">{{ dorm.dorm.address }}</p>
                                 <p class="mb-0">⭐ {{ Number(dorm.avg_rating).toFixed(1) }}</p>
-                                <a :href="`/dorm/${dorm.fkdormID}`" class="btn btn-outline-light btn-sm mt-1">View</a>
+                                <a @click="viewDorms(topDorms[0].dorm.dormID)"
+                                    class="btn btn-outline-light btn-sm mt-1">View</a>
                             </div>
                         </div>
                     </div>
@@ -192,15 +195,9 @@ export default {
                 });
         },
 
-        viewDorms(dormitoryId) {
-            this.tenant_id = window.tenant_id;
-
-            if (!this.tenant_id) {
-                alert("tenant_id id not found");
-                return;
-            }
-
-            window.location.href = `/room-details/${dormitoryId}/${this.tenant_id}`;
+        viewDorms(dormID) {
+            this.tenant_id = window.tenant_id;            
+            window.location.href = `/room-details/${dormID}/${this.tenant_id}`;
         },
         viewBooking() {
             this.tenant_id = window.tenant_id;

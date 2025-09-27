@@ -48,7 +48,7 @@
                     <option disabled value="">Select Availability</option>
                     <option value="all">All Availability</option>
                     <option value="Available">Available</option>
-                    <option value="Not Available">Not Available</option>
+                    <option value="Occupied">Occupied</option>
                     <option value="Under Maintenance">Under Maintenance</option>
                 </select>
             </div>
@@ -87,7 +87,7 @@
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-4 mb-3">
             <div class="col" v-for="room in rooms" :key="room.roomID">
                 <!-- Card Click = View Room -->
-                <div class="card h-100 border-2 shadow-lg rounded-4 position-relative"  @click="ViewRoom(room.roomID)" 
+                <div class="card h-100 border-2 shadow-lg rounded-4 position-relative" @click="ViewRoom(room.roomID)"
                     style="cursor: pointer; transition: 0.3s ease; border: 2px solid #4edce2;">
 
                     <!-- Floating Delete "X" Button -->
@@ -100,7 +100,7 @@
                     </div>
 
 
-                    <div class="card-body p-4 rounded-4" >
+                    <div class="card-body p-4 rounded-4">
 
                         <ul class="list-unstyled text-secondary">
                             <li class="mb-2"><i class="bi bi-building text-dark me-2"></i><strong>Dormitory:</strong> {{
@@ -590,9 +590,14 @@
                                 errors.editData.genderPreference[0]
                                 }}</span>
                             <div class="d-grid gap-2 mt-4">
+
+                                <button class="btn btn-outline-info  btn-lg"
+                                    @click="AllowedRoomReservation(editData.roomID)"> Allow this room to be reserved
+                                </button>
                                 <button type="submit" @click="updateRoom" class="btn btn-outline-primary btn-lg">
                                     Update Room
                                 </button>
+
                             </div>
 
                         </div>
@@ -639,12 +644,6 @@
                     </div>
 
                 </div>
-
-
-
-                <div class="modal-footer">
-                    <button class="btn btn-outline-secondary" @click="VisibleUpdateModal = false">Close</button>
-                </div>
             </div>
 
         </div>
@@ -666,8 +665,24 @@
 
                 <!-- Modal Body -->
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding: 1.5rem;">
-                    <img :src="selectedRoom?.roomImages" class="img-fluid mb-3 rounded " alt="Room Image"
-                        style="width: 100%;  height: 300px; object-fit: cover;">
+                    <div class="position-relative">
+                        <!-- Room Image -->
+                        <img :src="selectedRoom?.roomImages" class="img-fluid mb-3 rounded" alt="Room Image"
+                            style="width: 100%; height: 300px; object-fit: cover;">
+
+                        <!-- Badge for rooms NOT allowed to reserve -->
+                        <span v-if="!selectedRoom?.isReservable"
+                            class="position-absolute top-0 start-0 m-2 badge bg-danger text-white p-2">
+                            Not Allowed
+                        </span>
+
+                        <!-- Badge for rooms allowed to reserve -->
+                        <span v-else class="position-absolute top-0 start-0 m-2 badge bg-success text-white p-2">
+                            Allowed to Reserve
+                        </span>
+                    </div>
+
+
                     <div class="row g-4 ">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -1130,18 +1145,31 @@ export default {
                     this.roomFeaturesModal();
                     this.VisibleAddModal = false;
                 }
+                else if(response.data.status === "error"){
+                    this.$refs.loader.loading = false;
+                    this.$refs.toast.showToast(response.data.message, 'danger');
+                }
             } catch (error) {
                 if (error.response && error.response.status === 422) {
-                    this.errors = error.response.data.errors || {};
-                    if (error.response.data.message) {
+                    const data = error.response.data;
+
+                    // Show backend message in toast
+                    if (data.message) {
+                        this.$refs.toast.showToast(data.message, 'danger');
+                        this.VisibleAddModal = false;
 
                     }
+
+                    // Field validation errors
+                    this.errors = data.errors || {};
+
                     this.$refs.loader.loading = false;
                 } else {
                     this.$refs.loader.loading = false;
-                    this.$refs.toast.showToast('Something went wrong.', 'error');
+                    this.$refs.toast.showToast('Something went wrong.', 'danger');
                 }
             }
+
             finally {
                 this.$refs.loader.loading = false;
 
@@ -1511,7 +1539,41 @@ export default {
         },
         viewDormitories() {
             window.location.href = `/landlordDormManagement/${this.landlord_id}`;
-        }
+        },
+        async AllowedRoomReservation(id) { 
+            try {
+                const confirmed = await this.$refs.modal.show({
+                    title: 'Allow Room Reservation?',
+                    message: 'Do you want to allow reservations for this room?',
+                    functionName: 'Confirm'
+                });
+
+                if (!confirmed) {
+                    this.$refs.loader.loading = false;
+                    return;
+                }
+                this.$refs.loader.loading = true;
+                const response = await axios.post(`/rooms/allow-reserve/${id}`, {}, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (response.data.success) {
+                    this.$refs.toast.showToast(response.data.message, 'success');
+                    this.VisibleUpdateModal = false;
+
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Something went wrong.');
+            }
+            finally { 
+                this.$refs.loader.loading = false; 
+
+            }
+        },
+        
 
 
 
