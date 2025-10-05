@@ -264,16 +264,16 @@ export default {
                     functionName: 'Update Account',
                 });
                 if (!confirmed) {
-                    return;
+                    return false;
                 }
                 this.$refs.loader.loading = true;
+               
                 const formdata = new FormData();
                 formdata.append('firstname', this.tenant.firstname);
                 formdata.append('lastname', this.tenant.lastname);
-                formdata.append('profilePicUrl', this.tenant.profilePicUrl);
                 formdata.append('gender', this.tenant.gender);
                 if (this.tenant.profilePicFile) {
-                    formdata.append('profilePicUrl', this.tenant.profilePicFile);
+                    formdata.append('profilePicUrl', this.tenant.profilePicFile); // only append file
                 }
                 const response = await axios.post(`/update/tenant/data/${this.tenant.tenantID}`, formdata, {
                     headers: { 'Content-Type': 'multipart/form-data' }
@@ -282,6 +282,8 @@ export default {
                     this.error = {};
                     this.tenant = response.data.tenant;
                     this.$refs.toast.showToast(response.data.message, 'success');
+                    return true; 
+
                 }
 
             }
@@ -315,6 +317,8 @@ export default {
         this.tenant_id = element.dataset.tenantId;
         this.fetchTenantData();
         this.subscribeToNotifications();
+      
+
 
     }
 }

@@ -8,7 +8,7 @@
         <!-- Header -->
         <div class="d-flex justify-content-end align-items-center mb-4">
             <div class="  d-flex gap-3">
-                <!-- View Dormitories Button -->
+
                 <button
                     class="btn btn-outline-primary btn-sm shadow-sm flex-fill d-flex align-items-center justify-content-center gap-2 rounded-pill"
                     @click="viewDormitories" style="transition: 0.3s;">
@@ -25,6 +25,7 @@
                 </button>
             </div>
         </div>
+
         <div class="mb-3 d-flex gap-3 flex-wrap justify-content-start align-items-stretch w-100">
             <!-- Room Type Filter -->
             <div class="col-md-6 col-lg-3">
@@ -401,21 +402,30 @@
                 </div>
 
                 <div class="modal-body">
+                    <!-- Room Features Inputs -->
                     <div v-for="(feature, index) in roomFeatures" :key="index" class="form-floating mb-3">
-                        <input type="text" class="form-control mb-2" v-model="roomFeatures[index]"
-                            :id="'feature' + index" placeholder="Enter room feature" />
+                        <input type="text" class="form-control" v-model="roomFeatures[index]" :id="'feature' + index"
+                            placeholder="Enter room feature" />
                         <label :for="'feature' + index">Room Feature {{ index + 1 }}</label>
-                        <span class="text-danger mb-3 " v-if="errors.roomFeatures">{{ errors.roomFeatures[0]
-                            }}</span>
-
                     </div>
 
-                    <button class="btn btn-primary mb-4" @click="addRoomFeatures"
-                        :disabled="addRoomFeatures.length >= 4"
-                        :title="addRoomFeatures.length >= 4 ? 'Max 4 features allowed' : 'Add Room Feature'">
-                        <i class="fa-solid fa-plus"></i> Add Room Feature
+                    <!-- Error messages -->
+                    <div class="mb-3">
+                        <span class="text-danger small d-block" v-if="errors.roomFeatures">
+                            {{ errors.roomFeatures[0] }}
+                        </span>
+                        <span class="text-danger small d-block" v-if="errors.features">
+                            <i class="bi bi-exclamation-circle-fill"></i> {{ errors.features[0] }}
+                        </span>
+                    </div>
+
+                    <!-- Add Feature Button -->
+                    <button class="btn btn-primary w-100" @click="addRoomFeatures" :disabled="roomFeatures.length >= 4"
+                        :title="roomFeatures.length >= 4 ? 'Max 4 features allowed' : 'Add Room Feature'">
+                        <i class="fa-solid fa-plus me-2"></i> Add Room Feature
                     </button>
                 </div>
+
             </div>
         </div>
     </div>
@@ -489,7 +499,8 @@
                                     id="roomNumber" placeholder="Room Number" v-model="editData.roomNumber">
                                 <label for="roomNumber">Room Number</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.roomNumber">{{
+                            <span class="text-danger small" v-if="errors.editData?.roomNumber"> <i
+                                    class="bi bi-exclamation-circle-fill"></i>{{
                                 errors.editData.roomNumber[0]
                                 }}</span>
                             <div class="form-floating mb-2 mt-2">
@@ -498,7 +509,8 @@
                                     required>
                                 <label for="areaSqm">Area (sqm)</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.areaSqm">{{
+                            <span class="text-danger small" v-if="errors.editData?.areaSqm"> <i
+                                    class="bi bi-exclamation-circle-fill"></i>{{
                                 errors.editData.areaSqm[0]
                                 }}</span>
 
@@ -521,7 +533,7 @@
                                 <label for="room_type">Room Type</label>
                             </div>
                             <span class="text-danger small" style="border: 1px solid #4edce2;"
-                                v-if="errors.editData?.roomType">{{
+                                v-if="errors.editData?.roomType"> <i class="bi bi-exclamation-circle-fill"></i>{{
                                 errors.editData.roomType[0]
                                 }}</span>
                             <div class="form-floating mb-2">
@@ -534,7 +546,8 @@
                                 </select>
                                 <label for="availability">Availability Status</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.availability">{{
+                            <span class="text-danger small" v-if="errors.editData?.availability"> <i
+                                    class="bi bi-exclamation-circle-fill"></i>{{
                                 errors.editData.availability[0]
                                 }}</span>
                         </div>
@@ -546,7 +559,8 @@
                                     placeholder="Price" v-model="editData.price" min="0" step="0.01">
                                 <label for="price">Price (₱)</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.price">{{
+                            <span class="text-danger small" v-if="errors.editData?.price"> <i
+                                    class="bi bi-exclamation-circle-fill"></i>{{
                                 errors.editData.price[0]
                                 }}</span>
                             <div class="form-floating mb-2 mt-2">
@@ -559,7 +573,8 @@
                                 </select>
                                 <label for="bedType">Bed Type</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.listingType">{{
+                            <span class="text-danger small" v-if="errors.editData?.listingType"> <i
+                                    class="bi bi-exclamation-circle-fill"></i>{{
                                 errors.editData.listingType[0]
                                 }}</span>
 
@@ -573,7 +588,8 @@
                                 </select>
                                 <label for="furnishingStatus">Furnishing Status</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.furnishing_status">{{
+                            <span class="text-danger small" v-if="errors.editData?.furnishing_status"> <i
+                                    class="bi bi-exclamation-circle-fill"></i>{{
                                 errors.editData.furnishing_status[0]
                                 }}</span>
                             <div class="form-floating rounded-3 mb-2 mt-2" style="border: 1px solid #4edce2;">
@@ -586,7 +602,8 @@
                                 </select>
                                 <label for="genderPreference">Gender Preference</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.editData?.genderPreference">{{
+                            <span class="text-danger small" v-if="errors.editData?.genderPreference"> <i
+                                    class="bi bi-exclamation-circle-fill"></i>{{
                                 errors.editData.genderPreference[0]
                                 }}</span>
                             <div class="d-grid gap-2 mt-4">
@@ -607,7 +624,8 @@
                                     v-model="newRoomFeature" placeholder="Optional Add Rooms Features">
                                 <label for="Optional">(Optional) Add Rooms Features</label>
                             </div>
-                            <span class="text-danger small" v-if="errors.newRoomFeature">
+                            <span class="text-danger small" v-if="errors.newRoomFeature"> <i
+                                    class="bi bi-exclamation-circle-fill"></i>
                                 {{ errors.newRoomFeature[0] }}
                             </span>
                             <div class="mb-2">
@@ -1106,16 +1124,16 @@ export default {
         },
 
         async submitRoom() {
-            const confirmed = await this.$refs.modal.show({
-                title: 'Confirm New Room',
-                message: 'Do you want to add this room now?',
-                functionName: 'Add Room'
-            });
+            // const confirmed = await this.$refs.modal.show({
+            //     title: 'Confirm New Room',
+            //     message: 'Do you want to add this room now?',
+            //     functionName: 'Add Room'
+            // });
 
-            if (!confirmed) {
-                this.$refs.loader.loading = false;
-                return;
-            }
+            // if (!confirmed) {
+            //     this.$refs.loader.loading = false;
+            //     return;
+            // }
 
             try {
                 this.$refs.loader.loading = true;
@@ -1183,7 +1201,6 @@ export default {
             const formData = new FormData();
             formData.append('features', this.roomFeatures.join(','));
             formData.append('room_id', this.getRoomID);
-            console.log(this.getRoomID);
             try {
                 const confirmed = await this.$refs.modal.show({
                     title: 'Adding Room Features',
@@ -1215,17 +1232,14 @@ export default {
                 }
             } catch (error) {
                 this.$refs.loader.loading = false;
-
                 if (error.response && error.response.status === 422) {
-                    const validationErrors = error.response.data.message;
-                    // let messages = Object.values(validationErrors).flat().join('\n');
-                    this.errors.rules = [validationErrors];
-
-                } if (error.response.status === 400) {
-                    const message = error.response.data.message || 'Something went wrong.';
-                    this.errors.rules = [message];
+                    this.errors = error.response.data.errors || {};
+                } else if (error.response && error.response.status === 400) {
+                    this.errors = { roomFeatures: [error.response.data.message] };
                 }
             }
+
+            
         },
 
         async ViewRoom(roomId) {
@@ -1320,14 +1334,15 @@ export default {
             }
         },
         async addnewRoomFeatures() {
-
-
             this.errors = {};
             const confirmed = await this.$refs.modal.show({
                 title: 'Adding New Room Feature',
                 message: `Are you sure you want to add this room feature?`,
                 functionName: 'Add new Room Feature (Optional)'
             });
+            if(!confirmed){
+                return;
+            }
 
             this.$refs.loader.loading = true;
             try {
@@ -1397,21 +1412,20 @@ export default {
             }
         },
         async updateRoom() {
-            const confirmed = await this.$refs.modal.show({
-                title: 'Confirm Update',
-                message: 'Are you sure you want to update the details of this room? This action will overwrite the existing information.',
-                functionName: 'Update Room'
-            });
+            // const confirmed = await this.$refs.modal.show({
+            //     title: 'Confirm Update',
+            //     message: 'Are you sure you want to update the details of this room? This action will overwrite the existing information.',
+            //     functionName: 'Update Room'
+            // });
 
-            if (!confirmed) {
-                this.$refs.loader.loading = false;
-                return;
-            }
+            // if (!confirmed) {
+            //     this.$refs.loader.loading = false;
+            //     return;
+            // }
 
             this.$refs.loader.loading = true;
 
             const formData = new FormData();
-
             formData.append('dormitory_id', this.editData.fkdormID);
             formData.append('room_number', this.editData.roomNumber);
             formData.append('room_type', this.editData.roomType);
@@ -1442,7 +1456,6 @@ export default {
 
                     },
                 });
-
                 if (response.data.status === "success") {
                     this.handlePagination(this.currentPage);
                     this.$refs.toast.showToast(response.data.message, 'success');
@@ -1453,18 +1466,21 @@ export default {
                 }
             } catch (error) {
                 if (error.response && error.response.status === 422) {
-                    this.errors = {
-                        editData: error.response.data.errors
-                    };
+                    const laravelErrors = error.response.data.errors;
+                    this.errors.editData = {};
+
+                    // Convert snake_case to camelCase
+                    for (const key in laravelErrors) {
+                        const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+                        this.errors.editData[camelKey] = laravelErrors[key];
+                    }
 
                     this.$refs.loader.loading = false;
                 }
+
             } finally {
                 this.$refs.loader.loading = false;
             }
-
-
-
         },
         async deleteRoom(roomId) {
             this.currentRoomID = roomId;
@@ -1573,6 +1589,7 @@ export default {
 
             }
         },
+       
         
 
 

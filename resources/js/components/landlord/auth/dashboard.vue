@@ -17,19 +17,18 @@
                 <div class="d-flex align-items-center mb-3">
                     <!-- Left side: Date -->
                     <div class="d-flex align-items-center gap-2">
-                        <label class="form-label fw-bold m-0">📅 Today's Date:</label>
-                        <input type="date" class="form-control w-auto" v-model="newDate" :max="today">
+                        <label class=" form-label fw-bold m-0">📅 Today's Date:</label>
+                        <input type="date" class="form-control w-auto" style="border: 1px solid #4edce2; min-width: 200px;"
+                            v-model="newDate" :max="today">
                     </div>
 
                     <!-- Right side: Generate Reports -->
                     <!-- Right side: Generate Reports -->
                     <div class="ms-auto d-flex align-items-center gap-2">
-                        <label class="form-label fw-bold m-0 text-muted">
-                            📄 Generate Reports:
-                        </label>
+                       
                         <!-- Button with icon -->
                         <a :href="`/generate-full-report/${landlord_id}?date=${newDate}`" target="_blank"
-                            class="btn btn-outline-success btn-sm" :class="{ 'disabled': !newDate }">
+                            class="btn btn-outline-success btn-lg" :class="{ 'disabled': !newDate }">
                             📄 Download Full Report
                         </a>
 

@@ -201,6 +201,7 @@ export default {
                 if (!confirmed) {
                     return;
                 }
+                
                 const formdata = new FormData();
                 formdata.append('room_id', this.room_id);
                 formdata.append('tenant_id', this.tenant_id);

@@ -7,9 +7,8 @@
         Admin Dashboard
       </h1>
       <button class="btn btn-primary d-inline-flex align-items-center px-4 py-2" @click="downloadReport"
-        style="transition: transform 0.2s, box-shadow 0.2s;"
-        onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
-        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+        style="transition: transform 0.2s, box-shadow 0.2s;" @mouseover="hoverButton($event, true)"
+        @mouseout="hoverButton($event, false)">
         <i class="bi bi-file-earmark-arrow-down me-2"></i>
         Download Subscription Report
       </button>
@@ -50,14 +49,12 @@
       </div>
     </div>
 
-
-    <div class="card shadow-sm border-0 p-4 mt-5">
+    <!-- Subscribers Graph -->
+    <div class="card shadow-sm border-0 p-4 mt-5" v-if="chartData.labels.length">
       <div class="d-flex align-items-center mb-4">
         <i class="bi bi-graph-up-arrow text-primary fs-4 me-2"></i>
-        <h5 class="fw-semibold mb-0">Subscribers per Month</h5>
+        <h5 class="fw-semibold mb-0">Subscribers Graph</h5>
       </div>
-
-      <!-- Chart.js component -->
       <Bar :data="chartData" :options="chartOptions" />
     </div>
   </div>
@@ -65,7 +62,6 @@
 
 <script>
 import { Bar } from "vue-chartjs";
-
 import {
   Chart as ChartJS,
   Title,
@@ -74,105 +70,93 @@ import {
   BarElement,
   CategoryScale,
   LinearScale
-} from 'chart.js'
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+} from 'chart.js';
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+
 import axios from "axios";
 import Loader from '@/components/loader.vue';
 
 export default {
-  components: {
-    Bar,
-    Loader,
-
-  },
   name: "AdminDashboard",
-
+  components: { Bar, Loader },
   data() {
     return {
+      totalTenants: 0,
+      totalLandlords: 0,
+      totalCollection: 0,
+      totalSubscribers: 0,
       chartData: {
         labels: [],
-        datasets: [
-          {
-            label: "Subscribers",
-            data: [],
-            backgroundColor: "#0d6efd",
-            borderRadius: 8,
-          },
-        ],
+        datasets: [{
+          label: "Subscribers",
+          data: [],
+          backgroundColor: "#0d6efd",
+          borderRadius: 8,
+        }],
       },
       chartOptions: {
         responsive: true,
         plugins: {
           legend: { display: false },
-          title: { display: true, text: "Subscribers (Last 6 Months)" },
+          title: { display: true, text: "Subscribers" },
         },
-        scales: {
-          y: { beginAtZero: true },
-        },
+        scales: { y: { beginAtZero: true } },
       },
-      totalTenants: 0,
-      totalLandlords: 0,
-      totalCollection: 0,
-      chart: null,
     };
   },
-
   methods: {
+    hoverButton(event, isHover) {
+      if (isHover) {
+        event.currentTarget.style.transform = "scale(1.05)";
+        event.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+      } else {
+        event.currentTarget.style.transform = "scale(1)";
+        event.currentTarget.style.boxShadow = "none";
+      }
+    },
+    getUsersTotal() {
+      try {
+        this.$refs.loader.loading = true;
+        axios.get("/admin/get/total").then((response) => {
+          this.totalTenants = response.data.totalTenants;
+          this.totalLandlords = response.data.totalLandlords;
+          this.totalCollection = response.data.totalCollection;
+        });
+      } catch (error) {
+        console.error("Error fetching user totals:", error);
+      } finally {
+        this.$refs.loader.loading = false;
+      }
+    },
     async getTotals() {
       try {
         this.$refs.loader.loading = true;
+        const response = await axios.get("/admin/get-subscribers-total");
+        this.totalSubscribers = response.data.totalSubscribers;
 
-        const response = await axios.get("/admin/get/total");
-        this.totalTenants = response.data.totalTenants;
-        this.totalLandlords = response.data.totalLandlords;
-        this.totalCollection = response.data.totalCollection;
+        // Update chart with single total
+        this.chartData.labels = ["Total Subscribers"];
+        this.chartData.datasets[0].data = [this.totalSubscribers];
       } catch (error) {
         console.error("Error fetching totals:", error);
-      } finally { 
+      } finally {
         this.$refs.loader.loading = false;
-
-      }
-    },
-    async fetchData() {
-      try {
-        this.$refs.loader.loading = true;
-
-        const res = await axios.get("/subscriptions-per-month"); // ✅ make sure route matches
-        const data = res.data;
-
-        this.chartData.labels = data.map((item) => item.month);
-        this.chartData.datasets[0].data = data.map((item) => item.count);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-      finally { 
-        this.$refs.loader.loading = false;
-
       }
     },
     downloadReport() {
       try {
         this.$refs.loader.loading = true;
-
         window.open("/generate-subscription-report", "_blank");
-
-      } catch {
-
-      }
-      finally { 
+      } catch (error) {
+        console.error(error);
+      } finally {
         this.$refs.loader.loading = false;
-
       }
     }
-
-
-
-   
   },
-
   mounted() {
     this.getTotals();
-    this.fetchData();
+    this.getUsersTotal();
   },
 };
 </script>

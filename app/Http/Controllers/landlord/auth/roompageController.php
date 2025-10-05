@@ -259,6 +259,11 @@ class roompageController extends Controller
         $validated = $request->validate([
             'features' => 'required|string|max:255',
             'room_id' => 'required|integer',
+        ],
+        [
+            'features.required' => 'Please fill up features.',
+            'features.string' => 'Feature name must be a character or word.',
+            'features.max' => 'Feature name must not exceed 255 characters.',
         ]);
     
         try {
@@ -304,7 +309,8 @@ class roompageController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-    }    public function ViewRoom($id)
+    }   
+     public function ViewRoom($id)
     {
         $landlordId = session('landlord_id');
         if (!$landlordId) {

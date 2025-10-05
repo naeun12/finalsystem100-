@@ -53,31 +53,40 @@ $landlord = landlordModel::find($landlord_id);
         ]);
     
 }
-public function updatelandlordAccount(Request $request,$landlord_id)
+public function updatelandlordAccount(Request $request, $landlord_id)
 {
     $landlord = landlordModel::find($landlord_id);
-  $request->validate([
-    'firstname'   => 'required|string|max:255',
-    'lastname'    => 'required|string|max:255',
-    'gender'      => 'nullable|string',
-    'profilePicUrl' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-    
-], [
-    'firstname.required'   => 'Please enter the firstname.',
-    'lastname.required'    => 'Please enter the lastname.',
-]);
-            $profilePicPath = null;
-           if ($request->hasFile('profilePicUrl')) {
-            $image = $request->file('profilePicUrl');
-            $imageName = time() . '_profile.' . $image->getClientOriginalExtension();
-            $imagePath = $image->storeAs('public/uploads/profilePic', $imageName);
-            $profilePicPath = 'storage/uploads/profilePic/' . $imageName;
-          }
 
-    $landlord->firstname   = $request->firstname;
-    $landlord->lastname    = $request->lastname;
-    $landlord->gender      = $request->gender;
-    $landlord->profilePicUrl = $profilePicPath;
+    if (!$landlord) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Landlord not found.'
+        ], 404);
+    }
+
+    $request->validate([
+        'firstname'     => 'required|string|max:255',
+        'lastname'      => 'required|string|max:255',
+        'gender'        => 'nullable|string',
+        'profilePicUrl' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ], [
+        'firstname.required' => 'Please enter the firstname.',
+        'lastname.required'  => 'Please enter the lastname.',
+    ]);
+
+    // Update basic info
+    $landlord->firstname = $request->firstname;
+    $landlord->lastname  = $request->lastname;
+    $landlord->gender    = $request->gender;
+
+    // Update profile picture only if a new file is uploaded
+    if ($request->hasFile('profilePicUrl')) {
+        $image = $request->file('profilePicUrl');
+        $imageName = time() . '_profile.' . $image->getClientOriginalExtension();
+        $image->storeAs('public/uploads/profilePic', $imageName);
+        $landlord->profilePicUrl = 'storage/uploads/profilePic/' . $imageName;
+    }
+
     $landlord->save();
 
     return response()->json([
@@ -85,8 +94,8 @@ public function updatelandlordAccount(Request $request,$landlord_id)
         'message'  => 'Landlord account updated successfully.',
         'landlord' => $landlord
     ]);
-
 }
+
 
 public function updateDocuments(Request $request, $landlord_id)
 {

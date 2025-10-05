@@ -308,7 +308,6 @@ export default {
                 const formdata = new FormData();
                 formdata.append('firstname', this.landlord.firstname);
                 formdata.append('lastname', this.landlord.lastname);
-                formdata.append('profilePicUrl', this.landlord.profilePicUrl);
                 formdata.append('gender', this.landlord.gender);
                 if (this.landlord.profilePicFile) {
                     formdata.append('profilePicUrl', this.landlord.profilePicFile);
@@ -408,6 +407,8 @@ export default {
         const element = document.getElementById('landlordaccountUpdated');
         this.landlord_id = element.dataset.landlordId;
         this.fetchLandlordData();
+        // window.vueInstance = this;
+
 
         }
 }

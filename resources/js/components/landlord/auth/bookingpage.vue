@@ -234,16 +234,14 @@
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content shadow-lg rounded-4 overflow-hidden">
                 <div class="modal-body p-0 position-relative bg-dark">
-                    <img :src="selectedtenant.paymentImage" class="img-fluid w-100"
+                    <img :src="selectedtenant.payment[0].paymentImage" class="img-fluid w-100"
                         style="object-fit: contain; max-height: 90vh;" />
                     <button type="button"
                         class="btn-close position-absolute top-0 end-0 m-3 bg-white p-2 rounded-circle"
                         aria-label="Close" @click="showFullImage = false"></button>
                 </div>
                 <div class="modal-footer justify-content-center bg-light border-top">
-                    <button type="button" class="btn btn-outline-dark px-4" @click="showFullImage = false">
-                        Close
-                    </button>
+                   
                 </div>
             </div>
         </div>
@@ -487,11 +485,23 @@ export default {
         },
         async handleBookingAction(booking_id) {
             try {
+                const confirmed = await this.$refs.modal.show({
+                    title: 'Update Booking',
+                    message: `The tenant's status will be updated to '${this.status}' for this booking. Are you sure?`,
+                    functionName: 'Update Booking',
+                });
+
+                if (!confirmed) {
+                    return;
+                }
+
+
                 this.$refs.loader.loading = true;
                 const formdata = new FormData();
                 formdata.append('bookingID', booking_id);
                 formdata.append('landlordID', this.landlord_id);
                 formdata.append('status', this.status);
+                
                 const response = await axios.post('/handle-tenant-booking', formdata);
                 if (response.data.status === 'success') {
                     this.$refs.toast.showToast(response.data.message, 'success');

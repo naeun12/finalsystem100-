@@ -42,7 +42,7 @@ class bookingpageController extends Controller
         }
     
         return view('landlord.auth.bookingpage',[
-        "title" => "Landlord - Tenants", 
+        "title" => "Landlord - Booking Approval", 
         'headerName' => 'Tenants Booking',           
         'landlord' => $landlord,
         'landlord_id' => $landlord_id,

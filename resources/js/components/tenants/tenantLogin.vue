@@ -11,7 +11,6 @@
         </div>
 
         <!-- Tenant Login Form -->
-        <form @submit.prevent="TenantLogin">
             <div class="row px-4">
                 <!-- Email -->
                 <div class="mt-3">
@@ -49,7 +48,7 @@
                 <!-- Sign In Button -->
                 <div class="container d-flex justify-content-center">
                     <div class="w-75 mt-4">
-                        <button type="submit" class="btn btn-primary rounded-pill w-100 py-2 shadow-sm"
+                        <button @click="TenantLogin" class="btn btn-primary rounded-pill w-100 py-2 shadow-sm"
                             style="background: linear-gradient(135deg, #4edce2, #1fb6ff); border: none; font-weight: 600; transition: all 0.3s;"
                             @mouseover="event.target.style.opacity = '0.9'"
                             @mouseout="event.target.style.opacity = '1'">
@@ -58,7 +57,6 @@
                     </div>
                 </div>
             </div>
-        </form>
 
         <!-- Signup Link -->
         <p class="text-center mt-4 mb-2 text-muted">
@@ -109,6 +107,7 @@ export default {
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
+
                     });
                     if (response.data.status === "success") {
                         const userId = response.data.tenant.id;

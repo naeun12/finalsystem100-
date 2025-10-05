@@ -41,7 +41,7 @@ export default {
                         : 'You have a pending booking request to review.',
                 },
                 confirmed: {
-                    class: 'alert-warning',
+                    class: 'alert-secondary',
                     icon: '💸',
                     title: 'Awaiting Payment',
                     message: this.role === 'tenant'

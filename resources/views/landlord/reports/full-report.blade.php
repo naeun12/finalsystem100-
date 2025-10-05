@@ -95,10 +95,14 @@
             <td class="fw-bold">PHP {{ number_format($reservationTotal, 2) }}</td>
         </tr>
     </tfoot>
+   
 </table>
 
 <div class="income-box">
     Combined Total Income: PHP {{ number_format($bookingTotal + $reservationTotal, 2) }}
+</div>
+<div class="footer">
+    &copy; {{ now()->year }} DormHub. All rights reserved.
 </div>
 <style>
     body {
@@ -198,6 +202,17 @@
     .badge-success {
         background-color: #28a745; /* green */
     }
+    .footer {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    margin-top: 30px;        /* space above footer */
+    padding: 10px 0;   
+    width: 100%;      /* top/bottom padding */
+    border-top: 1px solid #ddd; /* subtle separator */
+    background-color: #f9f9f9;  /* optional light background */
+}
+
 </style>
 
 

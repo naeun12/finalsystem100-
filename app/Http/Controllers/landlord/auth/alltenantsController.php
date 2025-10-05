@@ -12,6 +12,8 @@ use App\Models\notificationModel;
 use App\Mail\TenantLandlordReminder;
 use Illuminate\Support\Facades\Mail; // <-- add this
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 use Illuminate\Support\Facades\Validator;
 
@@ -870,4 +872,90 @@ public function softDelete(Request $request, $id)
         ], 500);
 }
 }
+public function generateActiveTenantReport(Request $request)
+{
+    $landlordId = session('landlord_id');
+    if (!$landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized action. Please log in as a landlord.'
+        ], 403);
+    }
+
+    $logoPath = public_path('images/Logo/logo.png');
+    $date = $request->query('date'); // optional date filter YYYY-MM-DD
+
+    $tenants = approvetenantsModel::with('room.dorm')
+        ->whereHas('room', function ($query) use ($landlordId) {
+            $query->where('fklandlordID', $landlordId);
+        })
+        ->where('status', 'active')
+        ->where('isDeleted', false)
+        ->when($date, function ($query, $date) {
+            $query->whereDate('moveInDate', $date); // filter by move-in date
+        })
+        ->orderBy('moveInDate', 'desc')
+        ->get();
+
+    $totalTenants = $tenants->count();
+
+    $pdf = Pdf::loadView('landlord.reports.active-tenant-report', [
+        'tenants' => $tenants,
+        'logoPath' => $logoPath,
+        'totalTenants' => $totalTenants,
+        'selectedDate' => $date
+    ]);
+
+    return $pdf->stream("landlord.reports.active-tenant-report-{$landlordId}.pdf");
+}
+public function generateExtensionPaymentReport(Request $request)
+{
+    $landlordId = session('landlord_id');
+    if (!$landlordId) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized action. Please log in as a landlord.'
+        ], 403);
+    }
+
+    $logoPath = public_path('images/Logo/logo.png');
+
+    // Get date from query (optional)
+    $date = $request->query('date');
+if ($date) {
+    $tenantsWithExtensions = approvetenantsModel::with(['room.dorm', 'payments' => function($q) use ($date) {
+        $q->whereDate('created_at', $date);
+    }])
+    ->whereHas('room', fn($q) => $q->where('fklandlordID', $landlordId))
+    ->where('extension_payment_status', 'done')
+    ->where('isDeleted', false)
+    ->whereHas('payments', fn($q) => $q->whereDate('created_at', $date))
+    ->orderBy('created_at', 'desc')
+    ->get();
+} else {
+    $tenantsWithExtensions = approvetenantsModel::with('room.dorm', 'payments')
+        ->whereHas('room', fn($q) => $q->where('fklandlordID', $landlordId))
+        ->where('extension_payment_status', 'done')
+        ->where('isDeleted', false)
+        ->orderBy('created_at', 'desc')
+        ->get();
+}
+
+
+
+    // Calculate total extension payments
+    $totalIncome = $tenantsWithExtensions->sum(function($tenant) {
+        $payment = $tenant->payments->first();
+        return $payment->amount ?? 0;
+    });
+
+    $pdf = Pdf::loadView('landlord.reports.extension-payment-report', [
+        'tenants' => $tenantsWithExtensions,
+        'logoPath'=> $logoPath,
+        'totalIncome' => $totalIncome
+    ]);
+
+    return $pdf->stream("landlord-extension-payment-report-{$landlordId}.pdf");
+}
+
 }

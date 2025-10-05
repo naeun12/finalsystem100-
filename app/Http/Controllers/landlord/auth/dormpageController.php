@@ -233,15 +233,15 @@ class dormpageController extends Controller
                 'status' => 'success'
             ]);
         }
-        catch(\Illuminate\Validation\ValidationException $e)
-        {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->errors(),
-            ], 422);
-    
-        } catch (\Exception $e) {
-            return response()->json([
+       catch(\Illuminate\Validation\ValidationException $e)
+            {
+                return response()->json([
+                    'status' => 'error',
+                    'errors' => $e->errors(), // <-- change 'message' to 'errors'
+                ], 422);
+            }
+        catch (\Exception $e) {
+              return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
             ], 500);
@@ -268,7 +268,7 @@ class dormpageController extends Controller
         {
             return response()->json([
                 'status' => 'error',
-                'message' => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
     
         } catch (\Exception $e) {
@@ -383,7 +383,7 @@ class dormpageController extends Controller
         {
             return response()->json([
                 'status' => 'error',
-                'message' => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
     
         }

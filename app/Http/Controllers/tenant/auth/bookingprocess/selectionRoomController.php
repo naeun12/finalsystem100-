@@ -59,12 +59,7 @@ return view('tenant.auth.bookingProcess.roomSelection', [
         })
         ->values();
        
-            return response()->json(['rooms' => $rooms]);
-
-
-    
-   
-        
+            return response()->json(['rooms' => $rooms]);   
 
 }
 

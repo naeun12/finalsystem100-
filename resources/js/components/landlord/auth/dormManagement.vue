@@ -365,8 +365,6 @@
                 </div>
             </div>
         </div>
-
-
         <!-- Amenities Modal -->
         <div class="modal fade show d-block w-100" v-if="amenitiesModal" tabindex="-1"
             style="background-color: rgba(0,0,0,0.5);" @click.self="amenitiesModal = false">
@@ -420,9 +418,7 @@
                             <label :for="'rule' + index">Rule/Policy {{ index + 1 }}</label>
                             <span class="text-danger mb-3 " v-if="errors.rules">{{ errors.rules[0]
                                 }}</span>
-
                         </div>
-
                         <button class="btn btn-primary mb-4" @click="addRulesAndpolicy"
                             :disabled="addRulesAndpolicy.length >= 4"
                             :title="addRulesAndpolicy.length >= 4 ? 'Max 4 rules/policies allowed' : 'Add Rule/Policy'">
@@ -764,23 +760,14 @@
                                             </div>
                                         </div>
                                     </div>
-
-
                                 </div>
                                 <div class="col-md-4">
-
                                 </div>
-
-
-
                             </div>
                         </div>
                     </form>
                 </div>
-
             </div>
-
-
         </div>
 
         <!-- Update Map View -->
@@ -1002,15 +989,10 @@
                                 </div>
                             </div>
                         </div>
-
-
-
                     </div>
-
                 </div>
             </div>
         </div>
-
         <div v-if="VisibleImagePostModal" class="modal fade show d-block w-100" tabindex="-1"
             style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -1051,8 +1033,8 @@
                                         <small class="text-muted">JPG, PNG or GIF – Max 5MB</small>
                                     </div>
                                 </div>
-
-
+                                <p v-if="errors.roomImage1File" class="text-danger text-center">{{
+                                    errors.roomImage1File[0] }}</p>
                                 <!-- Image Preview -->
                                 <div v-if="roomImage1Preview" class="text-center mb-3">
                                     <img :src="roomImage1Preview" alt="Uploaded Room Image"
@@ -1081,6 +1063,9 @@
                                         <small class="text-muted">JPG, PNG or GIF – Max 5MB</small>
                                     </div>
                                 </div>
+                                <p v-if="errors.roomImage2File" class="text-danger text-center">{{
+                                    errors.roomImage2File[0] }}</p>
+
 
                                 <!-- Image Preview -->
                                 <div v-if="roomImage2Preview" class="text-center mb-3">
@@ -1110,6 +1095,8 @@
                                         <small class="text-muted">JPG, PNG or GIF – Max 5MB</small>
                                     </div>
                                 </div>
+                                <p v-if="errors.roomImage3File" class="text-danger text-center">{{
+                                    errors.roomImage3File[0] }}</p>
 
                                 <!-- Image Preview -->
                                 <div v-if="roomImage3Preview" class="text-center mb-3">
@@ -1138,17 +1125,11 @@
                                     Submit Dorm Details
                                 </button>
                             </div>
-
                             <!-- Image Grid -->
-
                         </div>
-
                     </div>
-
-
                     <!-- Footer -->
                 </div>
-
             </div>
         </div>
         <!--Update Images-->
@@ -1676,9 +1657,9 @@ export default {
             } catch (error) {
                 this.$refs.loader.loading = false;
                 if (error.response && error.response.status === 422) {
-                    const validationErrors = error.response.data.message;
-                    let messages = Object.values(validationErrors).flat().join('\n');
-                    this.$refs.toast.showToast(messages, 'danger');
+                    this.errors = error.response.data.errors;
+                    this.$refs.loader.loading = false;
+
                 } else if (error.response && error.response.data && error.response.data.errors) {
                     this.errors = error.response.data.errors;
                 } else {
@@ -2085,7 +2066,6 @@ export default {
         async UploadImages1() {
             try {
                 this.$refs.loader.loading = true;
-
                 const formData = new FormData();
                 formData.append('roomImage1File', this.roomImage1File);
                 const response = await axios.post('/upload-main-image', formData, {
@@ -2100,17 +2080,21 @@ export default {
                 }
             }
             catch (error) {
-                this.$refs.loader.loading = false;
-
                 if (error.response && error.response.status === 422) {
-                    const validationErrors = error.response.data.message;
-                    let messages = Object.values(validationErrors).flat().join('\n');
-                    this.$refs.toast.showToast(messages, 'danger');
-
+                    // Validation errors from backend
+                    this.errors = error.response.data.errors;
+                    this.$refs.loader.loading = false;
                 } else {
-                    this.$refs.toast.showToast(response.data.messages, 'danger');
+                    // Other errors
+                    const message = error.response?.data?.message || 'Something went wrong';
+                    this.$refs.toast.showToast(message, 'danger');
                     console.error(error);
                 }
+            }
+
+            finally { 
+                this.$refs.loader.loading = false;
+
             }
         },
         async UploadImages2() {
@@ -2132,14 +2116,17 @@ export default {
             catch (error) {
                 this.$refs.loader.loading = false;
                 if (error.response && error.response.status === 422) {
-                    const validationErrors = error.response.data.message;
-                    let messages = Object.values(validationErrors).flat().join('\n');
-                    this.$refs.toast.showToast(messages, 'danger');
+                    this.errors = error.response.data.errors;
+                    this.$refs.loader.loading = false;
 
                 } else {
                     this.$refs.toast.showToast(response.data.messages, 'danger');
                     console.error(error);
                 }
+            }
+            finally {
+                this.$refs.loader.loading = false;
+
             }
         },
         async addAmenity() {
@@ -2276,7 +2263,7 @@ export default {
         },
         async updateDorm() {
             // Hide spinner
-
+            
             const formData = new FormData();
             formData.append('dormName', this.editDormData.dormName);
             formData.append('address', this.editDormData.address);
@@ -2560,11 +2547,14 @@ export default {
             }
             formData.append("dorm_id", this.editDormData.dorm_id);
             console.log([...formData.entries()]); // for debugging
-            const confirmed = await this.$refs.modal.show({
-                title: 'Update Dorm',
-                message: `Confirm update to this dorm’s Images?`,
-                functionName: 'Update Dormitories Image'
-            });
+            // const confirmed = await this.$refs.modal.show({
+            //     title: 'Update Dorm',
+            //     message: `Confirm update to this dorm’s Images?`,
+            //     functionName: 'Update Dormitories Image'
+            // });
+            // if(confirmed === false){
+            //     return;
+            // }
             this.$refs.loader.loading = true;
 
             try {
@@ -2683,6 +2673,10 @@ export default {
             return `/` + path;
         },
         initMap() {
+            const centerPoint = { lat: 10.32, lng: 123.93 };
+            const defaultZoom = 13;
+
+            // Invisible polygons for Mandaue and Lapu-Lapu/Mactan
             const mandauePolygon = new google.maps.Polygon({
                 paths: [
                     { lat: 10.338, lng: 123.897 },
@@ -2690,184 +2684,124 @@ export default {
                     { lat: 10.310, lng: 123.940 },
                     { lat: 10.295, lng: 123.900 },
                 ],
-            });
-            mandauePolygon.setOptions({
-                strokeColor: "#FF0000",
-                fillColor: "#FF0000",
-                strokeWeight: 3,
-                strokeOpacity: 0.8,
-                fillOpacity: 0.2,
+                visible: false
             });
 
             const lapuLapuPolygon = new google.maps.Polygon({
                 paths: [
-                    { lat: 10.300, lng: 123.980 }, // Middle-right corner
-                    { lat: 10.325, lng: 123.975 }, // Bottom-right corner
-                    { lat: 10.335, lng: 123.945 }, // Bottom-middle corner
-                    { lat: 10.310, lng: 123.920 }, // Bottom-left corner
-                    { lat: 10.280, lng: 123.945 }, // Middle-left corner
-                    { lat: 10.260, lng: 123.945 }, // Close the polygon
+                    { lat: 10.260, lng: 123.945 },
+                    { lat: 10.280, lng: 123.945 },
+                    { lat: 10.310, lng: 123.920 },
+                    { lat: 10.335, lng: 123.945 },
+                    { lat: 10.325, lng: 123.975 },
+                    { lat: 10.300, lng: 123.980 },
                 ],
+                visible: false
             });
-            lapuLapuPolygon.setOptions({
-                strokeColor: "#0000FF",
-                fillColor: "#0000FF",
-                strokeWeight: 3,
-                strokeOpacity: 0.8,
-                fillOpacity: 0.2,
-            });
-            const mandaue = { lat: 10.330025, lng: 123.914337 };
-            const lapuLapu = { lat: 10.309897, lng: 123.949997 };
-            const centerPoint = { lat: 10.32, lng: 123.93 };
-            const defaultZoom = 13;
 
-            const geocoder = new google.maps.Geocoder();
-
-            const updateLocationFromLatLng = (latLng, isUpdateMap = false) => {
-                const isInsideMandaue = google.maps.geometry.poly.containsLocation(latLng, mandauePolygon);
-                const isInsideLapuLapu = google.maps.geometry.poly.containsLocation(latLng, lapuLapuPolygon);
-
-                if (!isInsideMandaue && !isInsideLapuLapu) {
-                    this.$refs.toast.showToast('Selected location is outside Mandaue and Lapu-Lapu city limits. Please select a valid location.', 'danger');
-                    return false;
-                }
-
-                geocoder.geocode({ location: latLng }, (results, status) => {
-                    if (status === "OK" && results[0]) {
-                        const address = results[0].formatted_address;
-                        const latitude = latLng.lat();
-                        const longitude = latLng.lng();
-
-                        if (isUpdateMap) {
-                            this.editDormData.address = address;
-                            this.editDormData.latitude = latitude;
-                            this.editDormData.longitude = longitude;
-                            this.$refs.toast.showToast(this.editDormData.address, 'success');
-
-                        } else {
-                            this.address = address;
-                            this.latitude = latitude;
-                            this.longitude = longitude;
-                            this.$refs.toast.showToast(this.address, 'success');
-
-                        }
-                    } else {
-                        alert(`Geocoder failed or no results found: ${status}`);
-                    }
-                });
-                return true;
-            };
-
-            // Map style to make background light and clean
             const mapStyle = [
-                {
-                    featureType: "all",
-                    elementType: "all",
-                    stylers: [
-                        { saturation: -20 },
-                        { lightness: 20 },
-                    ],
-                },
-                {
-                    featureType: "poi",
-                    stylers: [{ visibility: "off" }], // Hide points of interest to reduce clutter
-                },
-                {
-                    featureType: "transit",
-                    stylers: [{ visibility: "off" }], // Hide transit lines/stations
-                }
+                { featureType: "all", elementType: "all", stylers: [{ saturation: -20 }, { lightness: 20 }] },
+                { featureType: "poi", stylers: [{ visibility: "off" }] },
+                { featureType: "transit", stylers: [{ visibility: "off" }] }
             ];
 
-            // Add Dorm Map with polygon & draggable marker
+            const initializeMap = (elementId, initialPosition, isUpdate = false) => {
+                const mapElement = document.getElementById(elementId);
+                if (!mapElement || mapElement._map) return;
+
+                const map = new google.maps.Map(mapElement, {
+                    center: initialPosition,
+                    zoom: defaultZoom,
+                    styles: mapStyle
+                });
+
+                // Add polygons to map (invisible)
+                mandauePolygon.setMap(map);
+                lapuLapuPolygon.setMap(map);
+
+                const geocoder = new google.maps.Geocoder();
+
+                const updateLocation = (latLng) => {
+                    const insideMandaue = google.maps.geometry.poly.containsLocation(latLng, mandauePolygon);
+                    const insideLapuLapu = google.maps.geometry.poly.containsLocation(latLng, lapuLapuPolygon);
+
+                    if (!insideMandaue && !insideLapuLapu) {
+                        this.$refs.toast.showToast(
+                            "Selected location is outside Mandaue, Lapu-Lapu, or Mactan.",
+                            "danger"
+                        );
+                        return false;
+                    }
+
+                    geocoder.geocode({ location: latLng }, (results, status) => {
+                        if (status === "OK" && results[0]) {
+                            const address = results[0].formatted_address;
+                            const latitude = latLng.lat();
+                            const longitude = latLng.lng();
+
+                            if (isUpdate) {
+                                this.editDormData.address = address;
+                                this.editDormData.latitude = latitude;
+                                this.editDormData.longitude = longitude;
+                                this.$refs.toast.showToast(address, "success");
+                            } else {
+                                this.address = address;
+                                this.latitude = latitude;
+                                this.longitude = longitude;
+                                this.$refs.toast.showToast(address, "success");
+                            }
+                        }
+                    });
+                };
+
+                const draggableMarker = new google.maps.Marker({
+                    position: initialPosition,
+                    map: map,
+                    draggable: true,
+                    title: "Drag to select location",
+                    icon: {
+                        url: "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+                        scaledSize: new google.maps.Size(50, 50)
+                    }
+                });
+
+                draggableMarker.addListener("dragend", (event) => {
+                    const latLng = event.latLng;
+                    const inside = google.maps.geometry.poly.containsLocation(latLng, mandauePolygon) ||
+                        google.maps.geometry.poly.containsLocation(latLng, lapuLapuPolygon);
+
+                    if (!inside) {
+                        // Snap back to previous valid location
+                        draggableMarker.setPosition(new google.maps.LatLng(
+                            parseFloat(this.editDormData.latitude) || centerPoint.lat,
+                            parseFloat(this.editDormData.longitude) || centerPoint.lng
+                        ));
+                        this.$refs.toast.showToast(
+                            "Cannot place marker outside allowed cities.",
+                            "danger"
+                        );
+                    } else {
+                        updateLocation(latLng);
+                    }
+                });
+
+                mapElement._map = map;
+                mapElement._draggableMarker = draggableMarker;
+            };
+
             if (this.VisibleMap) {
-                const addMapElement = document.getElementById("AddMap");
-                if (addMapElement && !addMapElement._map) {
-                    const addMap = new google.maps.Map(addMapElement, {
-                        center: centerPoint,
-                        zoom: defaultZoom,
-                        styles: mapStyle,
-                    });
-
-                    // Add polygons to map (for boundaries)
-                    mandauePolygon.setMap(addMap);
-                    lapuLapuPolygon.setMap(addMap);
-
-                    // Markers for cities (smaller and subtle)
-                    new google.maps.Marker({ position: mandaue, map: addMap, title: "Mandaue City", icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" });
-                    new google.maps.Marker({ position: lapuLapu, map: addMap, title: "Lapu-Lapu City", icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" });
-
-                    // Draggable marker with big custom icon
-                    const draggableMarker = new google.maps.Marker({
-                        position: centerPoint,
-                        map: addMap,
-                        draggable: true,
-                        title: "Drag me to select location",
-                        animation: google.maps.Animation.DROP,
-                        icon: {
-                            url: "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-                            scaledSize: new google.maps.Size(50, 50),  // Big marker size for easy spotting
-                        }
-                    });
-
-                    draggableMarker.addListener('dragend', (event) => {
-                        const latLng = event.latLng;
-                        if (!updateLocationFromLatLng(latLng, false)) {
-                            draggableMarker.setPosition(new google.maps.LatLng(this.latitude || centerPoint.lat, this.longitude || centerPoint.lng));
-                        }
-                    });
-
-                    addMapElement._map = addMap;
-                    addMapElement._draggableMarker = draggableMarker;
-                }
+                initializeMap("AddMap", centerPoint, false);
             }
 
-            // Update Dorm Map with polygon & draggable marker
             if (this.UpdateVisibleMap) {
-                const updateMapElement = document.getElementById("map");
-                if (updateMapElement && !updateMapElement._map) {
-                    const initialPosition = this.editDormData.latitude && this.editDormData.longitude
-                        ? { lat: parseFloat(this.editDormData.latitude), lng: parseFloat(this.editDormData.longitude) }
-                        : centerPoint;
-
-                    const updateMap = new google.maps.Map(updateMapElement, {
-                        center: initialPosition,
-                        zoom: defaultZoom,
-                        styles: mapStyle,
-                    });
-
-                    mandauePolygon.setMap(updateMap);
-                    lapuLapuPolygon.setMap(updateMap);
-
-                    new google.maps.Marker({ position: mandaue, map: updateMap, title: "Mandaue City", icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" });
-                    new google.maps.Marker({ position: lapuLapu, map: updateMap, title: "Lapu-Lapu City", icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" });
-
-                    const draggableMarker = new google.maps.Marker({
-                        position: initialPosition,
-                        map: updateMap,
-                        draggable: true,
-                        title: "Drag me to select location",
-                        animation: google.maps.Animation.DROP,
-                        icon: {
-                            url: "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-                            scaledSize: new google.maps.Size(50, 50),
-                        }
-                    });
-
-                    draggableMarker.addListener('dragend', (event) => {
-                        const latLng = event.latLng;
-                        if (!updateLocationFromLatLng(latLng, true)) {
-                            draggableMarker.setPosition(new google.maps.LatLng(
-                                parseFloat(this.editDormData.latitude) || centerPoint.lat,
-                                parseFloat(this.editDormData.longitude) || centerPoint.lng
-                            ));
-                        }
-                    });
-
-                    updateMapElement._map = updateMap;
-                    updateMapElement._draggableMarker = draggableMarker;
-                }
+                const initialPosition = this.editDormData.latitude && this.editDormData.longitude
+                    ? { lat: parseFloat(this.editDormData.latitude), lng: parseFloat(this.editDormData.longitude) }
+                    : centerPoint;
+                initializeMap("map", initialPosition, true);
             }
         },
+
+
 
         formatDate(dateStr) {
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -2899,6 +2833,7 @@ export default {
         this.fetchDorms();
         this.subscribeToNotifications();
         this.getlandlordVerifiedStatus();
+        window.vueInstance = this; // after mounting
 
     },
 

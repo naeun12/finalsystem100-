@@ -3,37 +3,65 @@
     <Loader ref="loader" />
     <Toastcomponents ref="toast" />
 
-    <div class="p-4 mt-4">
-        <div class="input-group mb-2 w-100 shadow-sm rounded-pill overflow-hidden" style="border: 1px solid #4edce2;">
-            <span class="input-group-text bg-white border-0">
-                <i class="bi bi-search text-primary"></i>
-            </span>
-            <input type="text" class="form-control border-0 shadow-none" placeholder="Search Tenants name"
-                aria-label="Search Tenant " v-model="searchTerm" @input="searchTenants" />
+    <div class="p-4 mt-4 mb-3">
+        <div class="mb-3 w-100">
+            <!-- Search Bar -->
+            <div class="input-group shadow-sm rounded-pill overflow-hidden" style="border: 1px solid #4edce2;">
+                <span class="input-group-text bg-white border-0">
+                    <i class="bi bi-search text-primary"></i>
+                </span>
+                <input type="text" class="form-control border-0 shadow-none" placeholder="Search Tenant's name"
+                    aria-label="Search Tenant" v-model="searchTerm" @input="searchTenants" />
+            </div>
         </div>
-        <div class="py-3 d-flex gap-3 align-items-center flex-wrap">
-            <!-- Dorm No Dropdown -->
-            <div class="mb-2 d-flex align-items-center px-2 py-1 rounded shadow-sm"
-                style="border: 1px solid #4edce2; min-width: 250px;">
-                <select id="dormSelect" class="form-select border-0 shadow-none" @change="filterDorms"
-                    v-model="selectedDormId">
-                    <option value="" disabled> Select Dorm</option>
-                    <option value="all"> All Dorms</option>
-                    <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
-                        {{ dorm.dormName }} (ID: {{ dorm.dormID }})
-                    </option>
-                </select>
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+            <!-- Dorm Dropdown -->
+            <div class="d-flex align-items-center gap-2">
+                <!-- Dorm Select -->
+                <div class="d-flex align-items-center px-2 py-1 rounded shadow-sm"
+                    style="border: 1px solid #4edce2; min-width: 250px;">
+                    <select id="dormSelect" class="form-select border-0 shadow-none" v-model="selectedDormId"
+                        @change="filterDorms">
+                        <option value="" disabled>Select Dorm</option>
+                        <option value="all">All Dorms</option>
+                        <option v-for="dorm in dorms" :key="dorm.dormID" :value="dorm.dormID">
+                            {{ dorm.dormName }} (ID: {{ dorm.dormID }})
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Date Picker -->
+                <div class="d-flex align-items-center  px-2 py-1 rounded shadow-sm"
+                    style="border: 1px solid #4edce2; min-width: 200px;">
+                    <input type="date" class="form-control border-0 shadow-none" v-model="startDate"
+                        @change="filterByDate" />
+                </div>
+
             </div>
 
-            <!-- Add Tenant Button -->
-            <div class="ms-auto">
+
+            <!-- Buttons aligned to the end -->
+            <div class="ms-auto d-flex gap-2">
                 <button class="btn btn-success px-4 py-2 shadow-sm fw-semibold d-flex align-items-center gap-2"
                     @click="viewMoveInTenants">
                     <i class="bi bi-house-check fs-5"></i>
                     Confirmed Move-in Tenant
                 </button>
-            </div>
 
+                <button class="btn btn-primary px-4 py-2 shadow-sm fw-semibold d-flex align-items-center gap-2"
+                    @click="downloadReport">
+                    <i class="bi bi-file-earmark-text fs-5"></i>
+                    <span class="text-nowrap">Generate Active Tenant Report</span>
+                </button>
+                <button class="btn btn-secondary px-4 py-2 shadow-sm fw-semibold d-flex align-items-center gap-2"
+                    @click="extensionReport">
+                    <i class="bi bi-file-earmark-text fs-5"></i>
+                    <span class="text-nowrap">Generate Extension Payment Report</span>
+                </button>
+
+
+
+            </div>
         </div>
         <div v-if="clickConfirmedMoveInTenantModal" class="modal d-block modal-lg modal-dialog-centered" tabindex="-1">
             <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -65,9 +93,9 @@
                                 v-for="moveInTenant in moveInTenants" :key="moveInTenant.approvedID">
 
                                 <!-- Tenant Image -->
-                                <div class="position-relative">
+                                <div class="position-relative d-flex justify-content-center align-items-center">
                                     <img :src="moveInTenant.pictureID" alt="Tenant Image" class="card-img-top"
-                                        style="height: 200px; object-fit: cover;">
+                                        style="height:250px; width:auto;">
                                     <span class="badge bg-success position-absolute top-0 end-0 m-3 px-3 py-2 shadow">
                                         <i class="bi bi-check-circle me-1"></i> {{ moveInTenant.source_type }}
                                     </span>
@@ -82,9 +110,9 @@
                                     <ul class="list-group list-group-flush mb-4">
                                         <li class="list-group-item"><strong>Name:</strong> {{ moveInTenant.firstname }}
                                             {{
-                                            moveInTenant.lastname }}</li>
+                                                moveInTenant.lastname }}</li>
                                         <li class="list-group-item"><strong>Email:</strong> {{ moveInTenant.contactEmail
-                                            }}
+                                        }}
                                         </li>
                                         <li class="list-group-item"><strong>Phone:</strong> {{
                                             moveInTenant.contactNumber }}
@@ -159,29 +187,31 @@
         <div v-if="!tenants.length" class="d-flex flex-column justify-content-center align-items-center"
             style="height: 200px;">
             <i class="bi bi-emoji-frown mb-2" style="font-size: 2rem; color: #6c757d;"></i>
-            <p class="text-muted fw-bold">No Bookings found.</p>
+            <p class="text-muted fw-bold">No Tenant found.</p>
         </div>
-        <div class="container bg-white rounded shadow-sm "
-            style="border:1px solid #4edce2; border-radius: 0.375rem; max-height: 700px; overflow-y: auto;">
-            <div class="row fw-bold bg-info text-white text-center py-3 rounded">
-                <div class="col">#</div>
-                <div class="col">Tenant Name</div>
-                <div class="col">Email</div>
-                <div class="col">Dorm Name</div>
-                <div class="col">Room No</div>
-                <div class="col">Status</div>
-                <div class="col">Actions</div>
+
+        <div class="container bg-white rounded shadow-sm mt-4"
+            style="border:1px solid #4edce2; max-height: 700px; overflow-y: auto;">
+
+            <div class="row fw-bold bg-info text-white text-center py-3 rounded-top">
+                <div class="col-1">#</div>
+                <div class="col-2 text-start ps-3">Tenant Name</div>
+                <div class="col-3 text-start ps-3">Email</div>
+                <div class="col-2 text-start ps-3">Dorm Name</div>
+                <div class="col-1">Room No</div>
+                <div class="col-2">Status</div>
+                <div class="col-1">Actions</div>
             </div>
 
             <!-- Tenant Rows -->
             <div v-for="tenant in tenants" :key="tenant.approvedID"
                 class="row text-center align-items-center border-bottom py-2">
-                <div class="col">{{ tenant.approvedID }}</div>
-                <div class="col">{{ tenant.firstname }} {{ tenant.lastname }}</div>
-                <div class="col">{{ tenant.contactEmail }}</div>
-                <div class="col">{{ tenant.room?.dorm?.dormName ?? 'N/A' }}</div>
-                <div class="col">{{ tenant.room?.roomNumber ?? 'N/A' }}</div>
-                <div class="col">
+                <div class="col-1">{{ tenant.approvedID }}</div>
+                <div class="col-2 text-start ps-3">{{ tenant.firstname }} {{ tenant.lastname }}</div>
+                <div class="col-3 text-start ps-3">{{ tenant.contactEmail }}</div>
+                <div class="col-2 text-start ps-3">{{ tenant.room?.dorm?.dormName ?? 'N/A' }}</div>
+                <div class="col-1">{{ tenant.room?.roomNumber ?? 'N/A' }}</div>
+                <div class="col-2">
                     <span class="badge rounded-pill px-3 py-2" :class="{
                         'bg-success text-white': tenant.status === 'active',
                         'bg-secondary text-white': tenant.status === 'moved_out',
@@ -191,7 +221,7 @@
                         {{ tenant.status?.replace('_', ' ').toUpperCase() }}
                     </span>
                 </div>
-                <div class="col">
+                <div class="col-1 d-flex justify-content-center">
                     <!-- View Button -->
                     <button class="btn btn-sm btn-outline-primary" @click="displaytenantInformation(tenant.approvedID)"
                         title="View">
@@ -203,9 +233,9 @@
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
-
             </div>
         </div>
+
 
 
         <div v-if="VisibleTenantModal" class="modal fade show d-block rounded-3" style="background: rgba(0, 0, 0, 0.5);"
@@ -358,7 +388,7 @@
                                 <div class="mb-3">
                                     <p v-if="errors.contactNumber" class="text-danger small">{{
                                         errors.contactNumber[0]
-                                        }}
+                                    }}
                                     </p>
 
                                 </div>
@@ -606,7 +636,7 @@
                                     <p class="mb-2">
                                         <i class="bi bi-person-circle text-primary me-2"></i>
                                         <strong>Tenant Name:</strong> {{ tenantpayment.firstname }} {{
-                                        tenantpayment.lastname }}
+                                            tenantpayment.lastname }}
                                     </p>
                                     <p class="mb-2">
                                     <p>
@@ -639,11 +669,11 @@
                             <!-- Action Buttons -->
                             <div class="d-flex gap-2">
                                 <button class="btn btn-success w-50 shadow-sm"
-                                    @click="updateOnlinePayment(tenantpayment?.payments?.[0],tenantpayment.approvedID,'approved')">
+                                    @click="updateOnlinePayment(tenantpayment?.payments?.[0], tenantpayment.approvedID, 'approved')">
                                     <i class="bi bi-check-circle me-2"></i> Approve Payment
                                 </button>
                                 <button class="btn btn-danger w-50 shadow-sm"
-                                    @click="updateOnlinePayment(tenantpayment?.payments?.[0],tenantpayment.approvedID,'rejected')">
+                                    @click="updateOnlinePayment(tenantpayment?.payments?.[0], tenantpayment.approvedID, 'rejected')">
                                     <i class="bi bi-x-circle me-2"></i> Reject Payment
                                 </button>
                             </div>
@@ -662,7 +692,7 @@
                                     <p class="mb-2">
                                         <i class="bi bi-person-fill text-primary me-2"></i>
                                         <strong>Tenant Name:</strong> {{ tenantpayment.firstname }} {{
-                                        tenantpayment.lastname }}
+                                            tenantpayment.lastname }}
                                     </p>
                                     <p class="mb-2">
                                         <i class="bi bi-currency-exchange text-success me-2"></i>
@@ -777,8 +807,7 @@ export default {
             viewtenantpaymentModal: false,
             tenantpayment: [],
             extensionDate: '',
-
-
+            startDate: this.getTodayDate(), // set default to today
         }
     },
     watch:
@@ -1148,24 +1177,23 @@ export default {
                 this.$refs.loader.loading = false;
             }
         },
-        async btnViewTenantPaymentModal(selectedtenant)
-        {
-            try { 
+        async btnViewTenantPaymentModal(selectedtenant) {
+            try {
                 const res = await axios.get(`/view/tenant/payment/${selectedtenant.approvedID}`);
                 this.$refs.loader.loading = true;
                 this.tenantpayment = res.data.tenant;
                 this.extensionDate = this.tenantpayment.moveOutDate;
                 this.viewtenantpaymentModal = true;
-            }catch (error) {
+            } catch (error) {
                 console.error("Error viewing tenant payment:", error);
             }
             finally {
                 this.$refs.loader.loading = false;
             }
-            
+
         },
         async updateExtension(approveID) {
-            try { 
+            try {
                 const confirmed = await this.$refs.modal.show({
                     title: 'Confirm Extension Update',
                     message: `Are you sure you want to update the extension date to ${this.extensionDate.split(' ')[0]}?`,
@@ -1178,9 +1206,9 @@ export default {
                     const response = await axios.post(`/update/extension/${approveID}`, {
                         extensionDate: this.extensionDate
                     });
-                    
+
                     if (response.data.status === 'success') {
-                        this.$refs.toast.showToast(response.data.message, 'success'); 
+                        this.$refs.toast.showToast(response.data.message, 'success');
                         this.viewtenantpaymentModal = false;
                         this.VisibleTenantModal = false;
 
@@ -1195,15 +1223,15 @@ export default {
                     return;
                 }
             }
-            catch(error) {
+            catch (error) {
                 console.error("Error updating extension:", error);
             }
             finally {
                 this.$refs.loader.loading = false;
             }
         },
-        async updateOnlinePayment(tenantPayment, approvedID, status) { 
-            try { 
+        async updateOnlinePayment(tenantPayment, approvedID, status) {
+            try {
                 const confirmed = await this.$refs.modal.show({
                     title: 'Confirm Payment {}'.replace('{}', status.charAt(0).toUpperCase() + status.slice(1)),
                     message: `Are you sure you want to ${status} this payment?`,
@@ -1219,9 +1247,9 @@ export default {
                         extensionDate: this.extensionDate
 
                     });
-                    
+
                     if (response.data.status === 'success') {
-                        this.$refs.toast.showToast(response.data.message, 'success'); 
+                        this.$refs.toast.showToast(response.data.message, 'success');
                         this.viewtenantpaymentModal = false;
                         this.VisibleTenantModal = false;
 
@@ -1236,7 +1264,7 @@ export default {
                     return;
                 }
             }
-            catch(error) {
+            catch (error) {
                 console.error("Error approving payment:", error);
             }
             finally {
@@ -1272,10 +1300,10 @@ export default {
             catch (error) {
 
             }
-            finally { 
+            finally {
                 this.$refs.loader.loading = false;
             }
-          
+
         },
         formatDate(date) {
             if (!date) return "N/A";
@@ -1285,22 +1313,40 @@ export default {
                 day: 'numeric'
             });
         },
+        getTodayDate() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        },
         nextDay(date) {
             if (!date) return null;
             let d = new Date(date);
             d.setDate(d.getDate() + 1);
             return d.toISOString().split('T')[0]; // format YYYY-MM-DD
-        }
+        },
+        downloadReport() {
+            const dateParam = this.startDate || this.getTodayDate(); // fallback to today
+            window.open(`/report/active-tenants?date=${dateParam}`, '_blank');
+        },
+        extensionReport() {
+            const dateParam = this.startDate || this.getTodayDate();
+            window.open(`/report/extension-payments?date=${dateParam}`, '_blank');
+        },
+
 
     },
+
     mounted() {
         this.landlord_id = document.getElementById('tenantpage').dataset.landlordId;
-                      
+
         this.subscribeToNotifications();
         this.getTenantList();
         if (this.selectedtenant?.room?.dorm?.dormID) {
             this.selectedDormId = this.selectedtenant.room.dorm.dormID;
         }
+
         this.getDormId();
 
     },

@@ -103,6 +103,7 @@
 
             <!-- Right Column -->
             <div class="col-md-6">
+                <!-- Second Card -->
                 <div class="card mb-4 dorm-card text-white border-0 overflow-hidden shadow" v-if="topDorms.length > 1"
                     style="border-radius: 20px; height: 190px; position: relative;">
                     <div :style="{
@@ -118,7 +119,8 @@
                         <h5 class="fw-bold mb-1">{{ topDorms[1].dorm.dormName }}</h5>
                         <p class="mb-1">{{ topDorms[1].dorm.address }}</p>
                         <p class="mb-0">⭐ {{ Number(topDorms[1].avg_rating).toFixed(1) }}</p>
-                        <a @click="viewDorms(topDorms[0].dorm.dormID)"
+                        <!-- FIXED: now correctly points to second dorm -->
+                        <a @click="viewDorms(topDorms[1].dorm.dormID)"
                             class="btn btn-outline-light btn-sm mt-1">View</a>
                     </div>
                 </div>
@@ -141,18 +143,16 @@
                                 <h6 class="fw-bold mb-0">{{ dorm.dorm.dormName }}</h6>
                                 <p class="mb-0 text-truncate">{{ dorm.dorm.address }}</p>
                                 <p class="mb-0">⭐ {{ Number(dorm.avg_rating).toFixed(1) }}</p>
-                                <a @click="viewDorms(topDorms[0].dorm.dormID)"
+                                <!-- FIXED: correctly uses the loop dorm -->
+                                <a @click="viewDorms(dorm.dorm.dormID)"
                                     class="btn btn-outline-light btn-sm mt-1">View</a>
                             </div>
                         </div>
                     </div>
                 </div> <!-- End Smaller Cards -->
             </div>
-        </div>
     </div>
-
-
-
+    </div>
 </template>
 <script>
 import axios from 'axios';
@@ -291,15 +291,15 @@ export default {
         display: flex;
         flex-direction: column;">
         
-        <img src="${dorm.images.main_image}" alt="Dorm Image"
+        <img src="${dorm.images.mainImage}" alt="Dorm Image"
             style="width: 100%; height: 150px; object-fit: cover; border-bottom: 1px solid #ddd;">
         
         <div class="mb-3" style=" flex: 1;">
             <div style="font-size: 17px; font-weight: 600; color: #2c3e50;">
-                🏠 ${dorm.dorm_name}
+                🏠 ${dorm.dormName}
             </div>
             <div class="mt-2">
-                <a href="/room-details/${dorm.dorm_id}/${this.tenant_id}" class="btn btn-primary w-100" style="font-size: 14px;">View Details</a>
+                <a href="/room-details/${dorm.dormID}/${this.tenant_id}" class="btn btn-primary w-100" style="font-size: 14px;">View Details</a>
             </div>
         </div>
     </div>
@@ -334,11 +334,31 @@ export default {
                         });
 
                         const content = `
-                    <div>
-                        <strong>Dorm Name:</strong> ${dorm.dorm_name}<br>
-                        <strong>ID:</strong> ${dorm.id}
-                    </div>
-                `;
+                      <div style="
+        width: 250px;
+        height: 250px;
+        border-radius: 12px;
+        overflow: hidden;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
+        background: #fefefe;
+        display: flex;
+        flex-direction: column;">
+
+        <img src="${dorm.images.mainImage}" alt="Dorm Image"
+            style="width: 100%; height: 150px; object-fit: cover; border-bottom: 1px solid #ddd;">
+        
+        <div class="mb-3" style=" flex: 1;">
+            <div style="font-size: 17px; font-weight: 600; color: #2c3e50;">
+                🏠 ${dorm.dormName}
+            </div>
+            <div class="mt-2">
+                <a href="/room-details/${dorm.dormID}/${this.tenant_id}" class="btn btn-primary w-100" style="font-size: 14px;">View Details</a>
+            </div>
+        </div>
+    </div>
+`;
 
                         marker.addListener("click", () => {
                             infoWindow.setContent(content);

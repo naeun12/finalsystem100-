@@ -225,7 +225,8 @@ class dormitories extends Controller
     $dorms = $query->with('rooms')->get();
 
     return $dorms;
-} public function getQuestionRecommendations(Request $request)
+}
+public function getQuestionRecommendations(Request $request)
 {
     $question = $request->input('question');
 
@@ -260,6 +261,34 @@ class dormitories extends Controller
 
         // Ensure each dorm has proper structure and rooms are included
         $recommendations = array_map(function ($dorm) {
+            // Handle amenities safely
+            $amenities = '';
+            if (isset($dorm['amenities'])) {
+                if (is_array($dorm['amenities'])) {
+                    $amenities = implode(',', array_column($dorm['amenities'], 'aminityName'));
+                } elseif (is_string($dorm['amenities'])) {
+                    $amenities = $dorm['amenities'];
+                }
+            }
+
+            // Handle rooms safely
+            $rooms = [];
+            if (!empty($dorm['rooms']) && is_array($dorm['rooms'])) {
+                $rooms = array_map(function ($room) {
+                    $features = $room['features'] ?? [];
+                    if (is_string($features)) {
+                        $features = explode(',', $features);
+                    }
+                    return [
+                        'roomNumber' => $room['roomNumber'] ?? null,
+                        'type' => $room['type'] ?? $room['roomType'] ?? "Standard",
+                        'price' => $room['price'] ?? null,
+                        'availability' => $room['availability'] ?? null,
+                        'features' => $features,
+                    ];
+                }, $dorm['rooms']);
+            }
+
             return [
                 'dormID' => $dorm['dormID'] ?? null,
                 'dormName' => $dorm['dormName'] ?? 'Unnamed Dorm',
@@ -271,20 +300,41 @@ class dormitories extends Controller
                     'secondaryImage' => $dorm['dormimages']['secondaryImage'] ?? null,
                     'thirdImage' => $dorm['dormimages']['thirdImage'] ?? null
                 ],
-                'amenities' => isset($dorm['amenities']) ? implode(',', array_column($dorm['amenities'], 'aminityName')) : '',
+                'amenities' => $amenities,
                 'rules' => $dorm['rules'] ?? [],
-                // Ensure rooms are always set, fallback to AI or DB rooms
-                'rooms' => !empty($dorm['rooms']) 
-                    ? $dorm['rooms'] 
-                    : (isset($dorm['recommendationRooms']) ? $dorm['recommendationRooms'] : []),
+                'rooms' => $rooms,
                 'fklandlordID' => $dorm['fklandlordID'] ?? null,
                 'landlord' => $dorm['landlord'] ?? [],
             ];
         }, $aiRecommendations);
 
-        // If still empty, fallback entirely to DB result
-        if (empty($recommendations) && isset($data['result'])) {
-            $recommendations = $data['result'];
+        // Fallback entirely to DB result if recommendations still empty
+        if (empty($recommendations) && isset($data['result']) && is_array($data['result'])) {
+            $recommendations = array_map(function($room) {
+                $features = $room['features'] ?? [];
+                if (is_string($features)) {
+                    $features = explode(',', $features);
+                }
+
+                return [
+                    'dormID' => $room['dormID'] ?? null,
+                    'dormName' => $room['dormName'] ?? 'Unnamed Dorm',
+                    'address' => $room['address'] ?? 'No address provided',
+                    'occupancyType' => $room['occupancyType'] ?? 'Mixed',
+                    'price' => $room['price'] ?? 'Contact landlord',
+                    'rooms' => [
+                        [
+                            'roomNumber' => $room['roomNumber'] ?? null,
+                            'type' => $room['type'] ?? $room['roomType'] ?? "Standard",
+                            'price' => $room['price'] ?? null,
+                            'availability' => $room['availability'] ?? null,
+                            'features' => $features,
+                        ]
+                    ],
+                    'fklandlordID' => $room['fklandlordID'] ?? null,
+                    'landlord' => $room['landlord'] ?? [],
+                ];
+            }, $data['result']);
         }
 
         return response()->json([
@@ -292,6 +342,7 @@ class dormitories extends Controller
             'dorms' => $data['result'] ?? [],
             'recommendations' => $recommendations,
         ]);
+
     } catch (\Exception $e) {
         \Log::error('AI Dorm Recommendation Error: ' . $e->getMessage());
 
@@ -302,6 +353,5 @@ class dormitories extends Controller
         ], 500);
     }
 }
-
 
 }

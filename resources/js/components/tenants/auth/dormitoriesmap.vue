@@ -30,9 +30,6 @@
             <div class="col-md-8">
                 <div class="bg-light border rounded shadow-sm" style="height: 760px; overflow: hidden;">
                     <div id="map" style="width: 100%; height: 100%;"></div>
-
-
-
                 </div>
             </div>
 
@@ -45,16 +42,7 @@
                         <img :src="logoImage" alt="Pin Logo" width="50" height="50" class="rounded" />
                         Nearby Dormitories
                     </h5>
-                    <div class="row mb-4">
-                        <!-- Price Range Dropdown -->
 
-
-                        <!-- Occupancy Type Dropdown -->
-
-                    </div>
-
-
-                    <!-- Scrollable List -->
                     <!-- Scrollable List -->
                     <div class="overflow-auto" style="flex-grow: 1; max-height: 640px;">
                         <!-- No Results -->
@@ -63,59 +51,49 @@
                         </div>
 
                         <!-- Dorm Cards -->
-                        <div v-else class="row gy-3">
-                            <div class="col-12" v-for="dorm in nearbyDorms" :key="dorm.id">
-                                <div class="d-flex align-items-center p-3 rounded-4 shadow-sm bg-white border gap-3 hover-shadow"
-                                    style="transition: all 0.3s ease; cursor: pointer;"
-                                    @click="viewDormsDetails(dorm.dormID)">
-                                    <!-- Dorm Image -->
-                                    <img :src="dorm.images?.mainImage || dorm.mainImage || '/images/default-dorm.webp'"
-                                        alt="Dorm Image" class="rounded-3 border"
-                                        style="width: 90px; height: 90px; object-fit: cover;" />
+                        <div v-else class="d-flex flex-column align-items-center gap-3">
+                            <div v-for="dorm in nearbyDorms" :key="dorm.id" class="w-100 d-flex justify-content-center">
+                                <div class="card shadow-sm rounded-4 p-3 w-100"
+                                    style="max-width: 500px; cursor: pointer;" @click="viewDormsDetails(dorm.dormID)">
 
-                                    <!-- Dorm Info -->
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-semibold text-primary mb-1">
-                                            {{ dorm.dormName }}
-                                        </h6>
-                                        <p class="text-secondary small mb-1 d-flex align-items-center gap-1">
+                                    <!-- Card Content: stacked vertically -->
+                                    <img :src="dorm.images?.mainImage || dorm.mainImage || '/images/default-dorm.webp'"
+                                        alt="Dorm Image" class="rounded-3 border mb-3"
+                                        style="width: 100%; height: 150px; object-fit: cover;" />
+
+                                    <div class="text-center mb-3">
+                                        <h6 class="fw-semibold text-primary mb-1">{{ dorm.dormName }}</h6>
+                                        <p
+                                            class="text-secondary small mb-1 d-flex align-items-center justify-content-center gap-1">
                                             <img :src="logoImage" alt="Pin Logo" width="18" height="18"
                                                 class="rounded" />
                                             <span>{{ dorm.address }}</span>
                                         </p>
-                                        <p class="mb-2 text-secondary small d-flex align-items-center gap-2">
-                                            <i class="fas fa-user-group text-muted"></i>
-                                            {{ dorm.occupancyType }}
-                                        </p>
-
-
+                                        <p class="mb-2 text-secondary small">{{ dorm.occupancyType }}</p>
                                         <div v-if="isPrice" class="mb-1">
-                                            <p class="mb-0 text-dark ">
-                                                ₱{{ dorm.price ? dorm.price.toLocaleString() : '0' }}
-                                            </p>
+                                            <p class="mb-0 text-dark">₱{{ dorm.price ? dorm.price.toLocaleString() : '0'
+                                                }}</p>
                                         </div>
-
                                         <span class="badge bg-success bg-opacity-75">
                                             📍 {{ parseFloat(dorm.distance_km).toFixed(2) }} km away
                                         </span>
                                     </div>
 
-                                    <!-- Action Button -->
-                                    <div class="ms-auto">
-                                        <button class="btn btn-sm rounded-pill">
-                                            View
-                                        </button>
+                                    <!-- Action Button at bottom -->
+                                    <div class="d-flex justify-content-center">
+                                        <button class="btn btn-sm btn-primary rounded-pill w-75">View</button>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
+</div>
 
-        </div>
-    </div>
+    </div> <!-- End Right Column -->
+  
 
 </template>
 <script>
@@ -216,7 +194,7 @@ export default {
                 animation: google.maps.Animation.DROP,
                 title: "Drag me!",
                 icon: {
-                    url: "http://127.0.0.1:8000/images/Logo/logo.png",
+                    url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
                     scaledSize: new google.maps.Size(50, 50)
                 },
             });
@@ -261,7 +239,7 @@ export default {
                             position: { lat, lng },
                             map: this.map,
                             icon: {
-                                url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png', // Default red pin
+                                url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // Default red pin
                                 scaledSize: new google.maps.Size(40, 40)
                             },
                             title: `${dorm.dormName} (${dorm.distance_km} km)`

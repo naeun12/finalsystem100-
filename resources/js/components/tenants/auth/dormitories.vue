@@ -387,21 +387,28 @@ export default {
                 // AI recommendations (dorms or rooms)
                 const recs = response.data.recommendations || [];
 
-        this.dormReccomend = recs.map(d => ({
-          dormID: d.dormID,
-          dormName: d.dormName,
-          address: d.address,
-          occupancyType: d.occupancyType,
-          amenities: d.amenities,
-          rules: d.rules || [],
-          rooms: (d.rooms || []).map(r => ({
-            roomNumber: r.roomNumber,
-            type: r.type || r.roomType || "Standard",
-            price: r.price,
-            availability: r.availability,
-              features: r.features ? r.features.split(',').map(f => f.trim()) : []
-          }))
-        }));
+                this.dormReccomend = (recs || []).map(d => ({
+                    dormID: d.dormID || 0,
+                    dormName: d.dormName || 'Unnamed Dorm',
+                    address: d.address || 'No address provided',
+                    occupancyType: d.occupancyType || 'Mixed',
+                    amenities: d.amenities || '',
+                    rules: d.rules || [],
+                    rooms: (d.rooms || []).map(r => ({
+                        roomNumber: r.roomNumber || 'N/A',
+                        type: r.type || r.roomType || 'Standard',
+                        price: r.price || 'Contact landlord',
+                        availability: r.availability || 'Unknown',
+                        features: r.features
+                            ? (Array.isArray(r.features)
+                                ? r.features
+                                : r.features.split(',').map(f => f.trim()))
+                            : []
+                    }))
+                }));
+
+                console.log('AI Recommendations:', this.dormReccomend);
+        console.log('AI Response:', this.chatresponse);
 
             } catch (error) {
                 console.error('Error sending AI question:', error);

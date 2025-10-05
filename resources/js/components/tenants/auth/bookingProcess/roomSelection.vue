@@ -217,7 +217,7 @@
             <div class="modal-content shadow-lg rounded-4 overflow-hidden">
 
                 <!-- Modal Header -->
-                <div class="modal-header  text-white">
+                <div class="modal-header bg-info  text-white">
                     <h5 class="modal-title">Room Details</h5>
                     <button type="button" class="btn-close" @click="reservationDetailsModal = false"></button>
                 </div>
@@ -226,8 +226,8 @@
                 <div class="modal-body p-4">
                     <!-- Image Preview -->
                     <div class="text-center mb-4">
-                        <img :src="this.imageUrl" class="img-fluid rounded-3 shadow w-100"
-                            style="max-height: 300px; object-fit: cover;"
+                        <img :src="this.imageUrl" class="img-fluid rounded-3 shadow w-50"
+                            style="max-height: 300px; "
                             :alt="`Image of ${roomsDetail?.room_type || 'Room'}`" />
                     </div>
 
@@ -559,17 +559,6 @@ export default {
                 this.$refs.loader.loading = true;
 
                 const formdata = new FormData();
-                formdata.append('dormitory_id', this.dormitory_id);
-                formdata.append('room_id', this.room_id);
-                formdata.append('tenant_id', this.tenant_id);
-                formdata.append('firstname', this.firstname);
-                formdata.append('lastname', this.lastname);
-                formdata.append('contact_number', this.contactInfo);
-                formdata.append('email', this.email);
-                formdata.append('age', this.age);
-                formdata.append('gender', this.sex);
-                formdata.append('studentpicture_id', this.imageUrl);
-
                 const response = await axios.post('/reserved-room', formdata);
 
                 if (response.data.status === 'success') {
@@ -601,12 +590,8 @@ export default {
 
         },
         async bookRoom(room) {
-            console.log("Tenant Sex:", this.sex);
-            console.log("Room Preference:", room.genderPreference);
-            console.log("Occupancy Type:", room.dorm?.occupancyType);
 
             const tenantSex = this.sex.toLowerCase(); // "male" / "female"
-
             // Convert room values to simpler form
             let roomPref = room.genderPreference?.toLowerCase(); // "male only", "female only", "any gender"
             if (roomPref === "male only") roomPref = "male";

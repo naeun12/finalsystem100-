@@ -7,34 +7,40 @@
     <div class="container-fluid  p-3">
         <div class="row shadow rounded overflow-hidden " style="border: 3px solid #4edce2;">
             <!-- Left Section -->
-            <div class="col-md-4  text-black text-center py-4" style="background-color: #4edce2;">
-                <div class="border mb-4 rounded bg-white d-flex align-items-center justify-content-center overflow-hidden"
-                    style="height: 200px;">
-                    <img :src="booking.pictureID" alt="Profile Image"
-                        class="img-fluid w-100 h-100 object-fit-cover rounded" v-if="booking.pictureID">
-                    <p class="mb-0 text-muted" v-else>No Image</p>
+            <div class="col-md-4 text-black text-center py-4" style="background-color: #4edce2;">
+                <!-- Image Container -->
+                <div class="card-img-top d-flex align-items-center justify-content-center"
+                    style="height: 200px; overflow: hidden;">
+                    <img v-if="booking.pictureID" :src="booking.pictureID" alt="Profile Image" class="rounded"
+                        style="max-height: 100%; max-width: 100%; object-fit: cover;">
+                    <p v-else class="text-muted">No Image</p>
+                </div>
+                <statusMap :status="this.ispayment" role="tenant" />
+
+
+                <!-- Booking Details -->
+                <div class="text-start px-3">
+                    <p><strong><i class="bi bi-person-fill"></i>Full name:</strong> {{ booking.firstname }} {{
+                        booking.lastname }}</p>
+                    <p><strong><i class="bi bi-calendar-fill"></i> Age:</strong> {{ booking.age }}</p>
+                    <p><strong><i class="bi bi-gender-ambiguous"></i> Gender:</strong> {{ booking.gender }}</p>
+                    <p><strong><i class="bi bi-telephone-fill"></i> Contact No#:</strong> {{ booking.contactNumber }}
+                    </p>
+                    <p><strong><i class="bi bi-envelope-fill"></i> Email:</strong> {{ booking.contactEmail }}</p>
+                    <p><strong><i class="bi bi-house-door-fill"></i> Move-in Date:</strong> {{ booking.moveInDate }}</p>
+                    <p><strong><i class="bi bi-flag-fill"></i> Move-out Date:</strong> {{ booking.moveOutDate }}</p>
+
                 </div>
 
-                <div class="text-start px-3">
-                    <p><strong>📌 Booking Status:</strong>
-                        {{ booking.status }}
-                        <statusMap :status="this.ispayment" role="tenant" />
-                    </p>
-                    <p><strong>👤 Name:</strong> {{ booking.firstname }} {{ booking.lastname }}</p>
-                    <p><strong>🎂 Age:</strong> {{ booking.age }}</p>
-                    <p><strong>🚻 Gender:</strong> {{ booking.gender }}</p>
-                    <p><strong>📞 Contact No#:</strong> {{ booking.contactNumber }}</p>
-                    <p><strong>✉️ Email:</strong> {{ booking.contactEmail }}</p>
-                    <p><strong>🏠 Move-in Date:</strong> {{ booking.moveInDate }}</p>
-                    <p><strong>🏁 Move-out Date:</strong> {{ booking.moveOutDate }}</p>
-                </div>
-                <div v-if="booking.status === 'confirmed' || booking.status === 'pending'">
+                <!-- Action Button -->
+                <div v-if="booking.status === 'confirmed' || booking.status === 'pending'" class="mt-3">
                     <button class="btn btn-danger" @click="cancelBooking(booking.bookingID)">
                         <i class="bi bi-x-circle-fill me-2"></i>Cancel Booking
                     </button>
                 </div>
-
             </div>
+
+
 
             <!-- Right Section -->
             <div class="col-md-8 bg-light p-4">

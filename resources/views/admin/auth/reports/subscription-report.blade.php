@@ -60,22 +60,35 @@
 
 
     <!-- Table -->
-    <table>
-        <thead>
+    <!-- Table -->
+<table>
+    <thead>
+        <tr>
+            <th>Month</th>
+            <th>Subscribers</th>
+            <th>Income (PHP)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($subscriptions as $sub)
             <tr>
-                <th>Month</th>
-                <th>Subscribers</th>
+                <td>{{ $sub->month }}</td>
+                <td>{{ $sub->count }}</td>
+                <td>PHP {{ number_format($sub->total_amount, 2) }}</td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach ($subscriptions as $sub)
-                <tr>
-                    <td>{{ $sub->month }}</td>
-                    <td>{{ $sub->count }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+        @endforeach
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="2" style="text-align: right; font-weight: bold; background-color: #e8f6ff; padding: 6px; border-top: 2px solid #0d6efd;">
+                Total Income:
+            </td>
+            <td style="font-weight: bold; background-color: #e8f6ff; padding: 6px; border-top: 2px solid #0d6efd;">
+                PHP {{ number_format($totalIncome, 2) }}
+            </td>
+        </tr>
+    </tfoot>
+</table>
 
     <div class="footer">
         &copy; {{ now()->year }} DormHub. All rights reserved.

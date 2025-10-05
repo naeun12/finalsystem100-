@@ -38,7 +38,7 @@ class reservationController extends Controller
         }
     
         return view('landlord.auth.reservationpage',[
-        "title" => "Landlord - Reservation", 
+        "title" => "Landlord - Reservation Approval", 
         'headerName' => 'Tenants Reservation',           
         'landlord' => $landlord,
         'landlord_id' => $landlord_id,

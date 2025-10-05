@@ -231,10 +231,10 @@
 
             <!-- Booking Form -->
             <div class="col-12 col-md-4">
-                <form @submit.prevent="bookaroom" class="border rounded p-4 shadow bg-white">
+                <form class="border rounded p-4 shadow bg-white">
 
                     <h5 class="fw-bold mb-4 text-center text-primary">
-                        <i class="bi bi-calendar-check-fill me-2"></i>Dormitory Booking
+                        <i class="bi bi-calendar-check-fill me-2"></i>Fill up your Information
                     </h5>
 
                     <div class="mb-3 px-4">
@@ -485,17 +485,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal -->
-
-
-
-
-
-
-
     <Modalconfirmation ref="modal" />
-
 
 </template>
 

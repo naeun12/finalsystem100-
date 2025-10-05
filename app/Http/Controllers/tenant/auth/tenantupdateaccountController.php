@@ -64,25 +64,31 @@ public function updatetenantAccount(Request $request,$tenant_id)
   $request->validate([
     'firstname'   => 'required|string|max:255',
     'lastname'    => 'required|string|max:255',
-    'gender'      => 'nullable|string',
-    'profilePicUrl' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    'gender'      => 'required|string',
+'profilePicUrl' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
     
 ], [
     'firstname.required'   => 'Please enter the firstname.',
     'lastname.required'    => 'Please enter the lastname.',
+    'gender.required'      => 'Please select the gender.',
 ]);
-            $profilePicPath = null;
-           if ($request->hasFile('profilePicUrl')) {
+    $profilePicUrl = null;
+            if ($request->hasFile('profilePicUrl')) {
             $image = $request->file('profilePicUrl');
-            $imageName = time() . '_profile.' . $image->getClientOriginalExtension();
-            $imagePath = $image->storeAs('public/uploads/profilePic', $imageName);
-            $profilePicPath = 'storage/uploads/profilePic/' . $imageName;
-          }
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
 
+            // Save sa storage/app/public/uploads/profilePic
+            $image->storeAs('public/uploads/profilePic', $imageName);
+
+            // Path nga i-store sa DB (without /storage prefix)
+            $profilePicUrl = 'uploads/profilePic/' . $imageName;
+        } else {
+            $profilePicUrl = null;
+        }
     $tenant->firstname   = $request->firstname;
     $tenant->lastname    = $request->lastname;
     $tenant->gender      = $request->gender;
-    $tenant->profilePicUrl = $profilePicPath;
+    $tenant->profilePicUrl = $profilePicUrl ?? $tenant->profilePicUrl; // Retain existing if no new upload
     $tenant->save();
 
     return response()->json([
