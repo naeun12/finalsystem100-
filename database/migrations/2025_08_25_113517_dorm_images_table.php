@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dormImages', function (Blueprint $table) {
+        Schema::create('dormimages', function (Blueprint $table) {
             $table->id('imagesID'); // primary key
             $table->unsignedBigInteger('fkdormID');
             $table->string('mainImage')->nullable();

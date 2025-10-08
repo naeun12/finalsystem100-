@@ -12,6 +12,15 @@
             </button>
         </div>
 
+        <div v-if="bookings.length === 0"
+            class="text-center p-5 bg-light rounded-4 shadow-lg position-relative overflow-hidden">
+            <!-- Decorative Circle -->
+            
+
+            <h4 class="text-muted fw-bold mb-3">No bookings found</h4>
+            <p class="text-muted fs-6 mb-4">You haven't made any bookings yet. Explore dormitories and find your perfect
+                room!</p>
+        </div>
 
         <div class="card mb-3 shadow-lg border-0 rounded-4 hover-card"
             v-for="(booking, index) in bookings.slice(0, showCount)" :key="index" style="background: #ffffff;">

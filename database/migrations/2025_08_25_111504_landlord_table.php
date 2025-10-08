@@ -26,8 +26,7 @@ return new class extends Migration
             $table->string('govermentID', 255)->nullable();
             $table->string('businessPermit', 255)->nullable();
             $table->boolean('isVerified')->default(false);
-                         $table->boolean('is_deactivated')->default(false)->comment('0 = active, 1 = deactivated');
-
+            $table->boolean('is_deactivated')->default(false)->comment('0 = active, 1 = deactivated');
             $table->timestamps();
         });
     }

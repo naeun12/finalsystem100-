@@ -2,8 +2,16 @@
     <Loader ref="loader" />
     <NotificationList ref="toastRef" />
 
-    <div class="mt-5 px-4 d-flex justify-content-end align-items-end">
+    <div class="mt-5 py-3 px-5 d-flex justify-content-end align-items-end">
         <button class="custom-btn" @click="viewPayment">View Payments History</button>
+    </div>
+    <div v-if="rooms.length === 0"
+        class="text-center p-5 bg-light rounded-4 shadow-lg position-relative overflow-hidden">
+
+
+        <h4 class="text-muted fw-bold mb-3">No Room found</h4>
+        <p class="text-muted fs-6 mb-4">You haven't made any Room yet. Explore dormitories and find your perfect
+            room!</p>
     </div>
     <div class="container-fluid py-4" :class="{ 'card-slide': animate }"
         v-for="tenant in rooms.slice(currentIndex, currentIndex + 1)" :key="tenant.roomID">

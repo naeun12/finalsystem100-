@@ -89,7 +89,7 @@ class dormitories extends Controller
             $keywordNormalized = $this->normalize($keyword);
 
             $dorms = DB::table('dorms as d')
-                ->leftJoin('dormImages as i', 'i.fkdormID', '=', 'd.dormID')
+                ->leftJoin('dormimages as i', 'i.fkdormID', '=', 'd.dormID')
                 ->select('d.*', 'i.mainImage')
                 ->whereNotNull('d.latitude')
                 ->whereNotNull('d.longitude')
@@ -126,7 +126,7 @@ class dormitories extends Controller
     
             $results = DB::table('rooms as r')
                 ->join('dorms as d', 'r.fkdormID', '=', 'd.dormID')
-                ->leftJoin('dormImages as i', 'i.fkdormID', '=', 'd.dormID')
+                ->leftJoin('dormimages as i', 'i.fkdormID', '=', 'd.dormID')
                 ->select(
                     'd.dormID',
                     'd.dormName',
@@ -232,9 +232,30 @@ public function getQuestionRecommendations(Request $request)
 
     try {
         // Call Flask/OpenAI API
-        $response = Http::post('http://127.0.0.1:5000/ask-ai/dormitories', [
-            'question' => $question,
-        ]);
+//  $response = Http::post('http://127.0.0.1:5000/ask-ai/dormitories', [
+//             'question' => $question,
+//         ]);
+// Use your Render app URL here
+// $flaskApiUrl = "https://pythonai-rkae.onrender.com/ask-ai/dormitories";
+
+// Send POST request to Flask API
+$apiUrl = env('AI_API_URL') . '/'.'dormitories';
+
+$response = Http::post($apiUrl, [
+    'question' => $question,
+]);
+
+// Optional: handle errors
+if ($response->failed()) {
+    return [
+        'message' => 'Naa’y error sa pagkuha og AI recommendations.',
+        'result' => [],
+        'recommendations' => [],
+    ];
+}
+
+// Get JSON response
+$data = $response->json();
 
         \Log::info('Raw Flask response: ' . $response->body());
 

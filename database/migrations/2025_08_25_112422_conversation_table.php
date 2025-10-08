@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('initiatorID'); // who started the convo
             $table->enum('initiatorRole', ['tenant', 'landlord', 'admin']);
-            $table->text('topic')->unique(); // ✅ Declare column then make it unique
+            $table->string('topic', 255)->unique();
             $table->timestamps();
         });
     }

@@ -559,6 +559,16 @@ export default {
                 this.$refs.loader.loading = true;
 
                 const formdata = new FormData();
+                formdata.append('dormitory_id', this.dormitory_id);
+                formdata.append('room_id', this.room_id);
+                formdata.append('tenant_id', this.tenant_id);
+                formdata.append('firstname', this.firstname);
+                formdata.append('lastname', this.lastname);
+                formdata.append('contact_number', this.contactInfo);
+                formdata.append('email', this.email);
+                formdata.append('age', this.age);
+                formdata.append('gender', this.sex);
+                formdata.append('studentpicture_id', this.imageUrl);
                 const response = await axios.post('/reserved-room', formdata);
 
                 if (response.data.status === 'success') {

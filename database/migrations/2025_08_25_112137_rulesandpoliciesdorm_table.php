@@ -8,13 +8,13 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('rulesAndPolicyDorm', function (Blueprint $table) {
+        Schema::create('rulesandpolicydorm', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('fkdormID');
             $table->unsignedBigInteger('fkruleID');
             $table->timestamps();
             $table->foreign('fkdormID')->references('dormID')->on('dorms')->onDelete('cascade');
-            $table->foreign('fkruleID')->references('id')->on('rulesAndPolicies')->onDelete('cascade');
+            $table->foreign('fkruleID')->references('id')->on('rulesandpolicies')->onDelete('cascade');
             $table->unique(['fkdormID', 'fkruleID']); // prevent duplicates
         });
     }
@@ -22,7 +22,7 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('rulesAndPolicyDorm');
+        Schema::dropIfExists('rulesandpolicydorm');
     }
 };
 

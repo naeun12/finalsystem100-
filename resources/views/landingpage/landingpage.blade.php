@@ -58,7 +58,7 @@
                         </div>
                         <h5 class="fw-bold text-gradient">Easy Search</h5>
                         <p class="text-muted">
-                            Quickly find dormitories around Cebu with filters for price, location, and amenities.
+                            Quickly find dormitories around Lapu-Lapu and Mandaue City with filters for price, location, and amenities.
                         </p>
                     </div>
                 </div>

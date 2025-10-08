@@ -219,14 +219,13 @@
                                     <i class="fa-solid fa-circle-exclamation"></i>
                                     {{ errors.address[0] }}
                                 </span>
-                                <div class="form-floating mt-3">
-
-                                    <textarea class="form-control  text-muted" id="description" v-model="description"
-                                        placeholder="Description"
-                                        style="height: 120px; resize: vertical; font-size: 1rem; padding: 1rem;"></textarea>
-                                    <label for="description" class="fw-semibold">Description</label>
-
+                                <div class="form-floating mb-3 mt-3">
+                                    <textarea class="form-control border-primary shadow-sm text-muted" id="description"
+                                        v-model="description" placeholder="Enter Description"
+                                        style="height: 150px; font-size: 1rem;"></textarea>
+                                    <label for="description" class="fw-semibold text-primary">Description</label>
                                 </div>
+
 
                                 <span class="mb-3 text-danger" v-if="errors.description">
                                     <i class="fa-solid fa-circle-exclamation"></i>{{ errors.description[0]
@@ -1580,10 +1579,12 @@ export default {
             this.roomImage2File = ' ';
             if (this.$refs.roomImage2Preview) {
                 this.$refs.roomImage2Preview.value = ''; // Reset file input
-            } this.roomImage3Preview = ' ';
+            }
+            this.roomImage3Preview = ' ';
             if (this.$refs.roomImage3Preview) {
                 this.$refs.roomImage3Preview.value = ''; // Reset file input
             }
+            
             this.currentStep = 0;
 
 
@@ -2546,15 +2547,14 @@ export default {
                 formData.append("roomImage3File", this.editDormData.roomImage3File);
             }
             formData.append("dorm_id", this.editDormData.dorm_id);
-            console.log([...formData.entries()]); // for debugging
-            // const confirmed = await this.$refs.modal.show({
-            //     title: 'Update Dorm',
-            //     message: `Confirm update to this dorm’s Images?`,
-            //     functionName: 'Update Dormitories Image'
-            // });
-            // if(confirmed === false){
-            //     return;
-            // }
+            const confirmed = await this.$refs.modal.show({
+                title: 'Update Dorm',
+                message: `Confirm update to this dorm’s Images?`,
+                functionName: 'Update Dormitories Image'
+            });
+            if(confirmed === false){
+                return;
+            }
             this.$refs.loader.loading = true;
 
             try {
@@ -2814,7 +2814,7 @@ export default {
     mounted() {
         if (!window.google) {
             const script = document.createElement("script");
-            script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCyQYH_O-3v9vW6ba_V653qgVECSxII0GU&callback=initMap";
+            script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBZgqadX1d4wnviOKzUMNStd0DG2X7GA6s&callback=initMap";
 
             script.async = true;
             script.defer = true;

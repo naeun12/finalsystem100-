@@ -821,7 +821,7 @@ export default {
             if (!window.google || !window.google.maps) {
                 const script = document.createElement("script");
                 script.src =
-                    "https://maps.googleapis.com/maps/api/js?key=AIzaSyCyQYH_O-3v9vW6ba_V653qgVECSxII0GU&callback=initMap";
+                    "https://maps.googleapis.com/maps/api/js?key=AIzaSyBZgqadX1d4wnviOKzUMNStd0DG2X7GA6s&callback=initMap";
                 script.async = true;
                 window.initMap = () => this.initMap(); // 👈 Fix here
 

@@ -204,9 +204,17 @@ class dormdetailscontroller extends Controller
     $dormId   = $request->input('dormID');
     $question = $request->input('question');
 
-    $response = Http::post("http://127.0.0.1:5000/ask-ai/$dormId", [
-        'question' => $question
-    ]);
+//   $response = Http::post("http://127.0.0.1:5000/ask-ai/$dormId", [
+//         'question' => $question
+//     ]);
+// $flaskApiUrl = "https://pythonai-rkae.onrender.com/ask-ai/{$dormId}";
+$apiUrl = env('AI_API_URL') . '/' . $dormId;
+
+// Send POST request to Flask API
+$response = Http::post($apiUrl, [
+    'question' => $question,
+]);
+
 
     if ($response->successful()) {
         $result = $response->json();

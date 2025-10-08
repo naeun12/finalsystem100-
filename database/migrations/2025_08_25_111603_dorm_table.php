@@ -25,6 +25,7 @@ return new class extends Migration
         $table->string('contactEmail');
         $table->string('contactPhone');
         $table->string('gcashNumber');
+        $table->unsignedBigInteger('views')->default(0);
         $table->string('availability',255)->default('Not Available');
         $table->string('occupancyType',255);
         $table->string('buildingType',255);

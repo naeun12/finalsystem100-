@@ -11,7 +11,14 @@
                 My Reservations
             </h2>
         </div>
+        <div v-if="visibleReservation.length === 0"
+            class="text-center p-5 bg-light rounded-4 shadow-lg position-relative overflow-hidden">
+         
 
+            <h4 class="text-muted fw-bold mb-3">No Reservation found</h4>
+            <p class="text-muted fs-6 mb-4">You haven't made any Reservation yet. Explore dormitories and find your perfect
+                room!</p>
+        </div>
         <div class="card mb-3 shadow-sm border-0 rounded-4" v-for="(reservation, index) in visibleReservation"
             :key="index" style="transition: transform 0.2s ease-in-out;">
             <div class="row g-0" style="border:1px solid #4edce2;">

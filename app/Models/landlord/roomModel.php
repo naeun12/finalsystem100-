@@ -52,7 +52,7 @@ public function features()
 {
     return $this->belongsToMany(
         'App\Models\landlord\featuresModel', // Adjust the namespace as needed
-        'roomfeaturesrooms', // Pivot table name
+        'room_features_rooms', // Pivot table name
         'fkroomID', // Foreign key in the pivot table
         'fkfeatureID' // Foreign key in the pivot table
     )->withPivot('fkroomID', 'fkfeatureID'); // Include pivot timestamps if needed

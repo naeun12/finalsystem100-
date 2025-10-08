@@ -33,7 +33,6 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <!-- User Profile -->
                         <div class="d-flex align-items-center flex-grow-1">
-                            <img :src="notification.sender?.profile_pic_url" alt="User Avatar" class="avatar me-3" />
                             <div class="flex-grow-1">
                                 <strong class="text-dark">
                                     {{ notification.sender?.firstname }} {{ notification.sender?.lastname }}
